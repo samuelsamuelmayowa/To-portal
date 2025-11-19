@@ -156,6 +156,7 @@ const router = createBrowserRouter([
         path: "/liveCourses",
         element: <LiveCourses />,
       },
+            { path: "commands", element: <Commands /> },
       {
         path: "/result",
         element: <QuizResults />,
