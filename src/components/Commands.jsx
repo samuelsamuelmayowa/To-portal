@@ -32,7 +32,7 @@ const Commands = () => {
         // },
           {
            id: 4,
-        //   title: "Splunk ",
+          title: "Splunk Commands ",
           url: "https://drive.google.com/file/d/1jAkmrbTWQApPg7qg43bBfAe4bEg8o0VT/preview",
         //   dueDate: "2025-11-8",
          
@@ -58,7 +58,7 @@ const Commands = () => {
     <div className="p-6 space-y-8 bg-gray-50 min-h-screen">
     <DashboardDropdown/>
 
-      <h1 className="text-2xl font-bold text-gray-800">📝 Assignment</h1>
+      <h1 className="text-2xl font-bold text-gray-800">📝 Commands</h1>
 
       <div className="bg-white shadow-md rounded-2xl p-6">
         <h2 className="text-xl font-semibold text-gray-800 mb-2">
