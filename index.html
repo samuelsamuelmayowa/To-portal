@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="canonical" href="https://www.to-analytics.com" />
+    <meta property="og:image" content="https://www.to-analytics.com" />
+    <meta property="og:url" content="https://www.to-analytics.com" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="keywords"
+      content="splunk , photography, stock , Linux, Data Science, Educational Consulting,Excel  fundamentals,SQL,Lighting techniques for video"
+    />
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+    <link
+      rel="shortcut icon"
+      href="./src/assets/images/t.jpeg"
+      type="image/x-icon"
+      src=""
+    />
+    <meta
+      name="description"
+      content="To-Analytics is an educational platform that offers affordable courses across a wide array of fields, including Splunk, Linux, Data Science, Stock & Options, Videography, Drone Technology, Educational Consulting, Photography, and more. Our courses are designed to foster career advancement and help you achieve your professional goals."
+    />
+
+    <title>T.O ANALYTICS</title>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script>
+      document.cookie =
+        "myCookie=paypal;domain=www.to-analytics.com;  SameSite=None; Secure; Partitioned;";
+
+      if (document.cookie && document.cookie !== "paypal") {
+        var ca = document.cookie.split(";");
+        // console.log(ca);
+        ca.forEach((x) => {
+          var c = x.substring(0, x.indexOf("="));
+          document.cookie = c + "=;expires=-1";
+        });
+      }
+    </script>
+    <script type="module" src="/src/main.jsx"></script>
+
+    <script src="https://www.paypal.com/sdk/js?client-id=AXTaMJvDyHKb0JdWMYxjQRWK_-hQB6bjF7oM_r2TSACTTUPK9eRDrRiIb701IbMs_Sp4HERH1hQAXXT_"></script>
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <script>
+      AOS.init();
+    </script>
+  </body>
+</html>

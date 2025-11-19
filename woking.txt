@@ -1,0 +1,375 @@
+ 
+  {
+    path: "/",
+    element: <NavBar />,
+    errorElement: <ErrorPage />,
+    children: [
+      {
+        index: true,
+        element: <HomePage />
+      },
+      {
+        path: "/courses",
+        element: <Courses />
+      },
+      {
+        path: "/about",
+        element: <AboutPage />
+      },
+      {
+        path: "/blog",
+        element: <BlogPage />
+      },
+      {
+        path: "/contact",
+        element: <ContactPage />
+      },
+    ]
+  },
+  {
+    path: "/createAccount",
+    element: <CreateAccountForm />
+  },
+  {
+    path: "/login",
+    element: <LoginForm />
+  },
+  {
+    path: "/contractors",
+    element: <ConnectWithContractor />,
+  },
+
+ 
+
+
+
+
+
+
+
+ import NavBar from "./components/NavBar";
+import ErrorPage from "./components/errorPage";
+import HomePage from "./pages/HomePage";
+import Courses from "./pages/Courses";
+import AllCourses from "./components/AllCourses";
+import Splunk from "./components/Splunk";
+import Linux from "./components/Linux";
+import AboutPage from "./pages/AboutPage";
+import BlogPage from "./pages/BlogPage";
+import ContactPage from "./pages/ContactPage";
+import ConnectWithContractor from "./pages/ConnectWithContractor";
+import CreateAccountForm from "./pages/CreateAccountForm";
+import LoginForm from "./pages/LoginForm";
+import { AnimatePresence } from "framer-motion";
+import {
+  createBrowserRouter,
+  RouterProvider,
+} from "react-router-dom";
+import HomeLayout from "./layoutAuth/HomeLayout";
+import AuthLayout from "./layoutAuth/AuthLayout";
+import Dashboard from "./dashboard/components/Dashboard";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <HomeLayout />,
+    children: [
+      {
+        path: "/",
+        element: <NavBar />,
+        errorElement: <ErrorPage />,
+        children: [
+          {
+            index: true,
+            element: <HomePage />
+          },
+          {
+            path: "/courses",
+            element: <Courses />
+          },
+          {
+            path: "/about",
+            element: <AboutPage />
+          },
+          {
+            path: "/blog",
+            element: <BlogPage />
+          },
+          {
+            path: "/contact",
+            element: <ContactPage />
+          },
+        ]
+      },
+      {
+        path: "/courses",
+        element: <Courses />,
+        children: [
+          {
+            index: true,
+            element: <AllCourses />
+          },
+          {
+            path: "splunk",
+            element: <Splunk />
+          },
+          {
+            path: "linux",
+            element: <Linux />
+          }
+        ]
+      },
+      {
+        path: "/login",
+        element: <LoginForm />
+      },
+      {
+        path: "/contractors",
+        element: <ConnectWithContractor />,
+      },
+
+    ]
+  },
+
+  {
+    path: "/dashboard",
+    element: <AuthLayout />,
+    children: [
+      {
+        path: "/dashboard/post",
+        element: <Dashboard />
+      }
+    ]
+  }
+
+
+]);
+
+
+function App() {
+  return (
+    <AnimatePresence>
+      <RouterProvider router={router} />
+    </AnimatePresence>
+  );
+}
+
+export default App;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"
+import { useStateContext } from "../context/ContextProvider";
+import { Toaster, toast } from 'sonner';
+import { FaExclamation } from "react-icons/fa";
+import { FaXmark } from "react-icons/fa6";
+
+const CheckOut = () => {
+  const [cartItem, setCartItem] = useState([])
+  const { token } = useStateContext();
+  const navigate = useNavigate();
+  const checkOut = ()=> {
+    if (!token) {
+      navigate("/createAccount")
+    }
+    else if (cartItem.length === 0) {
+      toast.error("Oops, Your cart is empty", {
+        cancel: {
+          label: <FaXmark />,
+        },
+        duration: 4000,
+        icon: <FaExclamation color="red" />,
+      })
+    }
+    else {
+      navigate("/dashboard/makePayment")
+    }
+  }
+<<<<<<< HEAD
+  useEffect(()=> {
+    const data = JSON.parse(localStorage.getItem("COURSE-CART")) || []
+    setCartItem(data)
+  }, [])
+  const removeCourse = (id) => {
+    const updatedCart = cartItem.filter((item) => item.id !== id);
+    setCartItem(updatedCart);
+    localStorage.setItem("COURSE-CART", JSON.stringify(updatedCart));
+  };
+  
+=======
+    useEffect(()=> {
+      const data = JSON.parse(localStorage.getItem("COURSE-CART")) || []
+      setCartItem(data)
+    }, [])
+    const removeCourse = (id) => {
+      const updatedCart = cartItem.filter((item) => item.id !== id);
+      setCartItem(updatedCart);
+      localStorage.setItem("COURSE-CART", JSON.stringify(updatedCart));
+      window.location.reload()
+    };
+    
+    
+>>>>>>> e698f7a260e274fd613238e9f7c844fc88b87706
+  return (
+    <div className="min-h-screen md:px-10 px-2 pt-32 pb-20">
+      <h1 className="text-xl md:text-4xl font-black my-4">SHOPPING CART</h1>
+      <div>
+        <p className="font-semibold text-md">{cartItem.length} {cartItem.length > 1 ? "COURSES" : "COURSE"} in cart </p>
+      </div>
+      <section className="grid md:grid-cols-3 grid-cols-1 gap-10">
+        <div className="cart-items md:col-span-2">
+          {cartItem.length > 0 ? cartItem.map((item)=> (
+            <div key={item.id} className="py-4 px-2">
+              <div className="flex items-start gap-2 md:gap-10">
+                <div>
+                  {item.image ? <img src={item.image} className="w-14 aspect-square object-cover" alt="" /> : (<div className="w-14 aspect-square bg-BLUE"></div>)}
+                </div>
+                <div className="grow-[3]">
+                  <p className="font-black">{item.courseName || item.name}</p>
+                  <p className="text-xs">{item.intro}</p>
+                  <p className="text-sm font-medium line-clamp-1">{item.description}</p>
+                </div>
+                <div>
+                  <button onClick={()=> removeCourse(item.id)} className="font-bold text-xs text-BLUE">REMOVE</button>
+                </div>
+                <div>
+                  <p className="font-black">${item.price}</p>
+                </div>
+              </div>
+            </div>
+          )) : <h1 className="col-span-3 flex justify-center items-center font-bold text-xl">NO ITEM IN YOUR CART</h1>}
+        </div>
+        <div className="px-2 mb-3">
+          <div className="my-8">
+            <h1 className="text-slate-600 text-sm font-bold">TOTAL:</h1>
+            <p className="font-black text-2xl">${cartItem.map((price)=> price.price).reduce((acc, cur)=> acc + cur , 0)}</p>
+          </div>
+          <button onClick={checkOut} className="duration-300 bg-BLUE hover:bg-white border-2 border-BLUE hover:text-BLUE w-full text-white font-bold py-3 rounded-xl">CHECKOUT</button>
+        </div>
+      </section>
+      <Toaster position="top-center" />
+    </div>
+  )
+}
+
+export default CheckOut
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ // const imageRef = ref(storage, `${file.name}  owner is` + data.email);
+                // uploadBytes(imageRef, file).then((snapshot) => {
+                //     getDownloadURL(snapshot.ref).then((url) => {
+                //         console.log(url)
+                //         const payload = {
+                //             email: data.email,
+                //             link_portfolio: data.linkportfolio,
+                //             role_postion: data.role_postion,
+                //             name: data.name,
+                //             pdfurl: url
+                //         }
+                //         axios.post(`${api}contractors`, payload, {
+                //             headers: {
+                //                 Accept: "application/json",
+                //                 "Content-Type": "application/json"
+                //             }
+                //         }).then((res) => {
+                //             if (res.status === 201) {
+                //                 console.log('stored info')
+                //             }
+                //         })
+                //     }).catch((err) => console.log(err.message))
+                // }).then((res) => {
+                //     if (res.status === 201) {
+                //         alert('upload successfull')
+                //     }
+                // }).catch((err)=>console.error(err))
+
+
+
+                          {/* <section className="">
+                <div className="bg-BLUE text-white rounded-lg border-[1px] border-PURPLE mx-2 md:mx-10 grid grid-cols-1 lg:grid-cols-2">
+                    <div className="flex justify-center items-center">
+                        <div className="p-4">
+                            <img src={client} className="w-[450px] md:border-[1px] border-PURPLE rounded-2xl" alt="" />
+                            <div className="text-center">
+                                <p className="font-medium my-2 md:text-2xl">Tomide Olulana</p>
+                                <p className="text-lg md:text-xl my-2">CEO</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="about-me border-PURPLE text-sm md:text-sm font-extralight md:font-normal px-4 md:px-6 py-4 md:py-8">
+                        <p className="my-2 md:my-6">I am a passion driven Nigerian-American business magnate, big data developer, and financial investor based in the United States. I have over 7 years of experience trading and investing in the stock market through stocks and options and has several years training, teaching, and mentoring.</p>
+                        <p className="my-2 md:my-6">I received my Master of Science in Applied Economics from the University of Maryland, College Park. Worked as a Financial Analyst and Asset Manager for several years in the transportation industry and now work as a big data developer in the Cybersecurity field.</p>
+                        <p className="my-2 md:my-6">I am the founder of ACE Stocks Trading, a stock trading community that teaches and mentors people on how to trade and invest in the stock market, I am also the founder and CEO of TO Productions LLC, a multimedia production company, Co-founder of Dive Data LLC, a company that trains people how to use SPLUNK data monitoring tool from user to an Admin level, LINUX and AWS. </p>
+                        <p className="my-2 md:my-6">My stock trading community has made millions in the stock market using my simple strategy and I strongly believes that with the help of God, any dream can come alive if you are willing to put in the work.</p>
+                    </div>
+                </div>
+            </section> */}
+
+
+            {/* <section className="text-center p-10 bg-black text-white">
+                <h1 className="my-4 md:my-12 text-center font-black text-lg md:text-4xl">Ready to take your career to new heights?</h1>
+                <p className="font-base md:font-medium my-4 md:w-1/2 mx-auto text-sm md:text-lg">Connect directly with industry-leading contractors and discover exciting job opportunities tailored to your skills and aspirations. Don’t wait, start building the future you’ve always dreamed of!</p>
+                <div className="text-center">
+                    <Link to="/contractors" className="">
+                        <button className="hover:bg-white hover:border-white hover:text-black duration-300 border-BLUE border-2 w-fit mx-auto text-md md:text-xl font-semibold bg-BLUE text-white px-3 py-2 md:px-6 md:py-3 mt-8 rounded-2xl">Connect with Contractor</button>
+                    </Link>
+                </div>
+            </section> */}

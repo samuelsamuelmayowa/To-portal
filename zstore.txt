@@ -1,0 +1,45 @@
+// useEffect(() => {
+    //     auth.onAuthStateChanged((loggedInUser) => {
+    //         if (loggedInUser) {
+    //             loggedInUser.getIdToken().then((token) => {
+    //                 // alert(tempToken)
+    //                 // console.log(token)
+    //                 window.localStorage.setItem("ACCESS_TOKEN", tempToken)
+    //                 window.localStorage.setItem("user", tempName)
+    //                 // navigate('/dashboard')
+    //                 // setToken(tempToken)
+    //                 console.log(tempName,tempToken)
+    //                 // 
+    //             }).catch((err) => console.log(err.message))
+    //         }
+    //     })
+    // }, [])
+
+
+
+    // useEffect(() => {
+    //     auth.onAuthStateChanged((loggedInUser) => {
+    //         if (loggedInUser) {
+    //             loggedInUser.getIdToken().then((token) => {
+    //                 console.log(token)
+    //                 window.localStorage.setItem("user", loggedInUser.email)
+    //                 setToken(token)
+    //                 navigate('/dashboard')
+    //             }).catch((err) => console.log(err.message))
+    //         }
+    //     })
+    // }, [])
+
+
+      const loginwihGoogle = () => {
+        signInWithPopup(auth, googleProvider)
+            .then(result => {
+                const loggedInUser = result.user;
+                console.log(loggedInUser);
+                setToken(loggedInUser)
+                window.localStorage.setItem("user", loggedInUser.email)
+                console.log(loggedInUser.password)
+            }).catch(error => {
+                console.log('error', error.message);
+            })
+    }

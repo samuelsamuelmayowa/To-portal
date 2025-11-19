@@ -1,0 +1,538 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,700&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  scroll-behavior: smooth;
+}
+
+/* COURSES IMAGES DIMENSION */
+body {
+  overflow-x: hidden;
+}
+section.courses img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 16px 16px 0 0;
+}
+
+section.courses > div > a,
+div.courses > a {
+  transition: transform 300ms ease-in-out;
+
+}
+@keyframes bounce-slow {
+  0%, 100% {
+    transform: translateY(-4px);
+  }
+  50% {
+    transform: translateY(0);
+  }
+}
+
+
+
+
+.animate-bounce-slow {
+  animation: bounce-slow 1.4s infinite ease-in-out;
+}
+
+div.courses {
+  /* display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); */
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+section.courses > div > a:hover,
+div.courses > a:hover {
+  transform: translateY(-10px);
+}
+
+div.courses > a {
+  flex: 0 0 32.33%;
+}
+
+@media only screen and (max-width: 1024px) {
+  div.courses > a {
+    flex: 0 0 40%;
+  }
+}
+
+
+@media only screen and (max-width: 864px) {
+  div.courses > a {
+    flex: 0 0 100%;
+  }
+}
+
+section.landing-page>div:first-child {
+  position: relative;
+  z-index: 10;
+}
+
+div.landingDIV {
+  width: 100%;
+  aspect-ratio: 1/1;
+  clip-path: polygon(0 50%, 100% 100%, 100% 0);
+  z-index: 2;
+}
+div.landingDIV img {
+  z-index: 3;
+  width: 100%;
+}
+
+div.mobile-landingDIV {
+  z-index: 1;
+  opacity: 0.3;
+}
+
+.active {
+  color: #2d2065;
+  font-weight: 900;
+}
+
+
+nav.active {
+  height: 100vh;
+}
+
+.bounce {
+  animation: bounce 2s infinite;
+}
+
+.active-color {
+  background-color: red;
+}
+
+.card-container {
+  display: flex;
+}
+
+div.learn ul,
+div.benefit ul {
+  line-height: 40px;
+}
+
+div.learn ul li,
+div.benefit ul li,
+div.modal-learn ul li  {
+  position: relative;
+  padding-left: 26px;
+}
+
+div.learn ul li::before,
+div.benefit ul li::before,
+div.modal-learn ul li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  aspect-ratio: 1/1;
+  background-color: #c418ac;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+
+div.modal-learn ul li::before  {
+  width: 12px;
+}
+
+div.modal-learn ul li {
+  padding-left: 16px;
+}
+
+div.modal-shadow {
+  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+}
+
+div.modal-shadow div ul li {
+  line-height: 2;
+}
+
+section.mentorship {
+  position: relative;
+  background-image: url(../src/assets/images/mentorshipIMG.jpg);
+  background-size: cover;
+  z-index: 1;
+}
+
+section.mentorship::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+section.others {
+  position: relative;
+  background-image: url(../src/assets/images/mentorshipIMG.jpg);
+  background-size: cover;
+  z-index: 1;
+  background-position: center;
+  color: #fff;
+  background-attachment: fixed;
+}
+
+section.others::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+div.login-options button:hover {
+  background-color: black;
+}
+div.login-options button:hover {
+  background-color: black;
+}
+
+
+/* AUTH SEARCH BOX */
+div.search-box>svg:last-child {
+ top: 50%;
+ left: 7px;
+ transform: translateY(-50%);
+}
+div.search-box>svg:first-child {
+ top: 50%;
+ left: 7px;
+ transform: translateY(-50%);
+}
+div.search-box>svg:nth-child(2) {
+ top: 50%;
+ right: 7px;
+ transform: translateY(-50%);
+}
+
+div.search-box {
+  flex-grow: 3;
+}
+div.search-box input {
+  padding-left: 24px;
+  font-weight: 600;
+}
+
+/* COURSE HOVER */
+div.course-hover {
+  width: fit-content;
+}
+
+div.course-hover>h1>div:first-child {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition: all 300ms ease-in-out;
+  visibility: hidden;
+  opacity: 0;
+}
+
+div.course-hover>h1>div:last-child {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition: all 300ms ease-in-out;
+}
+
+div.stock-and-options::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: -10px;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 8px 0 8px 10px;
+  border-color: transparent transparent transparent #000;
+}
+
+div.cart-items>div {
+  border-top: 2px solid black;
+}
+
+/* DASHBOARD LINK */
+ul.dashboard-links {
+  border: 2px solid gray;
+  width: fit-content;
+  margin: 0 auto;
+}
+
+section.payment-page {
+  display: grid;
+  gap: 40px;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+/* CUSTOM FILE INPUT */
+.customFileInput::before {
+  content: 'CV/Resume';
+  color: #D9D9D9;
+}
+
+div.alert-msg svg:first-child {
+  position: relative;
+  z-index: 999;
+  filter: 
+    drop-shadow(-1px -1px 0px #fff) 
+    drop-shadow(2px -1px 0px #fff) 
+    drop-shadow(2px 2px 0px #fff)
+    drop-shadow(-1px 2px 0px #fff);
+}
+
+
+@media only screen and (min-width: 768px) {
+  nav.fixed {
+    top: 0;
+    left: 0;
+    bottom: 0;
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 35px;
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 20px 25px -5px,
+      rgba(0, 0, 0, 0.04) 0px 10px 10px -5px;
+  }
+  
+  section.others i {
+    font-size: 3rem;
+    margin-bottom: 10px;
+  }
+  div.courses > a:nth-last-child(2),
+  div.courses > a:last-child {
+    column-span: 2;
+  }
+  div.course-hover:hover>h1>div,
+  div.course-hover h1 div.show {
+    visibility: visible;
+    opacity: 1;
+  }
+  table.dashboard tr:nth-child(even) td,
+  table.dashboard thead tr th {
+    background-color: #fff;
+  }
+  table.contact-table tr:nth-child(even),
+  table.contractors tbody tr:nth-child(even),
+  table.contact-table thead tr th,
+  table.contractors thead tr th,
+  table.contact-table thead tr td {
+    background-color: #e8e2e2;
+  }
+  table.dashboard thead tr th:first-child,
+  table.dashboard tbody tr td:first-child,
+  table.contact-table tr:nth-child(even) td:first-child,
+  table.contact-table thead tr th:first-child,
+  table.contractors thead tr th:first-child,
+  table.contractors tbody tr td:first-child {
+    border-radius: 10px 0 0 10px;
+  }
+  table.contact-table tr:nth-child(even) td:last-child,
+  table.contact-table thead tr th:last-child,
+  table.dashboard thead tr th:last-child, 
+  table.dashboard tbody tr td:last-child,
+  table.contractors thead tr th:last-child,
+  table.contractors tbody tr td:last-child {
+    border-radius: 0 10px 10px 0;
+  }
+  
+}
+
+@media only screen and (min-width: 995px) {
+  .about-me {
+    border-left: 1px solid #c418ac;
+  }
+}
+
+@media only screen and (max-width: 995px) {
+  .about-me {
+    border-top: 1px solid #c418ac;
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  header {
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: #fff;
+    z-index: 99;
+  }
+  nav {
+    position: absolute;
+    top: 68px;
+    left: 0;
+    right: 0;
+    width: 100%;
+    visibility: hidden;
+    opacity: 0;
+    line-height: 30px;
+    transition: all 300ms ease-in-out;
+    background-color: #fff;
+  }
+  nav.navlinks {
+    width: 100%;
+  }
+  nav.navlinks ul li {
+    line-height: 2;
+  }
+
+  nav.show {
+    visibility: visible;
+    opacity: 1;
+  }
+  nav.auth-nav.show {
+    left: 0;
+    height: fit-content;
+    /* background: #fff; */
+  }
+
+  div.learn ul li::before,
+  div.benefit ul li::before {
+    width: 15px;
+  }
+  div.course-hover h1 div.show {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  th {
+    display: none;
+  }
+  tbody {
+    padding: 5px;
+    background-color: #e8e2e2;
+    display: grid;
+    justify-content: stretch;
+    gap: 5px;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+  td {
+    padding: 7px;
+    display: grid;
+    gap: 0.6rem;
+    grid-template-columns: 12ch auto;
+    background-color: #fff;
+    
+  }
+  td:first-child {
+    border-radius: 10px 10px 0 0 ;
+  }
+  td:last-child {
+    border-radius: 0 0 10px 10px;
+  }
+  td::before,
+  td:nth-child(2):before,
+  td:nth-child(3):before {
+    content: attr(data-cell) " " ;
+    font-weight: 700;
+  }
+}
+
+
+/* FORM BACKGROUNG ANIMATION */
+section.ANIMATE-BG {
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.8), #2d2065, #83517c);
+  animation: name duration timing-function delay iteration-count direction fill-mode;
+  animation-name: formchange;
+  animation-duration: 50s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  background-size: 700%;
+}
+
+@keyframes formchange {
+  0% {
+    background-position: center;
+  }
+  20% {
+    background-position: top;
+  }
+  40% {
+    background-position: right;
+  }
+  60% {
+    background-position: bottom;
+  }
+  80% {
+    background-position: left;
+  }
+  100% {
+    background-position: center;
+  }
+  
+}
+
+h1.stories::before {
+  position: absolute;
+  content: "";
+  left: 0;
+  width: 6px;
+  height: 100%;
+  background-color: #2d2065;
+}
+
+/* text animation */
+
+h1.OUR-COURSES, h1.OUR-MISSION, h1.ABOUT-US, h1.LANDING-TEXT {
+  background-image: linear-gradient(90deg, rgba(0, 0, 0, 0.8), #2d2065, #c418ac);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 400%;
+  background-position: left;
+  animation-name: textchange;
+  animation-duration: 30s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes textchange {
+  0% {background-position: left;}
+  25% {background-position: center;}
+  50% {background-position: right;}
+  75% {background-position: center;}
+  100% {background-position: left;}
+}
+
+div.shape-container {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  filter: blur(50px);
+}
+
+div.shape-spike {
+  width: 80vw;
+  aspect-ratio: 1/1;
+  clip-path: polygon(25% 0%, 48% 100%, 75% 0, 33% 44%, 0 100%, 10% 45%);
+  opacity: 0.3;
+  background: linear-gradient(90deg, #c418ac, #2d2065);
+}
+
+div.shape-triangle-left {
+  position: absolute;
+  width: 10vw;
+  aspect-ratio: 1/1;
+  clip-path: polygon(100% 52%, 0 0, 0 100%);
+  opacity: 0.5;
+  background: linear-gradient(to right, rgb(251, 113, 133), rgb(217, 70, 239), rgb(99, 102, 241));
+}
+
+div.shape-triangle-right {
+  position: absolute;
+  width: 10vw;
+  aspect-ratio: 1/1;
+  clip-path: polygon(0 51%, 100% 0, 100% 89%);
+  opacity: 0.5;
+  background: linear-gradient(to right, rgb(251, 113, 133), rgb(217, 70, 239), rgb(99, 102, 241));
+}
+
