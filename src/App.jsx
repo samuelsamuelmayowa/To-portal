@@ -54,6 +54,7 @@ import Cancel from "./pages/Cancel";
 import StudentDashboard from "./components/CheckC";
 import StockDashboard from "./components/StockPage";
 import StockPortal from "./components/StockPortal";
+import Commands from "./components/Commands";
 
 // 🟣 GLOBAL THEME HELPER
 function applySavedTheme() {
@@ -225,6 +226,7 @@ const router = createBrowserRouter([
       { path: "mentorship", element: <Mentorship /> },
       { path: "comment", element: <StudentCommentPage /> },
       { path: "links", element: <Links /> },
+       { path: "commands", element: <Commands /> },
       { path: "materials", element: <Materials /> },
       { path: "stockside", element: <StockDashboard /> },
       { path: "stockportal", element: <StockPortal /> },
