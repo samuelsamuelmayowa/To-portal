@@ -311,7 +311,7 @@ const sampleCourses = [
 
       {
         id: "class6",
-        title: "Class 5 SPL LAB",
+        title: "Class 5  SPL  LAB",
         desc: "Creating reports, dashboards, visualizations, inputs and filters. .",
         videos: [
           {
