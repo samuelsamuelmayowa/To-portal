@@ -126,7 +126,7 @@ const fullSplunkSyllabus = [
     docs: [
       {
         title: "Splunk Class 5 Slides",
-        url:"https://drive.google.com/file/d/1ekO5jcujdct0aofS4QBgd3P8BOPonsek/preview"
+        url: "https://drive.google.com/file/d/1ekO5jcujdct0aofS4QBgd3P8BOPonsek/preview",
         // url: "https://drive.google.com/file/d/1v7YRwUFvIBenhRSiS-f2evqh2ia2xuq6/preview",
       },
     ],
@@ -311,21 +311,44 @@ const sampleCourses = [
 
       {
         id: "class6",
-        title: "Class 5 — Reports & Dashboards",
+        title: "Class 5 SPL LAB",
         desc: "Creating reports, dashboards, visualizations, inputs and filters. .",
         videos: [
-            {
+          {
             id: "v2",
             title: "To-analytics Splunk Class 5",
             url: "https://player.vimeo.com/video/1138152119",
           },
-          
-],
+        ],
         docs: [
           {
-              id: "d3",
+            id: "d3",
             title: "Splunk Class 5 Slides",
             url: "https://drive.google.com/file/d/1v7YRwUFvIBenhRSiS-f2evqh2ia2xuq6/preview",
+          },
+        ],
+      },
+
+
+
+
+
+        {
+        id: "class6",
+        title: "Class 6 Introduction to Knowledge Objects.",
+        desc: "",
+        videos: [
+          {
+            id: "v2",
+            title: "",
+            url: "",
+          },
+        ],
+        docs: [
+          {
+            id: "d3",
+            title: "",
+            url: "",
           },
         ],
       },
