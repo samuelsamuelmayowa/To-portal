@@ -311,7 +311,7 @@ const sampleCourses = [
 
       {
         id: "class6",
-        title: "Class 5  SPL  LAB",
+        title: "Class 5  —  SPL  LAB",
         desc: "Creating reports, dashboards, visualizations, inputs and filters. .",
         videos: [
           {
@@ -330,12 +330,30 @@ const sampleCourses = [
       },
 
 
-
-
-
         {
+        id: "class8",
+        title: "Class 7  — Splunk Dashbaord.",
+        desc: "",
+        videos: [
+          {
+            id: "v2",
+            title: "",
+            url: "",
+          },
+        ],
+        docs: [
+          {
+            id: "d3",
+            title: "",
+            url: "",
+          },
+        ],
+      },
+
+
+          {
         id: "class7",
-        title: "Class 6 Introduction to Knowledge Objects.",
+        title: "Class 6  —  Introduction to Knowledge Objects.",
         desc: "",
         videos: [
           {
