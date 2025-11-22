@@ -8,7 +8,7 @@ const NewFeaturePopup = () => {
 
   useEffect(() => {
     //Fixed key mismatch ("sFeature" vs "seFeature")
-    const hasSeen = localStorage.getItem("newFeatueSeen");
+    const hasSeen = localStorage.getItem("newFeatueSe");
     if (!hasSeen) {
       setTimeout(() => setShow(true), 800); // delay for subtle effect
       localStorage.setItem("newFeatueSeen", "true");
