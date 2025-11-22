@@ -80,7 +80,7 @@ const DashboardDropdown = () => {
             onClick={() => setOpen(false)}
             to="/dictionary"
           >
-            Splunk Dictionary
+            Splunk Dictionary  --- Still in  Testing 
           </NavLink>
 
           {/* 🔗 Syllabus PDF Link */}
