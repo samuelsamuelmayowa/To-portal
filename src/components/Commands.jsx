@@ -116,7 +116,7 @@ const  Commands = () => {
     <div className="min-h-screen bg-[#0f172a] text-white p-6">
       <DashboardDropdown />
 
-      <h1 className="text-3xl font-bold mb-4 text-cyan-400">
+      <h1 className="text-3xl font-bold mb-4 text-cyan-400 pt-10">
         Splunk Command Explorer
       </h1>
 
