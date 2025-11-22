@@ -113,7 +113,7 @@ const  Commands = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-white p-6">
+    <div className="min-h-screen bg-[#0f172a] text-white p-6 mt-20">
       <DashboardDropdown />
 
       <h1 className="text-3xl font-bold mb-4 text-cyan-400 pt-10">
