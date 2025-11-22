@@ -375,10 +375,10 @@ const SplunkDictionary = () => {
       <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
         <div>
           <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium bg-gradient-to-r from-cyan-500/10 to-fuchsia-500/10 border border-cyan-500/40 mb-2">
-            <Sparkles className="h-3 w-3 text-cyan-400" />
-            <span>T.O Analytics · Splunk Bootcamp</span>
+            {/* <Sparkles className="h-3 w-3 text-cyan-400" /> */}
+            {/* <span>T.O Analytics · Splunk Bootcamp</span> */}
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold flex items-center gap-2">
+          <h1 className="text-3xl md:text-4xl font-bold flex items-center gap-2 pt-6">
             <BookOpenCheck className="h-8 w-8 text-cyan-400" />
             Splunk Dictionary
           </h1>
