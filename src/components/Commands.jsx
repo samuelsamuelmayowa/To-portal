@@ -148,14 +148,14 @@ const  Commands = () => {
 
       {/* Document preview */}
       <div className="mt-10">
-        <h2 className="text-xl mb-3 text-cyan-400">📖 Original Reference Document</h2>
+        {/* <h2 className="text-xl mb-3 text-cyan-400">📖 Original Reference Document</h2>
         <div className="h-[400px] rounded-xl overflow-hidden border border-slate-700">
           <iframe
             src="/mnt/data/splunk_reference_tables.pdf"
             title="Splunk Reference"
             className="w-full h-full"
           ></iframe>
-        </div>
+        </div> */}
       </div>
     </div>
   );
