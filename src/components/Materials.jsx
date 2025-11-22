@@ -311,7 +311,7 @@ const sampleCourses = [
 
       {
         id: "class6",
-        title: "Class 5  —  SPL  LAB",
+        title: "Class 5  — Splunk SPL  LAB",
         desc: "Creating reports, dashboards, visualizations, inputs and filters. .",
         videos: [
           {
@@ -324,7 +324,8 @@ const sampleCourses = [
           {
             id: "d3",
             title: "Splunk Class 5 Slides",
-            url: "https://drive.google.com/file/d/1v7YRwUFvIBenhRSiS-f2evqh2ia2xuq6/preview",
+            url: "",
+            // https://drive.google.com/file/d/1v7YRwUFvIBenhRSiS-f2evqh2ia2xuq6/preview
           },
         ],
       },
@@ -332,7 +333,7 @@ const sampleCourses = [
 
         {
         id: "class8",
-        title: "Class 7  — Splunk Dashbaord.",
+        title: "Class 6  — Splunk Knowledge Objects.",
         desc: "",
         videos: [
           {
@@ -353,7 +354,7 @@ const sampleCourses = [
 
           {
         id: "class7",
-        title: "Class 6  —  Introduction to Knowledge Objects.",
+        title: "Class 6  —  Splunk Dashboard",
         desc: "",
         videos: [
           {
