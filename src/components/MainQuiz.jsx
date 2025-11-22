@@ -9,11 +9,11 @@ const MainQuiz = () => {
   const api = import.meta.env.VITE_HOME_OO;
 
   const allowedEmails = [
-     "basseyvera018@gmail.com",
-      "codeverseprogramming23@gmail.com",
+    "basseyvera018@gmail.com",
+    "codeverseprogramming23@gmail.com",
     "ooolajuyigbe@gmail.com",
-     "fadeleolutola@gmail.com",
-      "jahdek76@gmail.com",
+    "fadeleolutola@gmail.com",
+    "jahdek76@gmail.com",
     "samuelsamuelmayowa@gmail.com",
     "oluwaferanmiolulana@gmail.com",
     "adenusitimi@gmail.com",
@@ -135,7 +135,10 @@ const MainQuiz = () => {
   // 🎯 Main Content
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-16 px-8">
- <div className="mb-10 mt-8">     <DashboardDropdown/></div>
+      <div className="mb-10 mt-8">
+        {" "}
+        <DashboardDropdown />
+      </div>
       {/* Header */}
       <motion.h2
         initial={{ opacity: 0, y: -20 }}
@@ -171,19 +174,19 @@ const MainQuiz = () => {
             <option value="T.O Analytics Splunk Class 2 Quiz">
               T.O Analytics Splunk Class 2 Quiz
             </option>
-         
-              <option value="T.O Analytics Splunk Class 3 Quiz">
-                T.O Analytics Splunk Class 3 Quiz
-            </option>
-         
-               <option value="T.O Analytics Splunk Class 4 Quiz">
-              T.O Analytics Splunk Class 4 Quiz
+
+            <option value="T.O Analytics Splunk Class 3 Quiz">
+              T.O Analytics Splunk Class 3 Quiz
             </option>
 
-<option value="T.O. Analytics – Splunk Class 5 Quiz">
-             T.O. Analytics – Splunk Class 5 Quiz
+            <option value="T.O Analytics Splunk Class 4 Quiz">
+              T.O Analytics Splunk Class 4 Quiz
             </option>
-            
+{/* T.O Analytics – Splunk Class 5 Quiz */}
+            <option value="T.O. Analytics – Splunk Class 5 Quiz">
+              T.O. Analytics Splunk Class 5 Quiz
+            </option>
+
             <option value="T.O Analytics Power User Exam Quiz">
               T.O Analytics Power User Exam Quiz
             </option>
@@ -227,7 +230,7 @@ const MainQuiz = () => {
       <div className="mt-16 text-center text-gray-400 text-sm">
         <p>
           © {new Date().getFullYear()}{" "}
-          <span className="font-semibold text-blue-500">T.O Analytics</span> — 
+          <span className="font-semibold text-blue-500">T.O Analytics</span> —
           Empowering Learners with Data Mastery.
         </p>
       </div>
@@ -236,7 +239,6 @@ const MainQuiz = () => {
 };
 
 export default MainQuiz;
-
 
 // ................ was using this one below /
 // import { useEffect, useState } from "react";
@@ -393,7 +395,6 @@ export default MainQuiz;
 //           T.O Analytics Splunk Admin Exam Quiz
 //           </option>
 
-          
 //         </select>
 //       </div>
 
@@ -408,30 +409,6 @@ export default MainQuiz;
 // };
 
 // export default MainQuiz;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // import { useEffect, useState } from "react";
 // import Quiz from "./Quiz";
