@@ -55,6 +55,7 @@ import StudentDashboard from "./components/CheckC";
 import StockDashboard from "./components/StockPage";
 import StockPortal from "./components/StockPortal";
 import Commands from "./components/Commands";
+import SplunkDictionary from "./components/Dictionary";
 
 // 🟣 GLOBAL THEME HELPER
 function applySavedTheme() {
@@ -157,6 +158,7 @@ const router = createBrowserRouter([
         element: <LiveCourses />,
       },
             { path: "commands", element: <Commands /> },
+             { path: "dictionary", element: <SplunkDictionary /> },
       {
         path: "/result",
         element: <QuizResults />,
