@@ -334,7 +334,7 @@ const sampleCourses = [
 
 
         {
-        id: "class6",
+        id: "class7",
         title: "Class 6 Introduction to Knowledge Objects.",
         desc: "",
         videos: [
