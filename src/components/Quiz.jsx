@@ -278,7 +278,10 @@ const handleDownloadReview = () => {
       y
     );
     y += 12;
-
+if (q.reason) {
+  doc.text(`Reason: ${q.reason}`, marginX + 10, y);
+  y += 14;
+}
     // Result
     doc.setTextColor(isCorrect ? "#2E8B57" : "#FF0000");
     doc.text(
@@ -363,40 +366,79 @@ const handleDownloadReview = () => {
 
       return (
         <div
-          key={idx}
-          className={`border p-3 mb-3 rounded-lg ${
-            isCorrect ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"
-          }`}
-        >
-          {/* Question */}
-          <p
-            className={`font-semibold mb-2 ${
-              isCorrect ? "text-green-600" : "text-red-600"
-            }`}
-          >
-            {isCorrect ? "✅ Correct" : "❌ Missed"} — {q.question}
-          </p>
+  key={idx}
+  className={`border p-3 mb-3 rounded-lg ${
+    isCorrect ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"
+  }`}
+>
+  <p
+    className={`font-semibold mb-2 ${
+      isCorrect ? "text-green-600" : "text-red-600"
+    }`}
+  >
+    {isCorrect ? "✅ Correct" : "❌ Missed"} — {q.question}
+  </p>
 
-          {/* Student’s Answer */}
-          <p>
-            Your Answer:{" "}
-            <span
-              className={`${
-                isCorrect ? "text-green-700 font-medium" : "text-red-700 font-medium"
-              }`}
-            >
-              {userAnswer || "No answer"}
-            </span>
-          </p>
+  <p>
+    Your Answer:{" "}
+    <span
+      className={`${
+        isCorrect ? "text-green-700 font-medium" : "text-red-700 font-medium"
+      }`}
+    >
+      {userAnswer || "No answer"}
+    </span>
+  </p>
 
-          {/* Correct Answer */}
-          <p>
-            Correct Answer:{" "}
-            <span className="text-blue-700 font-semibold">
-              {correctAnswers.join(", ")}
-            </span>
-          </p>
-        </div>
+  <p>
+    Correct Answer:{" "}
+    <span className="text-blue-700 font-semibold">
+      {correctAnswers.join(", ")}
+    </span>
+  </p>
+
+  {/* ⭐ NEW  */}
+  <p className="text-gray-700 mt-2">
+    <span className="font-semibold text-indigo-700">Reason:</span>{" "}
+    {q.reason}
+  </p>
+</div>
+
+        // <div
+        //   key={idx}
+        //   className={`border p-3 mb-3 rounded-lg ${
+        //     isCorrect ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"
+        //   }`}
+        // >
+        //   {/* Question */}
+        //   <p
+        //     className={`font-semibold mb-2 ${
+        //       isCorrect ? "text-green-600" : "text-red-600"
+        //     }`}
+        //   >
+        //     {isCorrect ? "✅ Correct" : "❌ Missed"} — {q.question}
+        //   </p>
+
+        //   {/* Student’s Answer */}
+        //   <p>
+        //     Your Answer:{" "}
+        //     <span
+        //       className={`${
+        //         isCorrect ? "text-green-700 font-medium" : "text-red-700 font-medium"
+        //       }`}
+        //     >
+        //       {userAnswer || "No answer"}
+        //     </span>
+        //   </p>
+
+        //   {/* Correct Answer */}
+        //   <p>
+        //     Correct Answer:{" "}
+        //     <span className="text-blue-700 font-semibold">
+        //       {correctAnswers.join(", ")}
+        //     </span>
+        //   </p>
+        // </div>
       );
     })}
   </div>
