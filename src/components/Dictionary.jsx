@@ -67,7 +67,7 @@ const SplunkDictionary = () => {
             </p>
 
             <p className="text-sm text-gray-500 mt-1">
-              🧠 Level: {item.level}
+               Level: {item.level}
             </p>
           </div>
         ))}
