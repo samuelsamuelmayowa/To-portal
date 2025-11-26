@@ -6,9 +6,9 @@ function AssignmentToast({ show, onClose }) {
 
   return (
     <div className="fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-xl shadow-lg animate-bounce">
-      <p className="font-medium text-sm">
+      <h2 className="font-medium text-sm  font-bold">
         New assignment has been released!
-      </p>
+      </h2>
       <button
         onClick={onClose}
         className="text-xs underline mt-2"
