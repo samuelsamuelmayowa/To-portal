@@ -768,6 +768,7 @@ export default function CoursePortal() {
               My Profile
             </button>
 
+<DashboardDropdown/>
             {/* Dark Mode Toggle */}
             <button
               onClick={() => setDarkMode(!darkMode)}
