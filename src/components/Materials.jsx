@@ -352,7 +352,7 @@ const sampleCourses = [
         docs: [
           {
             id: "d3",
-            title: "Splunk Class 6 note",
+            title: "Splunk Class 6 Slides",
             url: "https://drive.google.com/file/d/1cXBItLD6OpbOY6aDi5NGQ0-KXJbutCIS/view?usp=sharing",
           },
         ],
