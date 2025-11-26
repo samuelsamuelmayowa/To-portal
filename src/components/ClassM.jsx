@@ -4,7 +4,7 @@ import DashboardDropdown from "./Dropdown";
 const ClassM = () => {
   const [assignment, setAssignment] = useState(null);
   const [selectedDoc, setSelectedDoc] = useState(null);
-
+ const [darkMode, setDarkMode] = useState(false);
   useEffect(() => {
     // Example assignment data
     const data = {
@@ -56,7 +56,48 @@ const ClassM = () => {
 
   return (
     <div className="p-6 space-y-8 bg-gray-50 min-h-screen">
+    {/* <DashboardDropdown/> */}
+     <div className="max-w-7xl mx-auto mb-6">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow flex items-center justify-between">
+              {/* LEFT SIDE - TITLE */}
+              <div>
+                <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+                  To-Analytics Learning Portal
+                </h1>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Professional Splunk Bootcamp Dashboard
+                </p>
+              </div>
+    
+              {/* RIGHT SIDE - ACTIONS */}
+              <div className="flex items-center gap-4">
+                {/* User Email */}
+                <div className="text-sm text-gray-600 dark:text-gray-300">
+                  {userEmail}
+                </div>
+    
+                {/* Profile Button */}
+                {/* <button
+                  onClick={() => setProfileOpen(true)}
+                  className="px-3 py-1 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 transition"
+                >
+                  My Profile
+                </button> */}
+    
     <DashboardDropdown/>
+                {/* Dark Mode Toggle */}
+                <button
+                  onClick={() => setDarkMode(!darkMode)}
+                  className="px-3 py-1 rounded text-sm 
+            bg-gray-200 text-gray-800 
+            dark:bg-gray-800 dark:text-white
+            hover:opacity-90 transition"
+                >
+                  {darkMode ? "Light Mode" : "Dark Mode"}
+                </button>
+              </div>
+            </div>
+          </div>
 
       <h1 className="text-2xl font-bold text-gray-800">📝 Assignment</h1>
 

@@ -4,77 +4,277 @@ import DashboardDropdown from "./Dropdown";
 
 const COMMANDS = [
   // ================= SEARCH COMMANDS =================
-  { name: "chart / timechart", description: "Tabular / time-series chart output", category: "Search Commands" },
-  { name: "dedup", description: "Remove duplicate events", category: "Search Commands" },
-  { name: "eval", description: "Create or modify fields", category: "Search Commands" },
-  { name: "fields", description: "Include or exclude fields", category: "Search Commands" },
-  { name: "head / tail", description: "First or last N results", category: "Search Commands" },
-  { name: "lookup", description: "Add fields from lookup tables", category: "Search Commands" },
+  {
+    name: "chart / timechart",
+    description: "Tabular / time-series chart output",
+    category: "Search Commands",
+  },
+  {
+    name: "dedup",
+    description: "Remove duplicate events",
+    category: "Search Commands",
+  },
+  {
+    name: "eval",
+    description: "Create or modify fields",
+    category: "Search Commands",
+  },
+  {
+    name: "fields",
+    description: "Include or exclude fields",
+    category: "Search Commands",
+  },
+  {
+    name: "head / tail",
+    description: "First or last N results",
+    category: "Search Commands",
+  },
+  {
+    name: "lookup",
+    description: "Add fields from lookup tables",
+    category: "Search Commands",
+  },
   { name: "rename", description: "Rename fields", category: "Search Commands" },
-  { name: "rex", description: "Extract fields using regex", category: "Search Commands" },
+  {
+    name: "rex",
+    description: "Extract fields using regex",
+    category: "Search Commands",
+  },
   { name: "search", description: "Filter events", category: "Search Commands" },
   { name: "sort", description: "Sort results", category: "Search Commands" },
-  { name: "stats", description: "Aggregate statistics", category: "Search Commands" },
-  { name: "mstats", description: "Metrics version of stats", category: "Search Commands" },
-  { name: "table", description: "Show only specific fields", category: "Search Commands" },
-  { name: "top / rare", description: "Most / least common values", category: "Search Commands" },
-  { name: "transaction", description: "Group events", category: "Search Commands" },
-  { name: "where", description: "Eval-based filtering", category: "Search Commands" },
+  {
+    name: "stats",
+    description: "Aggregate statistics",
+    category: "Search Commands",
+  },
+  {
+    name: "mstats",
+    description: "Metrics version of stats",
+    category: "Search Commands",
+  },
+  {
+    name: "table",
+    description: "Show only specific fields",
+    category: "Search Commands",
+  },
+  {
+    name: "top / rare",
+    description: "Most / least common values",
+    category: "Search Commands",
+  },
+  {
+    name: "transaction",
+    description: "Group events",
+    category: "Search Commands",
+  },
+  {
+    name: "where",
+    description: "Eval-based filtering",
+    category: "Search Commands",
+  },
 
   // ================= EVAL FUNCTIONS =================
   { name: "abs(X)", description: "Absolute value", category: "Eval Functions" },
-  { name: "case()", description: "Conditional branching", category: "Eval Functions" },
-  { name: "ceil(X)", description: "Ceiling integer", category: "Eval Functions" },
-  { name: "cidrmatch()", description: "Match IP in CIDR", category: "Eval Functions" },
-  { name: "coalesce()", description: "First non-null", category: "Eval Functions" },
+  {
+    name: "case()",
+    description: "Conditional branching",
+    category: "Eval Functions",
+  },
+  {
+    name: "ceil(X)",
+    description: "Ceiling integer",
+    category: "Eval Functions",
+  },
+  {
+    name: "cidrmatch()",
+    description: "Match IP in CIDR",
+    category: "Eval Functions",
+  },
+  {
+    name: "coalesce()",
+    description: "First non-null",
+    category: "Eval Functions",
+  },
   { name: "cos(X)", description: "Cosine", category: "Eval Functions" },
   { name: "exp(X)", description: "e^X", category: "Eval Functions" },
-  { name: "if(X,Y,Z)", description: "Conditional logic", category: "Eval Functions" },
-  { name: "in()", description: "Check value in list", category: "Eval Functions" },
-  { name: "isbool / isint / isnull", description: "Type checks", category: "Eval Functions" },
+  {
+    name: "if(X,Y,Z)",
+    description: "Conditional logic",
+    category: "Eval Functions",
+  },
+  {
+    name: "in()",
+    description: "Check value in list",
+    category: "Eval Functions",
+  },
+  {
+    name: "isbool / isint / isnull",
+    description: "Type checks",
+    category: "Eval Functions",
+  },
   { name: "len(X)", description: "String length", category: "Eval Functions" },
-  { name: "like(X,Y)", description: "Wildcard match", category: "Eval Functions" },
+  {
+    name: "like(X,Y)",
+    description: "Wildcard match",
+    category: "Eval Functions",
+  },
   { name: "log(X,Y)", description: "Logarithm", category: "Eval Functions" },
   { name: "lower(X)", description: "Lowercase", category: "Eval Functions" },
-  { name: "ltrim / rtrim", description: "Trim characters", category: "Eval Functions" },
+  {
+    name: "ltrim / rtrim",
+    description: "Trim characters",
+    category: "Eval Functions",
+  },
   { name: "match()", description: "Regex match", category: "Eval Functions" },
-  { name: "max(X,...)", description: "Returns maximum", category: "Eval Functions" },
-  { name: "md5(X)", description: "Returns MD5 hash", category: "Eval Functions" },
-  { name: "min(X,...)", description: "Returns minimum", category: "Eval Functions" },
-  { name: "mvcount(X)", description: "Number of values", category: "Eval Functions" },
-  { name: "mvfilter(X)", description: "Filters multivalued field", category: "Eval Functions" },
-  { name: "mvindex(X,Y,Z)", description: "Subset of multivalued field", category: "Eval Functions" },
-  { name: "mvjoin(X,Y)", description: "Join multivalued field", category: "Eval Functions" },
-  { name: "now()", description: "Current Unix time", category: "Eval Functions" },
+  {
+    name: "max(X,...)",
+    description: "Returns maximum",
+    category: "Eval Functions",
+  },
+  {
+    name: "md5(X)",
+    description: "Returns MD5 hash",
+    category: "Eval Functions",
+  },
+  {
+    name: "min(X,...)",
+    description: "Returns minimum",
+    category: "Eval Functions",
+  },
+  {
+    name: "mvcount(X)",
+    description: "Number of values",
+    category: "Eval Functions",
+  },
+  {
+    name: "mvfilter(X)",
+    description: "Filters multivalued field",
+    category: "Eval Functions",
+  },
+  {
+    name: "mvindex(X,Y,Z)",
+    description: "Subset of multivalued field",
+    category: "Eval Functions",
+  },
+  {
+    name: "mvjoin(X,Y)",
+    description: "Join multivalued field",
+    category: "Eval Functions",
+  },
+  {
+    name: "now()",
+    description: "Current Unix time",
+    category: "Eval Functions",
+  },
   { name: "null()", description: "Returns NULL", category: "Eval Functions" },
-  { name: "nullif(X,Y)", description: "Returns X if different from Y", category: "Eval Functions" },
-  { name: "random()", description: "Random number generator", category: "Eval Functions" },
-  { name: "relative_time(X,Y)", description: "Apply relative time to epoch", category: "Eval Functions" },
-  { name: "round(X,Y)", description: "Round number", category: "Eval Functions" },
-  { name: "split(X,Y)", description: "Split string into multivalue", category: "Eval Functions" },
+  {
+    name: "nullif(X,Y)",
+    description: "Returns X if different from Y",
+    category: "Eval Functions",
+  },
+  {
+    name: "random()",
+    description: "Random number generator",
+    category: "Eval Functions",
+  },
+  {
+    name: "relative_time(X,Y)",
+    description: "Apply relative time to epoch",
+    category: "Eval Functions",
+  },
+  {
+    name: "round(X,Y)",
+    description: "Round number",
+    category: "Eval Functions",
+  },
+  {
+    name: "split(X,Y)",
+    description: "Split string into multivalue",
+    category: "Eval Functions",
+  },
   { name: "sqrt(X)", description: "Square root", category: "Eval Functions" },
-  { name: "strftime(X,Y)", description: "Epoch to formatted string", category: "Eval Functions" },
-  { name: "strptime(X,Y)", description: "Parse string to epoch", category: "Eval Functions" },
-  { name: "substr(X,Y,Z)", description: "Substring from position", category: "Eval Functions" },
-  { name: "time()", description: "Wall clock time", category: "Eval Functions" },
-  { name: "tonumber(X,Y)", description: "String to number", category: "Eval Functions" },
-  { name: "tostring(X,Y)", description: "Convert to string", category: "Eval Functions" },
-  { name: "typeof(X)", description: "Returns field type", category: "Eval Functions" },
-  { name: "urldecode(X)", description: "Decode URL", category: "Eval Functions" },
-  { name: "validate(X,Y,...)", description: "Validation logic", category: "Eval Functions" },
+  {
+    name: "strftime(X,Y)",
+    description: "Epoch to formatted string",
+    category: "Eval Functions",
+  },
+  {
+    name: "strptime(X,Y)",
+    description: "Parse string to epoch",
+    category: "Eval Functions",
+  },
+  {
+    name: "substr(X,Y,Z)",
+    description: "Substring from position",
+    category: "Eval Functions",
+  },
+  {
+    name: "time()",
+    description: "Wall clock time",
+    category: "Eval Functions",
+  },
+  {
+    name: "tonumber(X,Y)",
+    description: "String to number",
+    category: "Eval Functions",
+  },
+  {
+    name: "tostring(X,Y)",
+    description: "Convert to string",
+    category: "Eval Functions",
+  },
+  {
+    name: "typeof(X)",
+    description: "Returns field type",
+    category: "Eval Functions",
+  },
+  {
+    name: "urldecode(X)",
+    description: "Decode URL",
+    category: "Eval Functions",
+  },
+  {
+    name: "validate(X,Y,...)",
+    description: "Validation logic",
+    category: "Eval Functions",
+  },
 
   // ================= STATS FUNCTIONS =================
   { name: "avg(X)", description: "Average", category: "Stats Functions" },
-  { name: "count(X)", description: "Count events", category: "Stats Functions" },
+  {
+    name: "count(X)",
+    description: "Count events",
+    category: "Stats Functions",
+  },
   { name: "dc(X)", description: "Distinct count", category: "Stats Functions" },
-  { name: "earliest(X)", description: "Earliest value/time", category: "Stats Functions" },
-  { name: "latest(X)", description: "Latest value/time", category: "Stats Functions" },
-  { name: "median(X)", description: "Median value", category: "Stats Functions" },
+  {
+    name: "earliest(X)",
+    description: "Earliest value/time",
+    category: "Stats Functions",
+  },
+  {
+    name: "latest(X)",
+    description: "Latest value/time",
+    category: "Stats Functions",
+  },
+  {
+    name: "median(X)",
+    description: "Median value",
+    category: "Stats Functions",
+  },
   { name: "percX(Y)", description: "Percentile", category: "Stats Functions" },
   { name: "range(X)", description: "Max - Min", category: "Stats Functions" },
-  { name: "stdev / stdevp", description: "Standard deviation", category: "Stats Functions" },
+  {
+    name: "stdev / stdevp",
+    description: "Standard deviation",
+    category: "Stats Functions",
+  },
   { name: "sum(X)", description: "Sum of values", category: "Stats Functions" },
-  { name: "values(X)", description: "Distinct list", category: "Stats Functions" },
+  {
+    name: "values(X)",
+    description: "Distinct list",
+    category: "Stats Functions",
+  },
 
   // ================= REGEX =================
   { name: "\\s", description: "Whitespace", category: "Regex Reference" },
@@ -82,7 +282,11 @@ const COMMANDS = [
   { name: "\\d", description: "Digit", category: "Regex Reference" },
   { name: "\\D", description: "Non-digit", category: "Regex Reference" },
   { name: "\\w", description: "Word character", category: "Regex Reference" },
-  { name: "\\W", description: "Non-word character", category: "Regex Reference" },
+  {
+    name: "\\W",
+    description: "Non-word character",
+    category: "Regex Reference",
+  },
   { name: "*", description: "Zero or more", category: "Regex Reference" },
   { name: "+", description: "One or more", category: "Regex Reference" },
   { name: "?", description: "Optional", category: "Regex Reference" },
@@ -98,63 +302,72 @@ const COMMANDS = [
   { name: "%m", description: "Month", category: "Date & Time Formats" },
   { name: "%d", description: "Day of month", category: "Date & Time Formats" },
   { name: "%p", description: "AM / PM", category: "Date & Time Formats" },
-  { name: "%z", description: "Timezone offset", category: "Date & Time Formats" },
+  {
+    name: "%z",
+    description: "Timezone offset",
+    category: "Date & Time Formats",
+  },
   { name: "%Z", description: "Timezone name", category: "Date & Time Formats" },
-  { name: "%s", description: "Seconds since 1970", category: "Date & Time Formats" },
+  {
+    name: "%s",
+    description: "Seconds since 1970",
+    category: "Date & Time Formats",
+  },
 ];
 
-const  Commands = () => {
+const Commands = () => {
   const [search, setSearch] = useState("");
-
-  const filtered = COMMANDS.filter(cmd =>
-    cmd.name.toLowerCase().includes(search.toLowerCase()) ||
-    cmd.description.toLowerCase().includes(search.toLowerCase()) ||
-    cmd.category.toLowerCase().includes(search.toLowerCase())
+ const [darkMode, setDarkMode] = useState(false);
+  const filtered = COMMANDS.filter(
+    (cmd) =>
+      cmd.name.toLowerCase().includes(search.toLowerCase()) ||
+      cmd.description.toLowerCase().includes(search.toLowerCase()) ||
+      cmd.category.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <div className="min-h-screen bg-[#0f172a] text-white p-6 mt-20">
       <div className="max-w-7xl mx-auto mb-6">
-             <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow flex items-center justify-between">
-               {/* LEFT SIDE - TITLE */}
-               <div>
-                 <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-                   To-Analytics Learning Portal
-                 </h1>
-                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                   Professional Splunk Bootcamp Dashboard
-                 </p>
-               </div>
-     
-               {/* RIGHT SIDE - ACTIONS */}
-               <div className="flex items-center gap-4">
-                 {/* User Email */}
-                 <div className="text-sm text-gray-600 dark:text-gray-300">
-                   {userEmail}
-                 </div>
-     
-                 {/* Profile Button */}
-                 {/* <button
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow flex items-center justify-between">
+          {/* LEFT SIDE - TITLE */}
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+              To-Analytics Learning Portal
+            </h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Professional Splunk Bootcamp Dashboard
+            </p>
+          </div>
+
+          {/* RIGHT SIDE - ACTIONS */}
+          <div className="flex items-center gap-4">
+            {/* User Email */}
+            <div className="text-sm text-gray-600 dark:text-gray-300">
+              {userEmail}
+            </div>
+
+            {/* Profile Button */}
+            {/* <button
                    onClick={() => setProfileOpen(true)}
                    className="px-3 py-1 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 transition"
                  >
                    My Profile
                  </button> */}
-     
-     <DashboardDropdown/>
-                 {/* Dark Mode Toggle */}
-                 <button
-                   onClick={() => setDarkMode(!darkMode)}
-                   className="px-3 py-1 rounded text-sm 
+
+            <DashboardDropdown />
+            {/* Dark Mode Toggle */}
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className="px-3 py-1 rounded text-sm 
              bg-gray-200 text-gray-800 
              dark:bg-gray-800 dark:text-white
              hover:opacity-90 transition"
-                 >
-                   {darkMode ? "Light Mode" : "Dark Mode"}
-                 </button>
-               </div>
-             </div>
-           </div>
+            >
+              {darkMode ? "Light Mode" : "Dark Mode"}
+            </button>
+          </div>
+        </div>
+      </div>
 
       <h1 className="text-3xl font-bold mb-4 text-cyan-400 pt-10">
         Splunk Command Explorer
@@ -203,7 +416,6 @@ const  Commands = () => {
 
 export default Commands;
 
-
 // import { useState, useEffect } from "react";
 // import DashboardDropdown from "./Dropdown";
 
@@ -241,7 +453,7 @@ export default Commands;
 //           title: "Splunk Commands ",
 //           url: "https://drive.google.com/file/d/1jAkmrbTWQApPg7qg43bBfAe4bEg8o0VT/preview",
 //         //   dueDate: "2025-11-8",
-         
+
 //         },
 //         //   {
 //         //   id: 5,
@@ -250,7 +462,6 @@ export default Commands;
 //         //   dueDate: "2025-11-10",
 //         // },
 //       ],
-     
 
 //     };
 
@@ -332,6 +543,3 @@ export default Commands;
 // };
 
 // export default Commands
-
-
-
