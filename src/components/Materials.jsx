@@ -8,7 +8,6 @@ import { NavLink } from "react-router-dom";
 import DashboardDropdown from "./Dropdown";
 import NewFeaturePopup from "./Newapp";
 
-
 const API_BASE = import.meta.env.VITE_HOME_OO || "http://localhost:8000";
 
 // Allowed users
@@ -329,7 +328,7 @@ const sampleCourses = [
             // https://drive.google.com/file/d/1v7YRwUFvIBenhRSiS-f2evqh2ia2xuq6/preview
           },
 
-           {
+          {
             id: "d3",
             title: "Splunk Class 5 Note",
             url: "https://drive.google.com/file/d/1RrF8dEuaUgyKiWhF8lQ4h-WiN9CUb4gE/preview",
@@ -348,7 +347,6 @@ const sampleCourses = [
             title: "To-analytics Splunk Class 6",
             url: "https://player.vimeo.com/video/1140703570",
           },
-    
         ],
         docs: [
           {
@@ -357,7 +355,7 @@ const sampleCourses = [
             url: "https://drive.google.com/file/d/1cXBItLD6OpbOY6aDi5NGQ0-KXJbutCIS/view?usp=sharing",
           },
 
-           {
+          {
             id: "d3",
             title: "Splunk Class 6 Note",
             url: "https://drive.google.com/file/d/1fVtS0u-mPndEiVbSGm1f2H5Qm_Dx3CzV/preview",
@@ -483,8 +481,8 @@ function SyllabusSection() {
  */
 export default function CoursePortal() {
   const [darkMode, setDarkMode] = useState(false);
-const [showCertificate, setShowCertificate] = useState(false);
-const [profileOpen, setProfileOpen] = useState(false);
+  const [showCertificate, setShowCertificate] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const [courses] = useState(sampleCourses);
   const [selectedCourse, setSelectedCourse] = useState(courses[0]);
@@ -515,9 +513,6 @@ const [profileOpen, setProfileOpen] = useState(false);
         .includes((e || "").toLowerCase())
     );
 
-    useEffect(() => {
-  document.documentElement.classList.toggle("dark", darkMode);
-}, [darkMode]);
 
     // Load progress (from backend instead of localStorage)
     async function fetchProgress() {
@@ -689,6 +684,11 @@ const [profileOpen, setProfileOpen] = useState(false);
     } catch (e) {}
   }, [selectedClass, userEmail]);
 
+  
+    useEffect(() => {
+      document.documentElement.classList.toggle("dark", darkMode);
+    }, [darkMode]);
+
   // helpers: update progress & mark complete
   function updateVideoProgress(classId, videoId, timeSec, durationSec) {
     const e = userEmail || "anonymous";
@@ -738,326 +738,310 @@ const [profileOpen, setProfileOpen] = useState(false);
 
   const isSyllabusMode = showSyllabus;
 
- return (
-  <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4">
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4">
+      {/* Header */}
+      <div className="max-w-7xl mx-auto mb-6">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow flex items-center justify-between">
+          {/* LEFT SIDE - TITLE */}
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+              To-Analytics Learning Portal
+            </h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Professional Splunk Bootcamp Dashboard
+            </p>
+          </div>
 
-    {/* Header */}
-   <div className="max-w-7xl mx-auto mb-6">
-  <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow flex items-center justify-between">
+          {/* RIGHT SIDE - ACTIONS */}
+          <div className="flex items-center gap-4">
+            {/* User Email */}
+            <div className="text-sm text-gray-600 dark:text-gray-300">
+              {userEmail}
+            </div>
 
-    {/* LEFT SIDE - TITLE */}
-    <div>
-      <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-        To-Analytics Learning Portal
-      </h1>
-      <p className="text-sm text-gray-500 dark:text-gray-400">
-        Professional Splunk Bootcamp Dashboard
-      </p>
-    </div>
+            {/* Profile Button */}
+            <button
+              onClick={() => setProfileOpen(true)}
+              className="px-3 py-1 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 transition"
+            >
+              My Profile
+            </button>
 
-    {/* RIGHT SIDE - ACTIONS */}
-    <div className="flex items-center gap-4">
-
-      {/* User Email */}
-      <div className="text-sm text-gray-600 dark:text-gray-300">
-        {userEmail}
-      </div>
-
-      {/* Profile Button */}
-      <button
-        onClick={() => setProfileOpen(true)}
-        className="px-3 py-1 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 transition"
-      >
-        My Profile
-      </button>
-
-      {/* Dark Mode Toggle */}
-      <button
-        onClick={() => setDarkMode(!darkMode)}
-        className="px-3 py-1 rounded text-sm 
+            {/* Dark Mode Toggle */}
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className="px-3 py-1 rounded text-sm 
         bg-gray-200 text-gray-800 
         dark:bg-gray-800 dark:text-white
         hover:opacity-90 transition"
-      >
-        {darkMode ? "Light Mode" : "Dark Mode"}
-      </button>
-
-    </div>
-  </div>
-</div>
-
-    <div className="max-w-7xl mx-auto grid grid-cols-12 gap-6">
-
-      {/* LEFT SIDEBAR */}
-      <aside className="col-span-12 md:col-span-3 bg-white rounded-2xl p-4 shadow-lg">
-
-        <h2 className="text-lg font-semibold mb-4 text-gray-800">
-          Course Navigation
-        </h2>
-
-        {/* Syllabus Button */}
-        <button
-          onClick={() => {
-            setShowSyllabus(true);
-            setSelectedVideo(null);
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          }}
-          className={`w-full px-4 py-2 rounded-lg text-sm mb-4 transition shadow-sm ${
-            isSyllabusMode
-              ? "bg-blue-600 text-white"
-              : "bg-gray-100 hover:bg-blue-50 text-gray-700"
-          }`}
-        >
-          View Full Syllabus
-        </button>
-
-        {/* Courses */}
-        {courses.map((c) => (
-          <div key={c.id} className="mb-4">
-
-            <button
-              onClick={() => {
-                setSelectedCourse(c);
-                setSelectedClass(c.classes[0]);
-                setShowSyllabus(false);
-              }}
-              className={`w-full text-left px-3 py-2 rounded-lg font-medium transition ${
-                selectedCourse.id === c.id
-                  ? "bg-blue-100 text-blue-700"
-                  : "hover:bg-gray-100"
-              }`}
             >
-              {c.title}
+              {darkMode ? "Light Mode" : "Dark Mode"}
             </button>
-
-            {/* Classes */}
-            {selectedCourse.id === c.id && (
-              <div className="mt-2 space-y-2 ml-2">
-                {c.classes.map((cl) => {
-                  const progress = progressState[cl.id];
-                  const isDone = progress?.completed;
-
-                  return (
-                    <button
-                      key={cl.id}
-                      onClick={() => {
-                        setSelectedClass(cl);
-                        setShowSyllabus(false);
-                      }}
-                      className={`w-full p-2 rounded-lg text-left border transition ${
-                        selectedClass.id === cl.id
-                          ? "bg-blue-50 border-blue-300"
-                          : "border-gray-200 hover:bg-gray-50"
-                      }`}
-                    >
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">
-                          {isDone ? "✔ " : ""}{cl.title}
-                        </span>
-                      </div>
-
-                      {/* Progress bar */}
-                      {!isSyllabusMode && (
-                        <div className="w-full h-1 bg-gray-200 rounded mt-1">
-                          <div
-                            className={`h-1 rounded ${
-                              isDone ? "bg-green-500" : "bg-blue-500"
-                            }`}
-                            style={{
-                              width: progress?.completed
-                                ? "100%"
-                                : progress?.time
-                                ? `${Math.min((progress.time / (progress.duration || 1)) * 100, 100)}%`
-                                : "5%"
-                            }}
-                          />
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-
           </div>
-        ))}
+        </div>
+      </div>
 
-        {/* Reset Progress */}
-        <div className="mt-6 pt-4 border-t">
+      <div className="max-w-7xl mx-auto grid grid-cols-12 gap-6">
+        {/* LEFT SIDEBAR */}
+        <aside className="col-span-12 md:col-span-3 bg-white rounded-2xl p-4 shadow-lg">
+          <h2 className="text-lg font-semibold mb-4 text-gray-800">
+            Course Navigation
+          </h2>
+
+          {/* Syllabus Button */}
           <button
             onClick={() => {
-              localStorage.removeItem(storageProgressKey(userEmail));
-              setProgressState({});
-              alert("Progress reset");
+              setShowSyllabus(true);
+              setSelectedVideo(null);
+              window.scrollTo({ top: 0, behavior: "smooth" });
             }}
-            className="text-xs text-red-600 hover:underline"
+            className={`w-full px-4 py-2 rounded-lg text-sm mb-4 transition shadow-sm ${
+              isSyllabusMode
+                ? "bg-blue-600 text-white"
+                : "bg-gray-100 hover:bg-blue-50 text-gray-700"
+            }`}
           >
-            Reset My Progress
+            View Full Syllabus
           </button>
-        </div>
 
-      </aside>
+          {/* Courses */}
+          {courses.map((c) => (
+            <div key={c.id} className="mb-4">
+              <button
+                onClick={() => {
+                  setSelectedCourse(c);
+                  setSelectedClass(c.classes[0]);
+                  setShowSyllabus(false);
+                }}
+                className={`w-full text-left px-3 py-2 rounded-lg font-medium transition ${
+                  selectedCourse.id === c.id
+                    ? "bg-blue-100 text-blue-700"
+                    : "hover:bg-gray-100"
+                }`}
+              >
+                {c.title}
+              </button>
 
-      {/* CENTER MAIN */}
-      <main className="col-span-12 md:col-span-6 bg-white rounded-2xl p-6 shadow-lg">
+              {/* Classes */}
+              {selectedCourse.id === c.id && (
+                <div className="mt-2 space-y-2 ml-2">
+                  {c.classes.map((cl) => {
+                    const progress = progressState[cl.id];
+                    const isDone = progress?.completed;
 
-        {/* Title */}
-        <div className="mb-5">
-          <h2 className="text-xl font-bold text-gray-800">
-            {isSyllabusMode
-              ? "Full Splunk Training Syllabus"
-              : selectedClass.title}
-          </h2>
-          <p className="text-sm text-gray-500 mt-1">
-            {isSyllabusMode
-              ? "Complete program roadmap and structure"
-              : "Available Class Videos"}
-          </p>
-        </div>
+                    return (
+                      <button
+                        key={cl.id}
+                        onClick={() => {
+                          setSelectedClass(cl);
+                          setShowSyllabus(false);
+                        }}
+                        className={`w-full p-2 rounded-lg text-left border transition ${
+                          selectedClass.id === cl.id
+                            ? "bg-blue-50 border-blue-300"
+                            : "border-gray-200 hover:bg-gray-50"
+                        }`}
+                      >
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm">
+                            {isDone ? "✔ " : ""}
+                            {cl.title}
+                          </span>
+                        </div>
 
-        {/* Syllabus Mode */}
-        {isSyllabusMode ? (
-          <SyllabusSection />
-        ) : (
-          <>
-            {/* Video Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {selectedClass.videos.map((v) => (
-                <div
-                  key={v.id}
-                  className={`bg-gray-50 p-3 rounded-xl shadow transition hover:shadow-md ${
-                    selectedVideo?.id === v.id
-                      ? "ring-2 ring-blue-500"
-                      : ""
-                  }`}
-                >
+                        {/* Progress bar */}
+                        {!isSyllabusMode && (
+                          <div className="w-full h-1 bg-gray-200 rounded mt-1">
+                            <div
+                              className={`h-1 rounded ${
+                                isDone ? "bg-green-500" : "bg-blue-500"
+                              }`}
+                              style={{
+                                width: progress?.completed
+                                  ? "100%"
+                                  : progress?.time
+                                  ? `${Math.min(
+                                      (progress.time /
+                                        (progress.duration || 1)) *
+                                        100,
+                                      100
+                                    )}%`
+                                  : "5%",
+                              }}
+                            />
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ))}
 
-                  {/* Thumbnail */}
-                  <div className="h-40 bg-black rounded overflow-hidden mb-2">
-                    {thumbnails[v.id] ? (
-                      <img
-                        src={thumbnails[v.id]}
-                        alt={v.title}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400">
-                        Loading...
-                      </div>
-                    )}
-                  </div>
+          {/* Reset Progress */}
+          <div className="mt-6 pt-4 border-t">
+            <button
+              onClick={() => {
+                localStorage.removeItem(storageProgressKey(userEmail));
+                setProgressState({});
+                alert("Progress reset");
+              }}
+              className="text-xs text-red-600 hover:underline"
+            >
+              Reset My Progress
+            </button>
+          </div>
+        </aside>
 
-                  {/* Video Info */}
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h4 className="font-semibold text-sm">{v.title}</h4>
-                      <p className="text-xs text-gray-500">Vimeo Video</p>
+        {/* CENTER MAIN */}
+        <main className="col-span-12 md:col-span-6 bg-white rounded-2xl p-6 shadow-lg">
+          {/* Title */}
+          <div className="mb-5">
+            <h2 className="text-xl font-bold text-gray-800">
+              {isSyllabusMode
+                ? "Full Splunk Training Syllabus"
+                : selectedClass.title}
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">
+              {isSyllabusMode
+                ? "Complete program roadmap and structure"
+                : "Available Class Videos"}
+            </p>
+          </div>
+
+          {/* Syllabus Mode */}
+          {isSyllabusMode ? (
+            <SyllabusSection />
+          ) : (
+            <>
+              {/* Video Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {selectedClass.videos.map((v) => (
+                  <div
+                    key={v.id}
+                    className={`bg-gray-50 p-3 rounded-xl shadow transition hover:shadow-md ${
+                      selectedVideo?.id === v.id ? "ring-2 ring-blue-500" : ""
+                    }`}
+                  >
+                    {/* Thumbnail */}
+                    <div className="h-40 bg-black rounded overflow-hidden mb-2">
+                      {thumbnails[v.id] ? (
+                        <img
+                          src={thumbnails[v.id]}
+                          alt={v.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          Loading...
+                        </div>
+                      )}
                     </div>
 
-                    <button
-                      onClick={() => setSelectedVideo(v)}
-                      className="px-3 py-1 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                    >
-                      Watch
-                    </button>
+                    {/* Video Info */}
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h4 className="font-semibold text-sm">{v.title}</h4>
+                        <p className="text-xs text-gray-500">Vimeo Video</p>
+                      </div>
+
+                      <button
+                        onClick={() => setSelectedVideo(v)}
+                        className="px-3 py-1 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                      >
+                        Watch
+                      </button>
+                    </div>
                   </div>
-
-                </div>
-              ))}
-            </div>
-
-            {/* Video Player */}
-            <div className="mt-6">
-              <div
-                ref={playerRef}
-                className="w-full h-[420px] bg-black rounded-xl overflow-hidden border"
-              />
-
-              <div className="mt-3 flex justify-between items-center">
-                <span className="text-sm text-gray-600">
-                  {selectedVideo?.title || "Choose a video to start"}
-                </span>
-
-                <button
-                  onClick={() => markClassCompleted(selectedClass.id)}
-                  className="text-sm bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700"
-                >
-                  Mark Completed
-                </button>
+                ))}
               </div>
 
-            </div>
-          </>
-        )}
+              {/* Video Player */}
+              <div className="mt-6">
+                <div
+                  ref={playerRef}
+                  className="w-full h-[420px] bg-black rounded-xl overflow-hidden border"
+                />
 
-      </main>
+                <div className="mt-3 flex justify-between items-center">
+                  <span className="text-sm text-gray-600">
+                    {selectedVideo?.title || "Choose a video to start"}
+                  </span>
 
-      {/* RIGHT SIDE */}
-      <aside className="col-span-12 md:col-span-3 bg-white rounded-2xl p-5 shadow-lg">
+                  <button
+                    onClick={() => markClassCompleted(selectedClass.id)}
+                    className="text-sm bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700"
+                  >
+                    Mark Completed
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </main>
 
-        <h3 className="font-semibold text-gray-800 mb-4">
-          Class Materials
-        </h3>
+        {/* RIGHT SIDE */}
+        <aside className="col-span-12 md:col-span-3 bg-white rounded-2xl p-5 shadow-lg">
+          <h3 className="font-semibold text-gray-800 mb-4">Class Materials</h3>
 
-        {isSyllabusMode ? (
-          <p className="text-sm text-gray-500">
-            Select a class to see documents here.
-          </p>
-        ) : selectedClass.docs.length ? (
-          selectedClass.docs.map((doc) => (
-            <div key={doc.id} className="mb-3">
-              <a
-                href={doc.url}
-                target="_blank"
-                rel="noreferrer"
-                className="text-sm text-blue-600 hover:underline"
-              >
-                {doc.title}
-              </a>
-            </div>
-          ))
-        ) : (
-          <p className="text-sm text-gray-500">
-            No documents available currently.
-          </p>
-        )}
+          {isSyllabusMode ? (
+            <p className="text-sm text-gray-500">
+              Select a class to see documents here.
+            </p>
+          ) : selectedClass.docs.length ? (
+            selectedClass.docs.map((doc) => (
+              <div key={doc.id} className="mb-3">
+                <a
+                  href={doc.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-sm text-blue-600 hover:underline"
+                >
+                  {doc.title}
+                </a>
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-gray-500">
+              No documents available currently.
+            </p>
+          )}
 
-        {/* Notes Section */}
-        <div className="mt-6">
-          <h4 className="text-sm font-semibold mb-1">Personal Notes</h4>
+          {/* Notes Section */}
+          <div className="mt-6">
+            <h4 className="text-sm font-semibold mb-1">Personal Notes</h4>
 
-          <textarea
-            className="w-full h-40 border rounded-lg p-2 text-sm focus:ring"
-            placeholder="Write your notes..."
-            value={(() => {
-              const saved = JSON.parse(
-                localStorage.getItem(storageProgressKey(userEmail)) || "{}"
-              );
-              return saved[selectedClass.id]?.note || "";
-            })()}
-            onChange={(e) => {
-              const note = e.target.value;
+            <textarea
+              className="w-full h-40 border rounded-lg p-2 text-sm focus:ring"
+              placeholder="Write your notes..."
+              value={(() => {
+                const saved = JSON.parse(
+                  localStorage.getItem(storageProgressKey(userEmail)) || "{}"
+                );
+                return saved[selectedClass.id]?.note || "";
+              })()}
+              onChange={(e) => {
+                const note = e.target.value;
 
-              const key = storageProgressKey(userEmail);
-              const prev = JSON.parse(localStorage.getItem(key) || "{}");
+                const key = storageProgressKey(userEmail);
+                const prev = JSON.parse(localStorage.getItem(key) || "{}");
 
-              prev[selectedClass.id] = {
-                ...(prev[selectedClass.id] || {}),
-                note,
-              };
+                prev[selectedClass.id] = {
+                  ...(prev[selectedClass.id] || {}),
+                  note,
+                };
 
-              localStorage.setItem(key, JSON.stringify(prev));
-              setProgressState(prev);
-            }}
-          />
-
-        </div>
-
-      </aside>
+                localStorage.setItem(key, JSON.stringify(prev));
+                setProgressState(prev);
+              }}
+            />
+          </div>
+        </aside>
+      </div>
     </div>
-  </div>
-);
-
+  );
 }
 
 // BELOW IS THE REAL FILE
