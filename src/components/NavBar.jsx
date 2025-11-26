@@ -146,9 +146,9 @@ const NavBar = () => {
               Dashboard
             </NavLink>
 
-            <NavLink to="/result" className="hover:text-BLUE">
+            {/* <NavLink to="/result" className="hover:text-BLUE">
               My Results
-            </NavLink>
+            </NavLink> */}
 
             <button
               onClick={handleSignOut}
