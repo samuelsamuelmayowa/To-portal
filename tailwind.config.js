@@ -7,6 +7,8 @@ export default {
   theme: {
     extend: {
       colors: {
+        darkMode: "class",
+
         PURPLE: "#c418ac",
         landingBG: "#f4def1",
         textColor: "#d9d9d9",
