@@ -759,6 +759,10 @@ export default function CoursePortal() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4">
+         <AssignmentToast
+      show={showNewAssignmentAlert}
+      onClose={() => setShowNewAssignmentAlert(false)}
+    />
       {/* Header */}
 
       <div className="max-w-7xl mx-auto mb-6">
@@ -802,10 +806,7 @@ export default function CoursePortal() {
           </div>
         </div>
       </div>
-<AssignmentToast
-  show={showNewAssignmentAlert}
-  onClose={() => setShowNewAssignmentAlert(false)}
-/>
+
       <div className="max-w-7xl mx-auto grid grid-cols-12 gap-6">
         {/* LEFT SIDEBAR */}
         <aside className="col-span-12 md:col-span-3 bg-white rounded-2xl p-4 shadow-lg">
