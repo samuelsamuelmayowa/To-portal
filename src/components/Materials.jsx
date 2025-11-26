@@ -327,11 +327,17 @@ const sampleCourses = [
             url: "",
             // https://drive.google.com/file/d/1v7YRwUFvIBenhRSiS-f2evqh2ia2xuq6/preview
           },
+
+           {
+            id: "d3",
+            title: "Splunk Class 5 Note",
+            url: "https://drive.google.com/file/d/1RrF8dEuaUgyKiWhF8lQ4h-WiN9CUb4gE/preview",
+            // https://drive.google.com/file/d/1v7YRwUFvIBenhRSiS-f2evqh2ia2xuq6/preview
+          },
         ],
       },
 
-
-        {
+      {
         id: "class8",
         title: "Class 6  — Splunk Knowledge Objects.",
         desc: "",
@@ -341,18 +347,18 @@ const sampleCourses = [
             title: "",
             url: "",
           },
+    
         ],
         docs: [
           {
             id: "d3",
-            title: "",
-            url: "",
+            title: "Splunk Class 5 Slides",
+            url: "https://drive.google.com/file/d/1cXBItLD6OpbOY6aDi5NGQ0-KXJbutCIS/view?usp=sharing",
           },
         ],
       },
 
-
-          {
+      {
         id: "class7",
         title: "Class 7  —  Splunk Dashboard",
         desc: "",
