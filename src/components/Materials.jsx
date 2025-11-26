@@ -785,12 +785,12 @@ export default function CoursePortal() {
             </div>
 
             {/* Profile Button */}
-            <button
+            {/* <button
               onClick={() => setProfileOpen(true)}
               className="px-3 py-1 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 transition"
             >
               My Profile
-            </button>
+            </button> */}
 
 <DashboardDropdown/>
             {/* Dark Mode Toggle */}
