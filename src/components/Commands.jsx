@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Search } from "lucide-react";
 import DashboardDropdown from "./Dropdown";
-
+import { useEffect } from "react";
 const COMMANDS = [
   // ================= SEARCH COMMANDS =================
   {
