@@ -344,8 +344,8 @@ const sampleCourses = [
         videos: [
           {
             id: "v2",
-            title: "",
-            url: "",
+            title: "To-analytics Splunk Class 6",
+            url: "https://player.vimeo.com/video/1140703570",
           },
     
         ],
