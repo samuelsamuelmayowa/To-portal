@@ -3,8 +3,14 @@ import DashboardDropdown from "./Dropdown";
 
 const ClassM = () => {
   const [assignment, setAssignment] = useState(null);
+   const [userEmail, setUserEmail] = useState("");
   const [selectedDoc, setSelectedDoc] = useState(null);
  const [darkMode, setDarkMode] = useState(false);
+
+  useEffect(() => {
+     const e = localStorage.getItem("user") || "";
+     setUserEmail(e);
+  })
   useEffect(() => {
     // Example assignment data
     const data = {
