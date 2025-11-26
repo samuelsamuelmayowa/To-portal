@@ -318,6 +318,12 @@ const COMMANDS = [
 const Commands = () => {
   const [search, setSearch] = useState("");
  const [darkMode, setDarkMode] = useState(false);
+   const [userEmail, setUserEmail] = useState("");
+
+  useEffect(() => {
+     const e = localStorage.getItem("user") || "";
+     setUserEmail(e);
+  })
   const filtered = COMMANDS.filter(
     (cmd) =>
       cmd.name.toLowerCase().includes(search.toLowerCase()) ||
