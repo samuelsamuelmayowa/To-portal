@@ -1,6 +1,23 @@
 // CoursePortal.jsx
 // Single-file React component (Tailwind CSS required)
 // Now includes: Full Splunk Syllabus view in the center panel (triggered from left sidebar)
+function AssignmentToast({ show, onClose }) {
+  if (!show) return null;
+
+  return (
+    <div className="fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-xl shadow-lg animate-bounce">
+      <p className="font-medium text-sm">
+        New assignment has been released!
+      </p>
+      <button
+        onClick={onClose}
+        className="text-xs underline mt-2"
+      >
+        Close
+      </button>
+    </div>
+  );
+}
 
 import React, { useEffect, useRef, useState } from "react";
 import Player from "@vimeo/player";
@@ -480,6 +497,8 @@ function SyllabusSection() {
  * CoursePortal (single-file)
  */
 export default function CoursePortal() {
+  const [showNewAssignmentAlert, setShowNewAssignmentAlert] = useState(false);
+
   const [darkMode, setDarkMode] = useState(false);
   const [showCertificate, setShowCertificate] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -741,6 +760,7 @@ export default function CoursePortal() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4">
       {/* Header */}
+
       <div className="max-w-7xl mx-auto mb-6">
         <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow flex items-center justify-between">
           {/* LEFT SIDE - TITLE */}
@@ -782,7 +802,10 @@ export default function CoursePortal() {
           </div>
         </div>
       </div>
-
+<AssignmentToast
+  show={showNewAssignmentAlert}
+  onClose={() => setShowNewAssignmentAlert(false)}
+/>
       <div className="max-w-7xl mx-auto grid grid-cols-12 gap-6">
         {/* LEFT SIDEBAR */}
         <aside className="col-span-12 md:col-span-3 bg-white rounded-2xl p-4 shadow-lg">
