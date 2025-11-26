@@ -157,8 +157,8 @@ const router = createBrowserRouter([
         path: "/liveCourses",
         element: <LiveCourses />,
       },
-            { path: "commands", element: <Commands /> },
-             { path: "dictionary", element: <SplunkDictionary /> },
+            { path: "/commands", element: <Commands /> },
+             { path: "/dictionary", element: <SplunkDictionary /> },
       {
         path: "/result",
         element: <QuizResults />,
