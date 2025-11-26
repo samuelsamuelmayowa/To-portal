@@ -497,7 +497,7 @@ function SyllabusSection() {
  * CoursePortal (single-file)
  */
 export default function CoursePortal() {
-  const [showNewAssignmentAlert, setShowNewAssignmentAlert] = useState(false);
+  const [showNewAssignmentAlert, setShowNewAssignmentAlert] = useState(true);
 
   const [darkMode, setDarkMode] = useState(false);
   const [showCertificate, setShowCertificate] = useState(false);
