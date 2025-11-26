@@ -355,6 +355,12 @@ const sampleCourses = [
             title: "Splunk Class 6 Slides",
             url: "https://drive.google.com/file/d/1cXBItLD6OpbOY6aDi5NGQ0-KXJbutCIS/view?usp=sharing",
           },
+
+           {
+            id: "d3",
+            title: "Splunk Class 6 Note",
+            url: "https://drive.google.com/file/d/1fVtS0u-mPndEiVbSGm1f2H5Qm_Dx3CzV/preview",
+          },
         ],
       },
 
