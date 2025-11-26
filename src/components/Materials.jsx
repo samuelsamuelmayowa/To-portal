@@ -8,6 +8,7 @@ import { NavLink } from "react-router-dom";
 import DashboardDropdown from "./Dropdown";
 import NewFeaturePopup from "./Newapp";
 
+
 const API_BASE = import.meta.env.VITE_HOME_OO || "http://localhost:8000";
 
 // Allowed users
@@ -481,6 +482,10 @@ function SyllabusSection() {
  * CoursePortal (single-file)
  */
 export default function CoursePortal() {
+  const [darkMode, setDarkMode] = useState(false);
+const [showCertificate, setShowCertificate] = useState(false);
+const [profileOpen, setProfileOpen] = useState(false);
+
   const [courses] = useState(sampleCourses);
   const [selectedCourse, setSelectedCourse] = useState(courses[0]);
   const [selectedClass, setSelectedClass] = useState(courses[0].classes[0]);
@@ -509,6 +514,10 @@ export default function CoursePortal() {
         .map((a) => a.toLowerCase())
         .includes((e || "").toLowerCase())
     );
+
+    useEffect(() => {
+  document.documentElement.classList.toggle("dark", darkMode);
+}, [darkMode]);
 
     // Load progress (from backend instead of localStorage)
     async function fetchProgress() {
@@ -747,6 +756,34 @@ export default function CoursePortal() {
         <div className="text-sm text-gray-600">
           Logged in as <span className="font-semibold text-blue-600">{userEmail}</span>
         </div>
+
+        <div className="flex items-center gap-3">
+
+  {/* User Email */}
+  <div className="text-sm text-gray-600 dark:text-gray-300">
+    {userEmail}
+  </div>
+
+  {/* Profile Button */}
+  <button
+    onClick={() => setProfileOpen(true)}
+    className="px-3 py-1 text-sm rounded bg-blue-600 text-white"
+  >
+    My Profile
+  </button>
+
+  {/* Dark Mode Button */}
+  <button
+    onClick={() => setDarkMode(!darkMode)}
+    className="px-3 py-1 rounded text-sm 
+      bg-gray-200 text-gray-800 
+      dark:bg-gray-800 dark:text-white"
+  >
+    {darkMode ? "Light Mode" : "Dark Mode"}
+  </button>
+
+</div>
+
       </div>
     </div>
 
