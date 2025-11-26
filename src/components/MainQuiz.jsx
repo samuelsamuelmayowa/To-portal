@@ -187,6 +187,10 @@ const MainQuiz = () => {
               T.O. Analytics Splunk Class 5 Quiz
             </option>
 
+           
+  <option value="T.O Analytics – Splunk Class 6 Quiz">
+               T.O Analytics – Splunk Class 6 Quiz
+            </option>
             <option value="T.O Analytics Power User Exam Quiz">
               T.O Analytics Power User Exam Quiz
             </option>
