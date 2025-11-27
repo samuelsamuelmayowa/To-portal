@@ -137,7 +137,7 @@ const MainQuiz = () => {
 
   // 🎯 Main Content
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-16 px-8">
+    <div className="min-h-screen bg-gradient-to-br f to-purple-50 py-16 px-8">
       <div className="mb-10 mt-8">
         {" "}
          {/* HEADER */}
