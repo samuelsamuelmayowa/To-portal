@@ -317,13 +317,13 @@ const COMMANDS = [
 
 const Commands = () => {
   const [search, setSearch] = useState("");
- const [darkMode, setDarkMode] = useState(false);
-   const [userEmail, setUserEmail] = useState("");
+  const [darkMode, setDarkMode] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
 
   useEffect(() => {
-     const e = localStorage.getItem("user") || "";
-     setUserEmail(e);
-  })
+    const e = localStorage.getItem("user") || "";
+    setUserEmail(e);
+  });
   const filtered = COMMANDS.filter(
     (cmd) =>
       cmd.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -332,93 +332,87 @@ const Commands = () => {
   );
 
   return (
-  <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 p-6 mt-10">
-
-    {/* HEADER */}
-    <div className="max-w-7xl mx-auto mb-6">
-      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow flex items-center justify-between">
-        
-        {/* LEFT SIDE */}
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-            To-Analytics Learning Portal
-          </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Professional Splunk Bootcamp Dashboard
-          </p>
-        </div>
-
-        {/* RIGHT SIDE */}
-        <div className="flex items-center gap-4">
-          <div className="text-sm text-gray-600 dark:text-gray-300">
-            {userEmail}
+    <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 p-6 mt-1">
+      {/* HEADER */}
+      <div className="max-w-7xl mx-auto mb-6">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow flex items-center justify-between">
+          {/* LEFT SIDE */}
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+              To-Analytics Learning Portal
+            </h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Professional Splunk Bootcamp Dashboard
+            </p>
           </div>
 
-          <DashboardDropdown />
+          {/* RIGHT SIDE */}
+          <div className="flex items-center gap-4">
+            <div className="text-sm text-gray-600 dark:text-gray-300">
+              {userEmail}
+            </div>
 
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className="px-3 py-1 rounded-lg text-sm 
+            <DashboardDropdown />
+
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className="px-3 py-1 rounded-lg text-sm 
               bg-gray-100 text-gray-800 
               dark:bg-gray-800 dark:text-white
               border border-gray-300 dark:border-gray-700
               hover:bg-gray-200 dark:hover:bg-gray-700 transition"
-          >
-            {darkMode ? "Light Mode" : "Dark Mode"}
-          </button>
+            >
+              {darkMode ? "Light Mode" : "Dark Mode"}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
 
-    {/* TITLE */}
-    <h1 className="text-3xl font-bold mb-6 text-gray-800 dark:text-white">
-      Splunk Command Explorer
-    </h1>
+      {/* TITLE */}
+      <h1 className="text-3xl font-bold mb-6 text-gray-800 dark:text-white">
+        Splunk Command Explorer
+      </h1>
 
-    {/* SEARCH BAR */}
-    <div className="flex items-center bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl p-3 mb-6 max-w-md shadow">
-      <Search className="text-gray-500 mr-2" size={18} />
-      <input
-        type="text"
-        placeholder="Search command, regex, function..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="bg-transparent w-full outline-none text-gray-800 dark:text-white placeholder:text-gray-400"
-      />
-    </div>
+      {/* SEARCH BAR */}
+      <div className="flex items-center bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl p-3 mb-6 max-w-md shadow">
+        <Search className="text-gray-500 mr-2" size={18} />
+        <input
+          type="text"
+          placeholder="Search command, regex, function..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="bg-transparent w-full outline-none text-gray-800 dark:text-white placeholder:text-gray-400"
+        />
+      </div>
 
-    {/* RESULTS */}
-    <div className="grid md:grid-cols-2 gap-6">
-      {filtered.map((cmd, index) => (
-        <div
-          key={index}
-          className="bg-white dark:bg-gray-900 
+      {/* RESULTS */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {filtered.map((cmd, index) => (
+          <div
+            key={index}
+            className="bg-white dark:bg-gray-900 
           border border-gray-200 dark:border-gray-700 
           p-5 rounded-xl shadow hover:shadow-md transition"
-        >
-          <h3 className="text-gray-800 dark:text-white text-lg font-semibold">
-            {cmd.name}
-          </h3>
+          >
+            <h3 className="text-gray-800 dark:text-white text-lg font-semibold">
+              {cmd.name}
+            </h3>
 
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            {cmd.description}
-          </p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              {cmd.description}
+            </p>
 
-          <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
-            {cmd.category}
-          </p>
-        </div>
-      ))}
+            <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+              {cmd.category}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {/* DOCUMENT SECTION */}
+      <div className="mt-10">{/* Keep for future document preview */}</div>
     </div>
-
-    {/* DOCUMENT SECTION */}
-    <div className="mt-10">
-      {/* Keep for future document preview */}
-    </div>
-
-  </div>
-);
-
+  );
 
   // return (
   //   <div className="min-h-screen  text-white p-6 mt-20">
@@ -453,8 +447,8 @@ const Commands = () => {
   //           {/* Dark Mode Toggle */}
   //           <button
   //             onClick={() => setDarkMode(!darkMode)}
-  //             className="px-3 py-1 rounded text-sm 
-  //            bg-gray-200 text-gray-800 
+  //             className="px-3 py-1 rounded text-sm
+  //            bg-gray-200 text-gray-800
   //            dark:bg-gray-800 dark:text-white
   //            hover:opacity-90 transition"
   //           >
@@ -496,7 +490,7 @@ const Commands = () => {
 
   //     {/* Document preview */}
   //     <div className="mt-10">
-   
+
   //     </div>
   //   </div>
   // );
