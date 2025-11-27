@@ -5,6 +5,9 @@ const QuizResults = () => {
   const storedUser = localStorage.getItem("user");
   let userEmail = "";
  const [darkMode, setDarkMode] = useState(false);
+ useEffect(() => {
+  document.documentElement.classList.toggle("dark", darkMode);
+}, [darkMode]);
   try {
     const parsed = JSON.parse(storedUser);
     userEmail = parsed?.email || parsed?.username || "";
@@ -57,95 +60,149 @@ const QuizResults = () => {
       </div>
     );
 
-  return (
-    <>
-         <div className="max-w-7xl mx-auto mb-6">
-            <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow flex items-center justify-between">
-              {/* LEFT SIDE - TITLE */}
-              <div>
-                <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-                  To-Analytics Learning Portal
-                </h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Professional Splunk Bootcamp Dashboard
-                </p>
-              </div>
-    
-              {/* RIGHT SIDE - ACTIONS */}
-              <div className="flex items-center gap-4">
-                {/* User Email */}
-                <div className="text-sm text-gray-600 dark:text-gray-300">
-                  {userEmail}
-                </div>
-    
-                {/* Profile Button */}
-                {/* <button
-                  onClick={() => setProfileOpen(true)}
-                  className="px-3 py-1 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 transition"
-                >
-                  My Profile
-                </button> */}
-    
-    <DashboardDropdown/>
-                {/* Dark Mode Toggle */}
-                <button
-                  onClick={() => setDarkMode(!darkMode)}
-                  className="px-3 py-1 rounded text-sm 
-            bg-gray-200 text-gray-800 
-            dark:bg-gray-800 dark:text-white
-            hover:opacity-90 transition"
-                >
-                  {darkMode ? "Light Mode" : "Dark Mode"}
-                </button>
-              </div>
-            </div>
+ return (
+  <div className="min-h-screen bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 py-6">
+
+    {/* HEADER */}
+    <div className="max-w-7xl mx-auto mb-6 px-4">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow flex items-center justify-between">
+
+        <div>
+          <h1 className="text-2xl font-bold">
+            Quiz Results
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            View all your past test performances
+          </p>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <div className="text-sm text-gray-600 dark:text-gray-300">
+            {userEmail}
           </div>
-    
-    
-   
-    <div className="p-6 bg-gray-900 text-white rounded-lg max-w-3xl mx-auto mt-20 shadow-xl">
-      <h2 className="text-2xl font-bold mb-6 text-center text-indigo-400">
-        Your Past Quiz Scores 🧠
-      </h2>
 
-      <table className="w-full border-collapse">
-        <thead>
-          <tr className="bg-gray-800 text-left">
-            <th className="p-2 border-b border-gray-700">#</th>
-            <th className="p-2 border-b border-gray-700">Score</th>
-            <th className="p-2 border-b border-gray-700">Test Name</th>
-            <th className="p-2 border-b border-gray-700">Total Questions</th>
-            <th className="p-2 border-b border-gray-700">Total</th>
-            <th className="p-2 border-b border-gray-700">Date Taken</th>
-          </tr>
-        </thead>
-        <tbody>
-          {results.map((r, index) => {
-            const testName = r.testName || "Untitled Test";
-            const total = Number(r.totalQuestions) || 0;
-            const score = Number(r.score) || 0;
-            const date = r.dateTaken
-              ? new Date(r.dateTaken).toLocaleString()
-              : "N/A";
+          <DashboardDropdown />
 
-            return (
-              <tr key={index} className="hover:bg-gray-800 transition-colors">
-                <td className="p-2 border-b border-gray-700">{index + 1}</td>
-                <td className="p-2 border-b border-gray-700">{score}</td>
-                <td className="p-2 border-b border-gray-700">{testName}</td>
-                <td className="p-2 border-b border-gray-700">{total}</td>
-                <td className="p-2 border-b border-gray-700">
-                  {score} / {total}
-                </td>
-                <td className="p-2 border-b border-gray-700">{date}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+          <button
+            onClick={() => setDarkMode(!darkMode)}
+            className="px-3 py-1 rounded text-sm 
+            bg-gray-200 text-gray-800 dark:bg-gray-800 dark:text-white"
+          >
+            {darkMode ? "Light" : "Dark"}
+          </button>
+        </div>
+
+      </div>
     </div>
-     </>
-  );
+
+    {/* EMPTY STATE */}
+    {!results.length && (
+      <div className="text-center py-20">
+        <h2 className="text-2xl font-bold mb-2 text-gray-700 dark:text-gray-200">
+          No Quiz Attempts Yet
+        </h2>
+        <p className="text-gray-500 dark:text-gray-400">
+          Take your first quiz to see your performance here.
+        </p>
+      </div>
+    )}
+
+    {/* RESULTS */}
+    {results.length > 0 && (
+      <div className="max-w-5xl mx-auto px-4">
+
+        {/* STATS BAR */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div className="bg-white dark:bg-gray-900 p-4 rounded-xl shadow">
+            <h3 className="text-sm text-gray-500">Total Attempts</h3>
+            <p className="text-2xl font-bold">{results.length}</p>
+          </div>
+
+          <div className="bg-white dark:bg-gray-900 p-4 rounded-xl shadow">
+            <h3 className="text-sm text-gray-500">Highest Score</h3>
+            <p className="text-2xl font-bold">
+              {Math.max(...results.map(r => r.score))}
+            </p>
+          </div>
+
+          <div className="bg-white dark:bg-gray-900 p-4 rounded-xl shadow">
+            <h3 className="text-sm text-gray-500">Average Score</h3>
+            <p className="text-2xl font-bold">
+              {Math.round(
+                results.reduce((acc, r) => acc + Number(r.score), 0) / results.length
+              )}
+            </p>
+          </div>
+        </div>
+
+        {/* TABLE */}
+        <div className="bg-white dark:bg-gray-900 rounded-xl shadow overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-100 dark:bg-gray-800 text-left">
+              <tr>
+                <th className="p-3">#</th>
+                <th className="p-3">Test Name</th>
+                <th className="p-3">Score</th>
+                <th className="p-3">Total</th>
+                <th className="p-3">Performance</th>
+                <th className="p-3">Date</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {results.map((r, index) => {
+                const total = Number(r.totalQuestions) || 0;
+                const score = Number(r.score) || 0;
+                const percentage = total ? Math.round((score / total) * 100) : 0;
+
+                let statusColor = "text-red-500";
+                let statusText = "Needs Work";
+
+                if (percentage >= 70) {
+                  statusColor = "text-green-500";
+                  statusText = "Excellent";
+                } else if (percentage >= 50) {
+                  statusColor = "text-yellow-500";
+                  statusText = "Average";
+                }
+
+                const date = r.dateTaken
+                  ? new Date(r.dateTaken).toLocaleString()
+                  : "N/A";
+
+                return (
+                  <tr
+                    key={index}
+                    className="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+                  >
+                    <td className="p-3">{index + 1}</td>
+                    <td className="p-3">{r.testName || "Untitled Test"}</td>
+
+                    <td className="p-3 font-semibold">
+                      {score}/{total}
+                    </td>
+
+                    <td className="p-3">{percentage}%</td>
+
+                    <td className={`p-3 font-medium ${statusColor}`}>
+                      {statusText}
+                    </td>
+
+                    <td className="p-3 text-gray-500 dark:text-gray-400">
+                      {date}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    )}
+
+  </div>
+);
+
 };
 
 export default QuizResults;
