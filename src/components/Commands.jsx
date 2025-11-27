@@ -332,7 +332,7 @@ const Commands = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-white p-6 mt-20">
+    <div className="min-h-screen  text-white p-6 mt-20">
       <div className="max-w-7xl mx-auto mb-6">
         <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow flex items-center justify-between">
           {/* LEFT SIDE - TITLE */}
