@@ -232,6 +232,7 @@ const router = createBrowserRouter([
        { path: "commands", element: <Commands /> },
       { path: "materials", element: <Materials /> },
       { path: "stockside", element: <StockDashboard /> },
+        { path: "result", element: <QuizResults /> },
       { path: "stockportal", element: <StockPortal /> },
       { path: "takequiz", element: <MainQuiz /> },
       { path: "check", element: <StudentDashboard /> },
@@ -335,6 +336,10 @@ export default App;
 // import Contractors from "./components/Contractors";
 // import StudentCommentPage from "./components/StudentCommentPage";
 // import MyProfile from "./pages/MyProfile";
+
+
+
+
 // // import DashboardCourses from "./dashboard/components/DashboardCourses";
 // import PaymentPage from "./pages/PaymentPage";
 // import Loader from "./components/Loader";
