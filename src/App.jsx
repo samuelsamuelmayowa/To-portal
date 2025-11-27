@@ -160,7 +160,7 @@ const router = createBrowserRouter([
             { path: "/commands", element: <Commands /> },
              { path: "/dictionary", element: <SplunkDictionary /> },
       {
-        path: "result",
+        path: "/results",
         element: <QuizResults />,
       },
       {
