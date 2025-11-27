@@ -238,7 +238,11 @@ const MainQuiz = () => {
             transition={{ duration: 0.6 }}
             className="col-span-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-xl p-8"
           >
-            <Quiz data={quizData} />
+            {/* <Quiz data={quizData} /> */}
+            <div className="text-gray-800 dark:text-gray-100">
+  <Quiz data={quizData} />
+</div>
+
           </motion.div>
         )}
       </AnimatePresence>
