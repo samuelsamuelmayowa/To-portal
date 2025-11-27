@@ -41,7 +41,10 @@ const MainQuiz = () => {
   const [quizData, setQuizData] = useState(null);
   const [userEmail, setUserEmail] = useState("");
   const [isAllowed, setIsAllowed] = useState(false);
-
+ const [darkMode, setDarkMode] = useState(false);
+ useEffect(() => {
+  document.documentElement.classList.toggle("dark", darkMode);
+}, [darkMode]);
   // ✅ Load user email from localStorage
   useEffect(() => {
     const email = localStorage.getItem("user");
@@ -137,7 +140,39 @@ const MainQuiz = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-16 px-8">
       <div className="mb-10 mt-8">
         {" "}
-        <DashboardDropdown />
+         {/* HEADER */}
+            <div className="max-w-7xl mx-auto mb-6 px-4">
+              <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow flex items-center justify-between">
+        
+                <div>
+                  <h1 className="text-2xl font-bold">
+                    Quiz Results
+                  </h1>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    View all your past test performances
+                  </p>
+                </div>
+        
+                <div className="flex items-center gap-4">
+                  <div className="text-sm text-gray-600 dark:text-gray-300">
+                    {userEmail}
+                  </div>
+        
+                  <DashboardDropdown />
+        
+                  <button
+                    onClick={() => setDarkMode(!darkMode)}
+                    className="px-3 py-1 rounded text-sm 
+                    bg-gray-200 text-gray-800 dark:bg-gray-800 dark:text-white"
+                  >
+                    {darkMode ? "Light" : "Dark"}
+                  </button>
+                </div>
+        
+              </div>
+            </div>
+        
+        {/* <DashboardDropdown /> */}
       </div>
       {/* Header */}
       <motion.h2
