@@ -58,118 +58,242 @@ const ClassM = () => {
     setSelectedDoc(data.docs[0]);
   }, []);
 
+
   if (!assignment) return <p>Loading assignment...</p>;
 
+  
+
   return (
-    <div className="p-6 space-y-8 bg-gray-50 min-h-screen">
-    {/* <DashboardDropdown/> */}
-     <div className="max-w-7xl mx-auto mb-6">
-            <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow flex items-center justify-between">
-              {/* LEFT SIDE - TITLE */}
-              <div>
-                <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-                  To-Analytics Learning Portal
-                </h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Professional Splunk Bootcamp Dashboard
-                </p>
-              </div>
-    
-              {/* RIGHT SIDE - ACTIONS */}
-              <div className="flex items-center gap-4">
-                {/* User Email */}
-                <div className="text-sm text-gray-600 dark:text-gray-300">
-                  {userEmail}
-                </div>
-    
-                {/* Profile Button */}
-                {/* <button
-                  onClick={() => setProfileOpen(true)}
-                  className="px-3 py-1 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 transition"
-                >
-                  My Profile
-                </button> */}
-    
-    <DashboardDropdown/>
-                {/* Dark Mode Toggle */}
-                <button
-                  onClick={() => setDarkMode(!darkMode)}
-                  className="px-3 py-1 rounded text-sm 
-            bg-gray-200 text-gray-800 
-            dark:bg-gray-800 dark:text-white
-            hover:opacity-90 transition"
-                >
-                  {darkMode ? "Light Mode" : "Dark Mode"}
-                </button>
-              </div>
-            </div>
+  <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 p-6 space-y-6">
+
+    {/* HEADER */}
+    <div className="max-w-7xl mx-auto mb-6">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow flex items-center justify-between">
+        
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+            To-Analytics Learning Portal
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Professional Splunk Bootcamp Dashboard
+          </p>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <div className="text-sm text-gray-600 dark:text-gray-300">
+            {userEmail}
           </div>
 
-      <h1 className="text-2xl font-bold text-gray-800">📝 Assignment</h1>
+          {/* Remove if not imported */}
+          {DashboardDropdown && <DashboardDropdown />}
 
-      <div className="bg-white shadow-md rounded-2xl p-6">
-        <h2 className="text-xl font-semibold text-gray-800 mb-2">
-          {assignment.title}
-        </h2>
-        <p className="text-gray-700 mb-3">{assignment.description}</p>
-
-        {/* === MULTIPLE PDF BUTTONS === */}
-        <div className="flex flex-wrap gap-3 mb-4">
-          {assignment.docs.map((doc) => (
-            <button
-              key={doc.id}
-              onClick={() => setSelectedDoc(doc)}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
-                selectedDoc?.id === doc.id
-                  ? "bg-blue-600 text-white shadow"
-                  : "bg-gray-100 hover:bg-gray-200"
-              }`}
-            >
-              {doc.title}
-            </button>
-          ))}
+          <button
+            onClick={() => setDarkMode(!darkMode)}
+            className="px-3 py-1 rounded-lg text-sm 
+            bg-gray-100 text-gray-800 
+            dark:bg-gray-800 dark:text-white
+            border border-gray-300 dark:border-gray-700
+            hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+          >
+            {darkMode ? "Light Mode" : "Dark Mode"}
+          </button>
         </div>
+      </div>
+    </div>
 
-        {/* === PDF VIEWER === */}
-        <div className="w-full h-[600px] rounded-xl overflow-hidden border">
-          {selectedDoc && (
-            <iframe
-              src={selectedDoc.url}
-              title={selectedDoc.title}
-              className="w-full h-full"
-              frameBorder="0"
-              allowFullScreen
-            ></iframe>
-          )}
-        </div>
+    {/* PAGE TITLE */}
+    <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+      Assignment
+    </h1>
 
-        {/* === DETAILS BELOW VIEWER === */}
-        {selectedDoc && (
-          <div className="mt-3 text-sm text-gray-600 space-y-1">
-            <p>
-              <span className="font-semibold">Document:</span>{" "}
-              {selectedDoc.title}
-            </p>
-            <p>
-              <span className="font-semibold">Due Date:</span>{" "}
-              {selectedDoc.dueDate}
-            </p>
-            <p>
-              <span className="font-semibold">Open in new tab:</span>{" "}
-              <a
-                href={selectedDoc.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 underline break-words"
-              >
-                {selectedDoc.url}
-              </a>
-            </p>
+    {/* ASSIGNMENT CARD */}
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-md rounded-2xl p-6 space-y-4">
+
+      <h2 className="text-xl font-semibold">
+        {assignment?.title || "No Assignment Selected"}
+      </h2>
+
+      <p className="text-gray-700 dark:text-gray-400">
+        {assignment?.description || "No description available"}
+      </p>
+
+      {/* DOCUMENT BUTTONS */}
+   <div className="flex flex-wrap gap-3 pt-2">
+  {assignment?.docs?.length ? (
+    assignment.docs.map((doc) => (
+      <button
+        key={doc.id}
+        onClick={() => setSelectedDoc(doc)}
+        className={`px-4 py-2 rounded-xl text-sm font-medium border transition ${
+          selectedDoc?.id === doc.id
+            ? "bg-gray-800 text-white dark:bg-white dark:text-black"
+            : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-700"
+        }`}
+      >
+        {doc.title}
+      </button>
+    ))
+  ) : (
+    <p className="text-gray-500">No documents available.</p>
+  )}
+</div>
+
+
+      {/* DOCUMENT VIEWER */}
+      <div className="w-full h-[550px] mt-4 rounded-xl overflow-hidden border border-gray-300 dark:border-gray-700">
+        {selectedDoc ? (
+          <iframe
+            src={selectedDoc.url}
+            title={selectedDoc.title}
+            className="w-full h-full bg-white dark:bg-gray-950"
+            frameBorder="0"
+            allowFullScreen
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full text-gray-400">
+            Select a document to preview
           </div>
         )}
       </div>
+
+      {/* DOCUMENT DETAILS */}
+      {selectedDoc && (
+        <div className="mt-3 text-sm text-gray-600 dark:text-gray-400 space-y-2">
+          <p>
+            <strong>Document:</strong> {selectedDoc.title}
+          </p>
+
+          <p>
+            <strong>Due Date:</strong> {selectedDoc.dueDate}
+          </p>
+
+          <p>
+            <strong>Open in new tab:</strong>{" "}
+            <a
+              href={selectedDoc.url}
+              target="_blank"
+              rel="noreferrer"
+              className="text-blue-600 dark:text-blue-400 underline break-words"
+            >
+              {selectedDoc.url}
+            </a>
+          </p>
+        </div>
+      )}
     </div>
-  );
+  </div>
+);
+
+  // return (
+  //   <div className="p-6 space-y-8 bg-gray-50 min-h-screen">
+  //   {/* <DashboardDropdown/> */}
+  //    <div className="max-w-7xl mx-auto mb-6">
+  //           <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow flex items-center justify-between">
+  //             {/* LEFT SIDE - TITLE */}
+  //             <div>
+  //               <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+  //                 To-Analytics Learning Portal
+  //               </h1>
+  //               <p className="text-sm text-gray-500 dark:text-gray-400">
+  //                 Professional Splunk Bootcamp Dashboard
+  //               </p>
+  //             </div>
+    
+  //             {/* RIGHT SIDE - ACTIONS */}
+  //             <div className="flex items-center gap-4">
+  //               {/* User Email */}
+  //               <div className="text-sm text-gray-600 dark:text-gray-300">
+  //                 {userEmail}
+  //               </div>
+    
+  //               {/* Profile Button */}
+  //               {/* <button
+  //                 onClick={() => setProfileOpen(true)}
+  //                 className="px-3 py-1 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 transition"
+  //               >
+  //                 My Profile
+  //               </button> */}
+    
+  //   <DashboardDropdown/>
+  //               {/* Dark Mode Toggle */}
+  //               <button
+  //                 onClick={() => setDarkMode(!darkMode)}
+  //                 className="px-3 py-1 rounded text-sm 
+  //           bg-gray-200 text-gray-800 
+  //           dark:bg-gray-800 dark:text-white
+  //           hover:opacity-90 transition"
+  //               >
+  //                 {darkMode ? "Light Mode" : "Dark Mode"}
+  //               </button>
+  //             </div>
+  //           </div>
+  //         </div>
+
+  //     <h1 className="text-2xl font-bold text-gray-800">📝 Assignment</h1>
+
+  //     <div className="bg-white shadow-md rounded-2xl p-6">
+  //       <h2 className="text-xl font-semibold text-gray-800 mb-2">
+  //         {assignment.title}
+  //       </h2>
+  //       <p className="text-gray-700 mb-3">{assignment.description}</p>
+
+  //       {/* === MULTIPLE PDF BUTTONS === */}
+  //       <div className="flex flex-wrap gap-3 mb-4">
+  //         {assignment.docs.map((doc) => (
+  //           <button
+  //             key={doc.id}
+  //             onClick={() => setSelectedDoc(doc)}
+  //             className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+  //               selectedDoc?.id === doc.id
+  //                 ? "bg-blue-600 text-white shadow"
+  //                 : "bg-gray-100 hover:bg-gray-200"
+  //             }`}
+  //           >
+  //             {doc.title}
+  //           </button>
+  //         ))}
+  //       </div>
+
+  //       {/* === PDF VIEWER === */}
+  //       <div className="w-full h-[600px] rounded-xl overflow-hidden border">
+  //         {selectedDoc && (
+  //           <iframe
+  //             src={selectedDoc.url}
+  //             title={selectedDoc.title}
+  //             className="w-full h-full"
+  //             frameBorder="0"
+  //             allowFullScreen
+  //           ></iframe>
+  //         )}
+  //       </div>
+
+  //       {/* === DETAILS BELOW VIEWER === */}
+  //       {selectedDoc && (
+  //         <div className="mt-3 text-sm text-gray-600 space-y-1">
+  //           <p>
+  //             <span className="font-semibold">Document:</span>{" "}
+  //             {selectedDoc.title}
+  //           </p>
+  //           <p>
+  //             <span className="font-semibold">Due Date:</span>{" "}
+  //             {selectedDoc.dueDate}
+  //           </p>
+  //           <p>
+  //             <span className="font-semibold">Open in new tab:</span>{" "}
+  //             <a
+  //               href={selectedDoc.url}
+  //               target="_blank"
+  //               rel="noopener noreferrer"
+  //               className="text-blue-600 underline break-words"
+  //             >
+  //               {selectedDoc.url}
+  //             </a>
+  //           </p>
+  //         </div>
+  //       )}
+  //     </div>
+  //   </div>
+  // );
 };
 
 export default ClassM;
