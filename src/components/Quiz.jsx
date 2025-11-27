@@ -505,13 +505,9 @@ const Quiz = ({ data }) => {
             <label
               key={i}
               className={`block p-3 border rounded-lg cursor-pointer transition ${
-                // answers[currentQuestion] === option
-                //   ? "bg-blue-600 border-blue-600"
-                //   : "hover:bg-blue-50 border-gray-300"
                 answers[currentQuestion] === option
-  ? "bg-blue-100 border-blue-500 text-gray-900 font-medium"
-  : "hover:bg-gray-50 border-gray-300 text-gray-700"
-
+                  ? "bg-blue-600 border-blue-600"
+                  : "hover:bg-blue-50 border-gray-300"
               }`}
             >
               <input
