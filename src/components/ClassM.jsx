@@ -3,14 +3,14 @@ import DashboardDropdown from "./Dropdown";
 
 const ClassM = () => {
   const [assignment, setAssignment] = useState(null);
-   const [userEmail, setUserEmail] = useState("");
+  const [userEmail, setUserEmail] = useState("");
   const [selectedDoc, setSelectedDoc] = useState(null);
- const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
-     const e = localStorage.getItem("user") || "";
-     setUserEmail(e);
-  })
+    const e = localStorage.getItem("user") || "";
+    setUserEmail(e);
+  });
   useEffect(() => {
     // Example assignment data
     const data = {
@@ -36,153 +36,143 @@ const ClassM = () => {
         //   url: "https://drive.google.com/file/d/1zExampleTemplate123/preview",
         //   dueDate: "2025-11-10",
         // },
-          {
-           id: 4,
+        {
+          id: 4,
           title: "Splunk class 4 Assignment",
           url: "https://docs.google.com/presentation/d/1QH0-bN_phVwY5MGVPOcOnbAC9HmKuShL/preview",
           dueDate: "2025-11-8",
-         
         },
-          {
+        {
           id: 5,
           title: "Splunk class 3 Assignment",
           url: " https://drive.google.com/file/d/179_DKTqGoGjBrszOPRCJqGu3VFlXUbXe/preview",
           dueDate: "2025-11-10",
         },
       ],
-     
-
     };
 
     setAssignment(data);
     setSelectedDoc(data.docs[0]);
   }, []);
 
-
   if (!assignment) return <p>Loading assignment...</p>;
 
-  
-
   return (
-  <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 p-6 space-y-6">
-
-    {/* HEADER */}
-    <div className="max-w-7xl mx-auto mb-6">
-      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow flex items-center justify-between">
-        
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-            To-Analytics Learning Portal
-          </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Professional Splunk Bootcamp Dashboard
-          </p>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <div className="text-sm text-gray-600 dark:text-gray-300">
-            {userEmail}
+    <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 p-6 space-y-6">
+      {/* HEADER */}
+      <div className="max-w-7xl mx-auto mb-6">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+              To-Analytics Learning Portal
+            </h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Professional Splunk Bootcamp Dashboard
+            </p>
           </div>
 
-          {/* Remove if not imported */}
-          {DashboardDropdown && <DashboardDropdown />}
+          <div className="flex items-center gap-4">
+            <div className="text-sm text-gray-600 dark:text-gray-300">
+              {userEmail}
+            </div>
 
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className="px-3 py-1 rounded-lg text-sm 
+            {/* Remove if not imported */}
+            {DashboardDropdown && <DashboardDropdown />}
+
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className="px-3 py-1 rounded-lg text-sm 
             bg-gray-100 text-gray-800 
             dark:bg-gray-800 dark:text-white
             border border-gray-300 dark:border-gray-700
             hover:bg-gray-200 dark:hover:bg-gray-700 transition"
-          >
-            {darkMode ? "Light Mode" : "Dark Mode"}
-          </button>
+            >
+              {darkMode ? "Light Mode" : "Dark Mode"}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
 
-    {/* PAGE TITLE */}
-    <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-      Assignment
-    </h1>
+      {/* PAGE TITLE */}
+      <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+        Assignment
+      </h1>
 
-    {/* ASSIGNMENT CARD */}
-    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-md rounded-2xl p-6 space-y-4">
+      {/* ASSIGNMENT CARD */}
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-md rounded-2xl p-6 space-y-4">
+        <h2 className="text-xl font-semibold">
+          {assignment?.title || "No Assignment Selected"}
+        </h2>
 
-      <h2 className="text-xl font-semibold">
-        {assignment?.title || "No Assignment Selected"}
-      </h2>
+        <p className="text-gray-700 dark:text-gray-400">
+          {assignment?.description || "No description available"}
+        </p>
 
-      <p className="text-gray-700 dark:text-gray-400">
-        {assignment?.description || "No description available"}
-      </p>
+        {/* DOCUMENT BUTTONS */}
+        <div className="flex flex-wrap gap-3 pt-2">
+          {assignment?.docs?.length ? (
+            assignment.docs.map((doc) => (
+              <button
+                key={doc.id}
+                onClick={() => setSelectedDoc(doc)}
+                className={`px-4 py-2 rounded-xl text-sm font-medium border transition ${
+                  selectedDoc?.id === doc.id
+                    ? "bg-gray-800 text-white dark:bg-white dark:text-black"
+                    : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-700"
+                }`}
+              >
+                {doc.title}
+              </button>
+            ))
+          ) : (
+            <p className="text-gray-500">No documents available.</p>
+          )}
+        </div>
 
-      {/* DOCUMENT BUTTONS */}
-   <div className="flex flex-wrap gap-3 pt-2">
-  {assignment?.docs?.length ? (
-    assignment.docs.map((doc) => (
-      <button
-        key={doc.id}
-        onClick={() => setSelectedDoc(doc)}
-        className={`px-4 py-2 rounded-xl text-sm font-medium border transition ${
-          selectedDoc?.id === doc.id
-            ? "bg-gray-800 text-white dark:bg-white dark:text-black"
-            : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-700"
-        }`}
-      >
-        {doc.title}
-      </button>
-    ))
-  ) : (
-    <p className="text-gray-500">No documents available.</p>
-  )}
-</div>
+        {/* DOCUMENT VIEWER */}
+        <div className="w-full h-[550px] mt-4 rounded-xl overflow-hidden border border-gray-300 dark:border-gray-700">
+          {selectedDoc ? (
+            <iframe
+              src={selectedDoc.url}
+              title={selectedDoc.title}
+              className="w-full h-full bg-white dark:bg-gray-950"
+              frameBorder="0"
+              allowFullScreen
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full text-gray-400">
+              Select a document to preview
+            </div>
+          )}
+        </div>
 
+        {/* DOCUMENT DETAILS */}
+        {selectedDoc && (
+          <div className="mt-3 text-sm text-gray-600 dark:text-gray-400 space-y-2">
+            <p>
+              <strong>Document:</strong> {selectedDoc.title}
+            </p>
 
-      {/* DOCUMENT VIEWER */}
-      <div className="w-full h-[550px] mt-4 rounded-xl overflow-hidden border border-gray-300 dark:border-gray-700">
-        {selectedDoc ? (
-          <iframe
-            src={selectedDoc.url}
-            title={selectedDoc.title}
-            className="w-full h-full bg-white dark:bg-gray-950"
-            frameBorder="0"
-            allowFullScreen
-          />
-        ) : (
-          <div className="flex items-center justify-center h-full text-gray-400">
-            Select a document to preview
+            <p>
+              <strong>Due Date:</strong> {selectedDoc.dueDate}
+            </p>
+
+            <p>
+              <strong>Open in new tab:</strong>{" "}
+              <a
+                href={selectedDoc.url}
+                target="_blank"
+                rel="noreferrer"
+                className="text-blue-600 dark:text-blue-400 underline break-words"
+              >
+                {selectedDoc.url}
+              </a>
+            </p>
           </div>
         )}
       </div>
-
-      {/* DOCUMENT DETAILS */}
-      {selectedDoc && (
-        <div className="mt-3 text-sm text-gray-600 dark:text-gray-400 space-y-2">
-          <p>
-            <strong>Document:</strong> {selectedDoc.title}
-          </p>
-
-          <p>
-            <strong>Due Date:</strong> {selectedDoc.dueDate}
-          </p>
-
-          <p>
-            <strong>Open in new tab:</strong>{" "}
-            <a
-              href={selectedDoc.url}
-              target="_blank"
-              rel="noreferrer"
-              className="text-blue-600 dark:text-blue-400 underline break-words"
-            >
-              {selectedDoc.url}
-            </a>
-          </p>
-        </div>
-      )}
     </div>
-  </div>
-);
+  );
 
   // return (
   //   <div className="p-6 space-y-8 bg-gray-50 min-h-screen">
@@ -198,14 +188,14 @@ const ClassM = () => {
   //                 Professional Splunk Bootcamp Dashboard
   //               </p>
   //             </div>
-    
+
   //             {/* RIGHT SIDE - ACTIONS */}
   //             <div className="flex items-center gap-4">
   //               {/* User Email */}
   //               <div className="text-sm text-gray-600 dark:text-gray-300">
   //                 {userEmail}
   //               </div>
-    
+
   //               {/* Profile Button */}
   //               {/* <button
   //                 onClick={() => setProfileOpen(true)}
@@ -213,13 +203,13 @@ const ClassM = () => {
   //               >
   //                 My Profile
   //               </button> */}
-    
+
   //   <DashboardDropdown/>
   //               {/* Dark Mode Toggle */}
   //               <button
   //                 onClick={() => setDarkMode(!darkMode)}
-  //                 className="px-3 py-1 rounded text-sm 
-  //           bg-gray-200 text-gray-800 
+  //                 className="px-3 py-1 rounded text-sm
+  //           bg-gray-200 text-gray-800
   //           dark:bg-gray-800 dark:text-white
   //           hover:opacity-90 transition"
   //               >
@@ -297,9 +287,6 @@ const ClassM = () => {
 };
 
 export default ClassM;
-
-
-
 
 // import { useEffect, useState } from "react";
 // import { NavLink } from "react-router-dom";
@@ -541,7 +528,6 @@ export default ClassM;
 // };
 
 // export default ClassM;
-
 
 // import { useEffect, useState } from "react";
 // import Quiz from "./Quiz";

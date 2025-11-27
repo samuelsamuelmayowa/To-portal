@@ -137,144 +137,264 @@ const MainQuiz = () => {
 
   // 🎯 Main Content
   return (
-    <div className="min-h-screen bg-gradient-to-br f to-purple-50 py-16 px-8">
-      <div className="mb-10 mt-8">
-        {" "}
-         {/* HEADER */}
-            <div className="max-w-7xl mx-auto mb-6 px-4">
-              <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow flex items-center justify-between">
-        
-                <div>
-                  <h1 className="text-2xl font-bold">
-                    Quiz Results
-                  </h1>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    View all your past test performances
-                  </p>
-                </div>
-        
-                <div className="flex items-center gap-4">
-                  <div className="text-sm text-gray-600 dark:text-gray-300">
-                    {userEmail}
-                  </div>
-        
-                  <DashboardDropdown />
-        
-                  <button
-                    onClick={() => setDarkMode(!darkMode)}
-                    className="px-3 py-1 rounded text-sm 
-                    bg-gray-200 text-gray-800 dark:bg-gray-800 dark:text-white"
-                  >
-                    {darkMode ? "Light" : "Dark"}
-                  </button>
-                </div>
-        
-              </div>
-            </div>
-        
-        {/* <DashboardDropdown /> */}
-      </div>
-      {/* Header */}
-      <motion.h2
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="text-5xl font-extrabold text-left mb-10 text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 drop-shadow-sm"
-      >
-        <FiBookOpen className="inline-block mb-1 mr-3 text-indigo-600" />
-        Splunk Quiz Center
-      </motion.h2>
+  <div className="min-h-screen bg-white dark:bg-gray-950 py-16 px-8 text-gray-900 dark:text-gray-100">
 
-      {/* Layout */}
-      <div className="grid md:grid-cols-5 gap-10 items-start">
-        {/* Left Side - Quiz Title */}
-        <motion.div
-          initial={{ x: -30, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          className="col-span-2 bg-white/60 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-gray-100"
-        >
-          <h3 className="text-xl font-semibold text-gray-700 mb-3">
-            Select Your Quiz
-          </h3>
-          <select
-            value={selectedQuiz}
-            onChange={(e) => loadQuiz(e.target.value)}
-            className="p-3 w-full border border-gray-300 rounded-xl text-gray-700 font-medium focus:ring-4 focus:ring-blue-400/40 focus:border-blue-500 bg-white shadow-inner transition-all duration-300"
+    {/* HEADER */}
+    <div className="max-w-7xl mx-auto mb-10 px-4">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow flex items-center justify-between">
+
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+            Quiz Results
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            View all your past test performances
+          </p>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <div className="text-sm text-gray-600 dark:text-gray-300">
+            {userEmail}
+          </div>
+
+          <DashboardDropdown />
+
+          <button
+            onClick={() => setDarkMode(!darkMode)}
+            className="px-3 py-1 rounded-lg text-sm 
+            bg-gray-100 text-gray-800 
+            dark:bg-gray-800 dark:text-white
+            border border-gray-300 dark:border-gray-700
+            hover:bg-gray-200 dark:hover:bg-gray-700 transition"
           >
-            <option value="">-- Choose a Quiz --</option>
-            <option value="T.O Analytics Splunk Class 1 Quiz">
-              T.O Analytics Splunk Class 1 Quiz
-            </option>
-            <option value="T.O Analytics Splunk Class 2 Quiz">
-              T.O Analytics Splunk Class 2 Quiz
-            </option>
+            {darkMode ? "Light Mode" : "Dark Mode"}
+          </button>
+        </div>
 
-            <option value="T.O Analytics Splunk Class 3 Quiz">
-              T.O Analytics Splunk Class 3 Quiz
-            </option>
-
-            <option value="T.O Analytics Splunk Class 4 Quiz">
-              T.O Analytics Splunk Class 4 Quiz
-            </option>
-{/* T.O Analytics – Splunk Class 5 Quiz */}
-            <option value="T.O. Analytics – Splunk Class 5 Quiz">
-              T.O. Analytics Splunk Class 5 Quiz
-            </option>
-
-           
-  <option value="T.O Analytics – Splunk Class 6 Quiz">
-               T.O Analytics – Splunk Class 6 Quiz
-            </option>
-            <option value="T.O Analytics Power User Exam Quiz">
-              T.O Analytics Power User Exam Quiz
-            </option>
-            <option value="T.O Analytics Splunk Admin Exam Quiz">
-              T.O Analytics Splunk Admin Exam Quiz
-            </option>
-          </select>
-
-          {selectedQuiz && (
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-6 bg-gradient-to-r from-indigo-100 to-blue-50 p-4 rounded-xl shadow-inner border border-blue-100"
-            >
-              <p className="text-sm text-gray-600">Currently Selected:</p>
-              <h4 className="font-semibold text-indigo-600 mt-1">
-                {selectedQuiz}
-              </h4>
-            </motion.div>
-          )}
-        </motion.div>
-
-        {/* Center - Quiz Content */}
-        <AnimatePresence>
-          {quizData && (
-            <motion.div
-              key="quiz"
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              transition={{ duration: 0.6 }}
-              className="col-span-3 bg-white/80 backdrop-blur-lg rounded-3xl border border-gray-200 shadow-2xl p-8 hover:shadow-indigo-200 transition-all duration-500"
-            >
-              <Quiz data={quizData} />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Footer */}
-      <div className="mt-16 text-center text-gray-400 text-sm">
-        <p>
-          © {new Date().getFullYear()}{" "}
-          <span className="font-semibold text-blue-500">T.O Analytics</span> —
-          Empowering Learners with Data Mastery.
-        </p>
       </div>
     </div>
-  );
+
+    {/* TITLE */}
+    <motion.h2
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="text-4xl font-extrabold mb-10 text-gray-900 dark:text-white text-center"
+    >
+      <FiBookOpen className="inline-block mb-1 mr-3 text-blue-600" />
+      Splunk Quiz Center
+    </motion.h2>
+
+    {/* MAIN LAYOUT */}
+    <div className="grid md:grid-cols-5 gap-10 max-w-7xl mx-auto">
+
+      {/* LEFT: QUIZ SELECTOR */}
+      <motion.div
+        initial={{ x: -30, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="col-span-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow"
+      >
+        <h3 className="text-xl font-semibold mb-3 text-gray-800 dark:text-white">
+          Select Your Quiz
+        </h3>
+
+        <select
+          value={selectedQuiz}
+          onChange={(e) => loadQuiz(e.target.value)}
+          className="p-3 w-full border border-gray-300 dark:border-gray-700 rounded-xl text-gray-700 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none transition"
+        >
+          <option value="">-- Choose a Quiz --</option>
+          <option value="T.O Analytics Splunk Class 1 Quiz">Splunk Class 1 Quiz</option>
+          <option value="T.O Analytics Splunk Class 2 Quiz">Splunk Class 2 Quiz</option>
+          <option value="T.O Analytics Splunk Class 3 Quiz">Splunk Class 3 Quiz</option>
+          <option value="T.O Analytics Splunk Class 4 Quiz">Splunk Class 4 Quiz</option>
+          <option value="T.O. Analytics – Splunk Class 5 Quiz">Splunk Class 5 Quiz</option>
+          <option value="T.O Analytics – Splunk Class 6 Quiz">Splunk Class 6 Quiz</option>
+          <option value="T.O Analytics Power User Exam Quiz">Power User Exam</option>
+          <option value="T.O Analytics Splunk Admin Exam Quiz">Admin Exam</option>
+        </select>
+
+        {selectedQuiz && (
+          <div className="mt-6 p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Currently Selected:
+            </p>
+            <h4 className="font-semibold text-blue-600 mt-1">
+              {selectedQuiz}
+            </h4>
+          </div>
+        )}
+      </motion.div>
+
+      {/* RIGHT: QUIZ DISPLAY */}
+      <AnimatePresence>
+        {quizData && (
+          <motion.div
+            key="quiz"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.6 }}
+            className="col-span-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-xl p-8"
+          >
+            <Quiz data={quizData} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+
+    {/* FOOTER */}
+    <div className="mt-16 text-center text-gray-400 text-sm">
+      <p>
+        © {new Date().getFullYear()}{" "}
+        <span className="font-semibold text-blue-600">T.O Analytics</span> —
+        Empowering Learners with Data Mastery.
+      </p>
+    </div>
+
+  </div>
+);
+
+//   return (
+//     <div className="min-h-screen bg-gradient-to-br f to-purple-50 py-16 px-8">
+//       <div className="mb-10 mt-8">
+//         {" "}
+//          {/* HEADER */}
+//             <div className="max-w-7xl mx-auto mb-6 px-4">
+//               <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow flex items-center justify-between">
+        
+//                 <div>
+//                   <h1 className="text-2xl font-bold">
+//                     Quiz Results
+//                   </h1>
+//                   <p className="text-sm text-gray-500 dark:text-gray-400">
+//                     View all your past test performances
+//                   </p>
+//                 </div>
+        
+//                 <div className="flex items-center gap-4">
+//                   <div className="text-sm text-gray-600 dark:text-gray-300">
+//                     {userEmail}
+//                   </div>
+        
+//                   <DashboardDropdown />
+        
+//                   <button
+//                     onClick={() => setDarkMode(!darkMode)}
+//                     className="px-3 py-1 rounded text-sm 
+//                     bg-gray-200 text-gray-800 dark:bg-gray-800 dark:text-white"
+//                   >
+//                     {darkMode ? "Light" : "Dark"}
+//                   </button>
+//                 </div>
+        
+//               </div>
+//             </div>
+        
+//         {/* <DashboardDropdown /> */}
+//       </div>
+//       {/* Header */}
+//       <motion.h2
+//         initial={{ opacity: 0, y: -20 }}
+//         animate={{ opacity: 1, y: 0 }}
+//         transition={{ duration: 0.6 }}
+//         className="text-5xl font-extrabold text-left mb-10 text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 drop-shadow-sm"
+//       >
+//         <FiBookOpen className="inline-block mb-1 mr-3 text-indigo-600" />
+//         Splunk Quiz Center
+//       </motion.h2>
+
+//       {/* Layout */}
+//       <div className="grid md:grid-cols-5 gap-10 items-start">
+//         {/* Left Side - Quiz Title */}
+//         <motion.div
+//           initial={{ x: -30, opacity: 0 }}
+//           animate={{ x: 0, opacity: 1 }}
+//           transition={{ duration: 0.5 }}
+//           className="col-span-2 bg-white/60 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-gray-100"
+//         >
+//           <h3 className="text-xl font-semibold text-gray-700 mb-3">
+//             Select Your Quiz
+//           </h3>
+//           <select
+//             value={selectedQuiz}
+//             onChange={(e) => loadQuiz(e.target.value)}
+//             className="p-3 w-full border border-gray-300 rounded-xl text-gray-700 font-medium focus:ring-4 focus:ring-blue-400/40 focus:border-blue-500 bg-white shadow-inner transition-all duration-300"
+//           >
+//             <option value="">-- Choose a Quiz --</option>
+//             <option value="T.O Analytics Splunk Class 1 Quiz">
+//               T.O Analytics Splunk Class 1 Quiz
+//             </option>
+//             <option value="T.O Analytics Splunk Class 2 Quiz">
+//               T.O Analytics Splunk Class 2 Quiz
+//             </option>
+
+//             <option value="T.O Analytics Splunk Class 3 Quiz">
+//               T.O Analytics Splunk Class 3 Quiz
+//             </option>
+
+//             <option value="T.O Analytics Splunk Class 4 Quiz">
+//               T.O Analytics Splunk Class 4 Quiz
+//             </option>
+// {/* T.O Analytics – Splunk Class 5 Quiz */}
+//             <option value="T.O. Analytics – Splunk Class 5 Quiz">
+//               T.O. Analytics Splunk Class 5 Quiz
+//             </option>
+
+           
+//   <option value="T.O Analytics – Splunk Class 6 Quiz">
+//                T.O Analytics – Splunk Class 6 Quiz
+//             </option>
+//             <option value="T.O Analytics Power User Exam Quiz">
+//               T.O Analytics Power User Exam Quiz
+//             </option>
+//             <option value="T.O Analytics Splunk Admin Exam Quiz">
+//               T.O Analytics Splunk Admin Exam Quiz
+//             </option>
+//           </select>
+
+//           {selectedQuiz && (
+//             <motion.div
+//               initial={{ opacity: 0, y: 15 }}
+//               animate={{ opacity: 1, y: 0 }}
+//               className="mt-6 bg-gradient-to-r from-indigo-100 to-blue-50 p-4 rounded-xl shadow-inner border border-blue-100"
+//             >
+//               <p className="text-sm text-gray-600">Currently Selected:</p>
+//               <h4 className="font-semibold text-indigo-600 mt-1">
+//                 {selectedQuiz}
+//               </h4>
+//             </motion.div>
+//           )}
+//         </motion.div>
+
+//         {/* Center - Quiz Content */}
+//         <AnimatePresence>
+//           {quizData && (
+//             <motion.div
+//               key="quiz"
+//               initial={{ opacity: 0, y: 40 }}
+//               animate={{ opacity: 1, y: 0 }}
+//               exit={{ opacity: 0, y: 20 }}
+//               transition={{ duration: 0.6 }}
+//               className="col-span-3 bg-white/80 backdrop-blur-lg rounded-3xl border border-gray-200 shadow-2xl p-8 hover:shadow-indigo-200 transition-all duration-500"
+//             >
+//               <Quiz data={quizData} />
+//             </motion.div>
+//           )}
+//         </AnimatePresence>
+//       </div>
+
+//       {/* Footer */}
+//       <div className="mt-16 text-center text-gray-400 text-sm">
+//         <p>
+//           © {new Date().getFullYear()}{" "}
+//           <span className="font-semibold text-blue-500">T.O Analytics</span> —
+//           Empowering Learners with Data Mastery.
+//         </p>
+//       </div>
+//     </div>
+//   );
 };
 
 export default MainQuiz;
