@@ -5,26 +5,26 @@ const Quiz = ({ data }) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});
   const [score, setScore] = useState(null);
- const [timeLeft, setTimeLeft] = useState(() => {
-  if (
-    data?.title === "T.O Analytics Power User Exam Quiz" ||
-    data?.title === "T.O Analytics Splunk Admin Exam Quiz"
-  ) {
-    return 120 * 60; // 2 hours in seconds
-  }
-  return 30 * 60; // default 30 minutes
-});
+  const [timeLeft, setTimeLeft] = useState(() => {
+    if (
+      data?.title === "T.O Analytics Power User Exam Quiz" ||
+      data?.title === "T.O Analytics Splunk Admin Exam Quiz"
+    ) {
+      return 120 * 60; // 2 hours in seconds
+    }
+    return 30 * 60; // default 30 minutes
+  });
 
-useEffect(() => {
-  if (
-    data?.title === "T.O Analytics Power User Exam Quiz" ||
-    data?.title === "T.O Analytics Splunk Admin Exam Quiz"
-  ) {
-    setTimeLeft(120 * 60); // 2 hours
-  } else {
-    setTimeLeft(30 * 60); // 30 minutes
-  }
-}, [data?.title]);
+  useEffect(() => {
+    if (
+      data?.title === "T.O Analytics Power User Exam Quiz" ||
+      data?.title === "T.O Analytics Splunk Admin Exam Quiz"
+    ) {
+      setTimeLeft(120 * 60); // 2 hours
+    } else {
+      setTimeLeft(30 * 60); // 30 minutes
+    }
+  }, [data?.title]);
 
   // const [timeLeft, setTimeLeft] = useState(30 * 60); // 30 minutes
   const [submitted, setSubmitted] = useState(false);
@@ -42,11 +42,11 @@ useEffect(() => {
   const userEmail = user?.email || "";
   // ✅ Allowed test-takers
   const allowedEmails = [
-     "basseyvera018@gmail.com",
-      "codeverseprogramming23@gmail.com",
+    "basseyvera018@gmail.com",
+    "codeverseprogramming23@gmail.com",
     "ooolajuyigbe@gmail.com",
-     "fadeleolutola@gmail.com",
-      "jahdek76@gmail.com",
+    "fadeleolutola@gmail.com",
+    "jahdek76@gmail.com",
     "samuelsamuelmayowa@gmail.com",
     "oluwaferanmiolulana@gmail.com",
     "yinkalola51@gmail.com",
@@ -216,102 +216,87 @@ useEffect(() => {
     return `${m}:${s}`;
   };
 
- 
+  const handleDownloadReview = () => {
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
+    const marginX = 40;
+    let y = 60;
 
-const handleDownloadReview = () => {
-  const doc = new jsPDF({ unit: "pt", format: "a4" });
-  const marginX = 40;
-  let y = 60;
-
-  // --- Header Section ---
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(18);
-  doc.text("T.O Analytics Quiz Review", marginX, y);
-  y += 25;
-
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "normal");
-  doc.text(`Quiz Title: ${data?.title || "N/A"}`, marginX, y);
-  y += 15;
-  doc.text(`Student Email: ${userEmail}`, marginX, y);
-  y += 15;
-  doc.text(`Date: ${new Date().toLocaleString()}`, marginX, y);
-  y += 15;
-
-  if (score !== null) {
-    doc.text(`Score: ${score} / ${questions.length}`, marginX, y);
-    y += 25;
-  }
-
-  // --- Divider Line ---
-  doc.setDrawColor(150);
-  doc.line(marginX, y, 550, y);
-  y += 20;
-
-  // --- Questions Section ---
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
-
-  questions.forEach((q, idx) => {
-    const userAnswer = answers[idx];
-    const correctAnswers = Array.isArray(q.correct) ? q.correct : [q.correct];
-    const isCorrect = correctAnswers.includes(userAnswer);
-
-    // Question text
+    // --- Header Section ---
     doc.setFont("helvetica", "bold");
-    doc.text(`${idx + 1}. ${q.question}`, marginX, y);
-    y += 14;
+    doc.setFontSize(18);
+    doc.text("T.O Analytics Quiz Review", marginX, y);
+    y += 25;
 
-    // Your Answer
+    doc.setFontSize(12);
     doc.setFont("helvetica", "normal");
-    doc.text(
-      `Your Answer: ${userAnswer || "No answer"}`,
-      marginX + 10,
-      y
-    );
-    y += 12;
+    doc.text(`Quiz Title: ${data?.title || "N/A"}`, marginX, y);
+    y += 15;
+    doc.text(`Student Email: ${userEmail}`, marginX, y);
+    y += 15;
+    doc.text(`Date: ${new Date().toLocaleString()}`, marginX, y);
+    y += 15;
 
-    // Correct Answer
-    doc.text(
-      `Correct Answer: ${correctAnswers.join(", ")}`,
-      marginX + 10,
-      y
-    );
-    y += 12;
-if (q.reason) {
-  doc.text(`Reason: ${q.reason}`, marginX + 10, y);
-  y += 14;
-}
-    // Result
-    doc.setTextColor(isCorrect ? "#2E8B57" : "#FF0000");
-    doc.text(
-      `Result: ${isCorrect ? "✅ Correct" : "❌ Missed"}`,
-      marginX + 10,
-      y
-    );
-    doc.setTextColor("#000000");
+    if (score !== null) {
+      doc.text(`Score: ${score} / ${questions.length}`, marginX, y);
+      y += 25;
+    }
+
+    // --- Divider Line ---
+    doc.setDrawColor(150);
+    doc.line(marginX, y, 550, y);
     y += 20;
 
-    // Page break if reaching bottom
-    if (y > 750) {
-      doc.addPage();
-      y = 60;
-    }
-  });
+    // --- Questions Section ---
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
 
-  // --- Footer ---
-  y = 800;
-  doc.setFontSize(9);
-  doc.setTextColor("#666666");
-  doc.text(
-    "Generated by T.O Analytics Learning Portal",
-    marginX,
-    y
-  );
+    questions.forEach((q, idx) => {
+      const userAnswer = answers[idx];
+      const correctAnswers = Array.isArray(q.correct) ? q.correct : [q.correct];
+      const isCorrect = correctAnswers.includes(userAnswer);
 
-  doc.save(`${data?.title || "Quiz"}_Review.pdf`);
-};
+      // Question text
+      doc.setFont("helvetica", "bold");
+      doc.text(`${idx + 1}. ${q.question}`, marginX, y);
+      y += 14;
 
+      // Your Answer
+      doc.setFont("helvetica", "normal");
+      doc.text(`Your Answer: ${userAnswer || "No answer"}`, marginX + 10, y);
+      y += 12;
+
+      // Correct Answer
+      doc.text(`Correct Answer: ${correctAnswers.join(", ")}`, marginX + 10, y);
+      y += 12;
+      if (q.reason) {
+        doc.text(`Reason: ${q.reason}`, marginX + 10, y);
+        y += 14;
+      }
+      // Result
+      doc.setTextColor(isCorrect ? "#2E8B57" : "#FF0000");
+      doc.text(
+        `Result: ${isCorrect ? "✅ Correct" : "❌ Missed"}`,
+        marginX + 10,
+        y
+      );
+      doc.setTextColor("#000000");
+      y += 20;
+
+      // Page break if reaching bottom
+      if (y > 750) {
+        doc.addPage();
+        y = 60;
+      }
+    });
+
+    // --- Footer ---
+    y = 800;
+    doc.setFontSize(9);
+    doc.setTextColor("#666666");
+    doc.text("Generated by T.O Analytics Learning Portal", marginX, y);
+
+    doc.save(`${data?.title || "Quiz"}_Review.pdf`);
+  };
 
   // 🛑 Not allowed to take the test
   if (notAllowed) {
@@ -344,106 +329,113 @@ if (q.reason) {
         {missedQuestions.length > 0 && (
           <button
             onClick={() => setShowReview(!showReview)}
-            className="px-5 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition mb-6"
+            className="px-5 py-2 bg-indigo-600 rounded-lg hover:bg-indigo-700 transition mb-6"
           >
             {showReview ? "Hide Review" : "Review Missed Questions"}
           </button>
         )}
 
         {showReview && (
-  <div className="text-left max-w-3xl mx-auto">
-    <h3 className="text-xl font-bold mb-3">Full Quiz Review</h3>
-     <button
-        onClick={handleDownloadReview}
-        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-      >
-        ⬇ Download as PDF
-      </button>
-    {questions.map((q, idx) => {
-      const userAnswer = answers[idx];
-      const correctAnswers = Array.isArray(q.correct) ? q.correct : [q.correct];
-      const isCorrect = correctAnswers.includes(userAnswer);
+          <div className="text-left max-w-3xl mx-auto">
+            <h3 className="text-xl font-bold mb-3">Full Quiz Review</h3>
+            <button
+              onClick={handleDownloadReview}
+              className="px-4 py-2 bg-green-600 rounded-lg hover:bg-green-700 transition"
+            >
+              ⬇ Download as PDF
+            </button>
+            {questions.map((q, idx) => {
+              const userAnswer = answers[idx];
+              const correctAnswers = Array.isArray(q.correct)
+                ? q.correct
+                : [q.correct];
+              const isCorrect = correctAnswers.includes(userAnswer);
 
-      return (
-        <div
-  key={idx}
-  className={`border p-3 mb-3 rounded-lg ${
-    isCorrect ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"
-  }`}
->
-  <p
-    className={`font-semibold mb-2 ${
-      isCorrect ? "text-green-600" : "text-red-600"
-    }`}
-  >
-    {isCorrect ? "✅ Correct" : "❌ Missed"} — {q.question}
-  </p>
+              return (
+                <div
+                  key={idx}
+                  className={`border p-3 mb-3 rounded-lg ${
+                    isCorrect
+                      ? "bg-green-50 border-green-200"
+                      : "bg-red-50 border-red-200"
+                  }`}
+                >
+                  <p
+                    className={`font-semibold mb-2 ${
+                      isCorrect ? "text-green-600" : "text-red-600"
+                    }`}
+                  >
+                    {isCorrect ? "✅ Correct" : "❌ Missed"} — {q.question}
+                  </p>
 
-  <p>
-    Your Answer:{" "}
-    <span
-      className={`${
-        isCorrect ? "text-green-700 font-medium" : "text-red-700 font-medium"
-      }`}
-    >
-      {userAnswer || "No answer"}
-    </span>
-  </p>
+                  <p>
+                    Your Answer:{" "}
+                    <span
+                      className={`${
+                        isCorrect
+                          ? "text-green-700 font-medium"
+                          : "text-red-700 font-medium"
+                      }`}
+                    >
+                      {userAnswer || "No answer"}
+                    </span>
+                  </p>
 
-  <p>
-    Correct Answer:{" "}
-    <span className="text-blue-700 font-semibold">
-      {correctAnswers.join(", ")}
-    </span>
-  </p>
+                  <p>
+                    Correct Answer:{" "}
+                    <span className="text-blue-700 font-semibold">
+                      {correctAnswers.join(", ")}
+                    </span>
+                  </p>
 
-  {/* ⭐ NEW  */}
-  <p className="text-gray-700 mt-2">
-    <span className="font-semibold text-indigo-700">Reason:</span>{" "}
-    {q.reason}
-  </p>
-</div>
+                  {/* ⭐ NEW  */}
+                  <p className="text-gray-700 mt-2">
+                    <span className="font-semibold text-indigo-700">
+                      Reason:
+                    </span>{" "}
+                    {q.reason}
+                  </p>
+                </div>
 
-        // <div
-        //   key={idx}
-        //   className={`border p-3 mb-3 rounded-lg ${
-        //     isCorrect ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"
-        //   }`}
-        // >
-        //   {/* Question */}
-        //   <p
-        //     className={`font-semibold mb-2 ${
-        //       isCorrect ? "text-green-600" : "text-red-600"
-        //     }`}
-        //   >
-        //     {isCorrect ? "✅ Correct" : "❌ Missed"} — {q.question}
-        //   </p>
+                // <div
+                //   key={idx}
+                //   className={`border p-3 mb-3 rounded-lg ${
+                //     isCorrect ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"
+                //   }`}
+                // >
+                //   {/* Question */}
+                //   <p
+                //     className={`font-semibold mb-2 ${
+                //       isCorrect ? "text-green-600" : "text-red-600"
+                //     }`}
+                //   >
+                //     {isCorrect ? "✅ Correct" : "❌ Missed"} — {q.question}
+                //   </p>
 
-        //   {/* Student’s Answer */}
-        //   <p>
-        //     Your Answer:{" "}
-        //     <span
-        //       className={`${
-        //         isCorrect ? "text-green-700 font-medium" : "text-red-700 font-medium"
-        //       }`}
-        //     >
-        //       {userAnswer || "No answer"}
-        //     </span>
-        //   </p>
+                //   {/* Student’s Answer */}
+                //   <p>
+                //     Your Answer:{" "}
+                //     <span
+                //       className={`${
+                //         isCorrect ? "text-green-700 font-medium" : "text-red-700 font-medium"
+                //       }`}
+                //     >
+                //       {userAnswer || "No answer"}
+                //     </span>
+                //   </p>
 
-        //   {/* Correct Answer */}
-        //   <p>
-        //     Correct Answer:{" "}
-        //     <span className="text-blue-700 font-semibold">
-        //       {correctAnswers.join(", ")}
-        //     </span>
-        //   </p>
-        // </div>
-      );
-    })}
-  </div>
-)}
-
+                //   {/* Correct Answer */}
+                //   <p>
+                //     Correct Answer:{" "}
+                //     <span className="text-blue-700 font-semibold">
+                //       {correctAnswers.join(", ")}
+                //     </span>
+                //   </p>
+                // </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* {showReview && (
           <div className="text-left max-w-3xl mx-auto">
@@ -514,7 +506,7 @@ if (q.reason) {
               key={i}
               className={`block p-3 border rounded-lg cursor-pointer transition ${
                 answers[currentQuestion] === option
-                  ? "bg-blue-600 text-white border-blue-600"
+                  ? "bg-blue-600 border-blue-600"
                   : "hover:bg-blue-50 border-gray-300"
               }`}
             >
@@ -540,7 +532,7 @@ if (q.reason) {
           className={`px-5 py-2 rounded-lg font-medium ${
             currentQuestion === 0
               ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-              : "bg-gray-800 text-white hover:bg-gray-700 transition"
+              : "bg-gray-800 hover:bg-gray-700 transition"
           }`}
         >
           ⬅ Prev
@@ -549,14 +541,14 @@ if (q.reason) {
         {currentQuestion < questions.length - 1 ? (
           <button
             onClick={nextQuestion}
-            className="px-5 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition"
+            className="px-5 py-2 bg-blue-600 rounded-lg font-medium hover:bg-blue-700 transition"
           >
             Next ➡
           </button>
         ) : (
           <button
             onClick={handleSubmit}
-            className="px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition"
+            className="px-6 py-2 bg-green-600 rounded-lg font-semibold hover:bg-green-700 transition"
           >
             Submit ✅
           </button>
@@ -740,7 +732,7 @@ export default Quiz;
 //               key={i}
 //               className={`block p-3 border rounded-lg cursor-pointer transition ${
 //                 answers[currentQuestion] === option
-//                   ? "bg-blue-600 text-white border-blue-600"
+//                   ? "bg-blue-600 border-blue-600"
 //                   : "hover:bg-blue-50 border-gray-300"
 //               }`}
 //             >
@@ -766,7 +758,7 @@ export default Quiz;
 //           className={`px-5 py-2 rounded-lg font-medium ${
 //             currentQuestion === 0
 //               ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-//               : "bg-gray-800 text-white hover:bg-gray-700 transition"
+//               : "bg-gray-800 hover:bg-gray-700 transition"
 //           }`}
 //         >
 //           ⬅ Prev
@@ -775,14 +767,14 @@ export default Quiz;
 //         {currentQuestion < questions.length - 1 ? (
 //           <button
 //             onClick={nextQuestion}
-//             className="px-5 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition"
+//             className="px-5 py-2 bg-blue-600 rounded-lg font-medium hover:bg-blue-700 transition"
 //           >
 //             Next ➡
 //           </button>
 //         ) : (
 //           <button
 //             onClick={handleSubmit}
-//             className="px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition"
+//             className="px-6 py-2 bg-green-600 rounded-lg font-semibold hover:bg-green-700 transition"
 //           >
 //             Submit ✅
 //           </button>
@@ -931,7 +923,7 @@ export default Quiz;
 //               key={i}
 //               className={`block p-3 border rounded-lg cursor-pointer transition ${
 //                 answers[currentQuestion] === option
-//                   ? "bg-blue-600 text-white border-blue-600"
+//                   ? "bg-blue-600 border-blue-600"
 //                   : "hover:bg-blue-50 border-gray-300"
 //               }`}
 //             >
@@ -957,7 +949,7 @@ export default Quiz;
 //           className={`px-5 py-2 rounded-lg font-medium ${
 //             currentQuestion === 0
 //               ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-//               : "bg-gray-800 text-white hover:bg-gray-700 transition"
+//               : "bg-gray-800 hover:bg-gray-700 transition"
 //           }`}
 //         >
 //           ⬅ Prev
@@ -966,14 +958,14 @@ export default Quiz;
 //         {currentQuestion < questions.length - 1 ? (
 //           <button
 //             onClick={nextQuestion}
-//             className="px-5 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition"
+//             className="px-5 py-2 bg-blue-600 rounded-lg font-medium hover:bg-blue-700 transition"
 //           >
 //             Next ➡
 //           </button>
 //         ) : (
 //           <button
 //             onClick={handleSubmit}
-//             className="px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition"
+//             className="px-6 py-2 bg-green-600 rounded-lg font-semibold hover:bg-green-700 transition"
 //           >
 //             Submit ✅
 //           </button>
