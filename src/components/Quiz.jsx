@@ -461,7 +461,7 @@ const Quiz = ({ data }) => {
   const q = questions[currentQuestion];
 
   return (
-    <div className="p-6 bg-white rounded-xl shadow-md">
+    <div className="p-6 bg-white rounded-xl shadow-md text-gray-800">
       {/* Timer */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-bold text-gray-800">{data.title}</h2>
@@ -505,9 +505,13 @@ const Quiz = ({ data }) => {
             <label
               key={i}
               className={`block p-3 border rounded-lg cursor-pointer transition ${
+                // answers[currentQuestion] === option
+                //   ? "bg-blue-600 border-blue-600"
+                //   : "hover:bg-blue-50 border-gray-300"
                 answers[currentQuestion] === option
-                  ? "bg-blue-600 border-blue-600"
-                  : "hover:bg-blue-50 border-gray-300"
+  ? "bg-blue-100 border-blue-500 text-gray-900 font-medium"
+  : "hover:bg-gray-50 border-gray-300 text-gray-700"
+
               }`}
             >
               <input
