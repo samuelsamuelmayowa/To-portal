@@ -224,7 +224,6 @@ const router = createBrowserRouter([
       { index: true, element: <MyCourses /> },
       { path: "checkout", element: <CheckOut /> },
       { path: "quiz", element: <SplunkQuiz /> },
-      // dictionary
         { path: "dictionary", element: <SplunkDictionary /> },
       { path: "classmaterials", element: <ClassM /> },
       { path: "myCourses", element: <MyCourses /> },
