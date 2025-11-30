@@ -66,36 +66,71 @@ export default function StockDashboard() {
   }, []);
 
   // Sparkline chart renderer
-  const Sparkline = ({ data }) => {
-    const ref = useRef(null);
+  // const Sparkline = ({ data }) => {
+  //   const ref = useRef(null);
 
-    useEffect(() => {
-      if (!data || data.c?.length === 0) return;
+  //   useEffect(() => {
+  //     if (!data || data.c?.length === 0) return;
 
-      const chart = createChart(ref.current, {
-        width: 250,
-        height: 60,
-        layout: { background: { color: "transparent" }, textColor: "#999" },
-        grid: { vertLines: { visible: false }, horzLines: { visible: false } },
-      });
+  //     const chart = createChart(ref.current, {
+  //       width: 250,
+  //       height: 60,
+  //       layout: { background: { color: "transparent" }, textColor: "#999" },
+  //       grid: { vertLines: { visible: false }, horzLines: { visible: false } },
+  //     });
 
-      const lineSeries = chart.addLineSeries({
-        color: data.c[0] < data.c[data.c.length - 1] ? "#22c55e" : "#ef4444",
-        lineWidth: 2,
-      });
+  //     const lineSeries = chart.addLineSeries({
+  //       color: data.c[0] < data.c[data.c.length - 1] ? "#22c55e" : "#ef4444",
+  //       lineWidth: 2,
+  //     });
 
-      const formatted = data.t.map((t, i) => ({
-        time: t,
-        value: data.c[i],
-      }));
+  //     const formatted = data.t.map((t, i) => ({
+  //       time: t,
+  //       value: data.c[i],
+  //     }));
 
-      lineSeries.setData(formatted);
+  //     lineSeries.setData(formatted);
 
-      return () => chart.remove();
-    }, [data]);
+  //     return () => chart.remove();
+  //   }, [data]);
 
-    return <div ref={ref} />;
-  };
+  //   return <div ref={ref} />;
+  // };
+
+  // Sparkline Chart (FIXED - no more undefined errors)
+const Sparkline = ({ data }) => {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!data || !data.c || !Array.isArray(data.c) || data.c.length === 0) {
+      return; // ❗ NO CHART DATA → SKIP RENDERING
+    }
+
+    const chart = createChart(ref.current, {
+      width: 250,
+      height: 60,
+      layout: { background: { color: "transparent" }, textColor: "#999" },
+      grid: { vertLines: { visible: false }, horzLines: { visible: false } },
+    });
+
+    const lineSeries = chart.addLineSeries({
+      color: data.c[0] < data.c[data.c.length - 1] ? "#22c55e" : "#ef4444",
+      lineWidth: 2,
+    });
+
+    const formatted = data.t.map((t, i) => ({
+      time: t,
+      value: data.c[i],
+    }));
+
+    lineSeries.setData(formatted);
+
+    return () => chart.remove();
+  }, [data]);
+
+  return <div ref={ref} />;
+};
+
 
   return (
     <div className="min-h-screen bg-[#0d1117] text-gray-100 py-12 px-6">
