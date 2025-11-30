@@ -7,10 +7,10 @@ import COURSES from "../coursesAPI/api";
 import LandingIMG from "../assets/images/landingIMG.png";
 
 // NEW images you should add
-import WebDev from "../assets/images/webdev.jpg";
-import AppDev from "../assets/images/appdev.jpg";
-import UiUx from "../assets/images/uiux.jpg";
-import Consulting from "../assets/images/consulting.jpg";
+import WebDev from "../assets/images/workplace-full (1).jpeg";
+import AppDev from "../assets/images/mobile.jpg";
+import UiUx from "../assets/images/oneone.jpeg";
+import Consulting from "../assets/images/make.jpeg";
 
 import "../../src/assets/css/pagination.css";
 
