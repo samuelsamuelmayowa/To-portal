@@ -78,14 +78,12 @@ export default function StockDashboard() {
           `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=60&from=${from}&to=${now}&token=${FINNHUB_KEY}`
         );
         const chartData = await chartRes.json();
-       
-
+        
         const validChart =
           chartData &&
           chartData.s === "ok" &&
           Array.isArray(chartData.c) &&
           chartData.c.length > 0;
-console.log("CHART DATA:", s.symbol, s.chart);
 
         return {
           symbol,
