@@ -4,7 +4,7 @@ import { TrendingUp, TrendingDown, ArrowRight } from "lucide-react";
 import { createChart } from "lightweight-charts";
 
 export default function StockDashboard() {
-  const FINNHUB_KEY = "YOUR_FINNHUB_API_KEY";
+  const FINNHUB_KEY = "d4lr7u9r01qr851q60q0d4lr7u9r01qr851q60qg";
 
   const symbols = [
     { symbol: "AAPL", name: "Apple Inc." },
