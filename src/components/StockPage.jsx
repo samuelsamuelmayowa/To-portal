@@ -30,33 +30,84 @@ export default function StockDashboard() {
 
   const [stocks, setStocks] = useState([]);
 
+  // const fetchStockData = async () => {
+  //   const updated = await Promise.all(
+  //     symbols.map(async ({ symbol, name }) => {
+  //       const quoteRes = await fetch(
+  //         `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_KEY}`
+  //       );
+  //       const quote = await quoteRes.json();
+
+  //       const now = Math.floor(Date.now() / 1000);
+  //       const from = now - 7 * 24 * 60 * 60;
+  //       const chartRes = await fetch(
+  //         `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=60&from=${from}&to=${now}&token=${FINNHUB_KEY}`
+  //       );
+  //       const chartData = await chartRes.json();
+
+  //       return {
+  //         symbol,
+  //         name,
+  //         price: quote.c,
+  //         change: quote.d,
+  //         chart: chartData,
+  //       };
+  //     })
+  //   );
+
+  //   setStocks(updated);
+  // };
   const fetchStockData = async () => {
-    const updated = await Promise.all(
-      symbols.map(async ({ symbol, name }) => {
+  const updated = await Promise.all(
+    symbols.map(async ({ symbol, name }) => {
+      try {
         const quoteRes = await fetch(
           `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_KEY}`
         );
         const quote = await quoteRes.json();
 
+        // Basic price fallback
+        const price = quote?.c ?? 0;
+        const change = quote?.d ?? 0;
+
+        // Fetch chart safely
         const now = Math.floor(Date.now() / 1000);
         const from = now - 7 * 24 * 60 * 60;
+
         const chartRes = await fetch(
           `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=60&from=${from}&to=${now}&token=${FINNHUB_KEY}`
         );
         const chartData = await chartRes.json();
 
+        const validChart =
+          chartData &&
+          chartData.s === "ok" &&
+          Array.isArray(chartData.c) &&
+          chartData.c.length > 0;
+
         return {
           symbol,
           name,
-          price: quote.c,
-          change: quote.d,
-          chart: chartData,
+          price,
+          change,
+          chart: validChart ? chartData : null, // ❗ Only send VALID chart
         };
-      })
-    );
+      } catch (err) {
+        console.error("Fetch error:", err);
+        return {
+          symbol,
+          name,
+          price: 0,
+          change: 0,
+          chart: null,
+        };
+      }
+    })
+  );
 
-    setStocks(updated);
-  };
+  setStocks(updated);
+};
+
 
   // Fetch immediately, and every 10 seconds
   useEffect(() => {
@@ -186,7 +237,13 @@ const Sparkline = ({ data }) => {
 
               {/* Mini Chart */}
               <div className="mt-3">
-                {s.chart && <Sparkline data={s.chart} />}
+                {/* {s.chart && <Sparkline data={s.chart} />} */}
+                {s.chart ? (
+  <Sparkline data={s.chart} />
+) : (
+  <p className="text-xs text-gray-500 mt-2">No chart data</p>
+)}
+
               </div>
 
               <motion.p
