@@ -30,12 +30,12 @@ const ClassM = () => {
         //   url: "https://drive.google.com/file/d/1swg7fD7Q6DEO_E8PQZTIiPCrNtikWlSK/preview",
         //   dueDate: "2025-11-09",
         // },
-        // {
-        //   id: 3,
-        //   title: "Submission Template",
-        //   url: "https://drive.google.com/file/d/1zExampleTemplate123/preview",
-        //   dueDate: "2025-11-10",
-        // },
+        {
+          id: 3,
+          title: "Splunk Class 5 Assignment",
+          url: "https://drive.google.com/file/d/1SDDn63LQqEidjk2ZBRejqYfE-LnbiY76/preview",
+          dueDate: "2025-12-02",
+        },
         {
           id: 4,
           title: "Splunk class 4 Assignment",
