@@ -13,9 +13,9 @@ const Footer = ({ black }) => {
         <div className="grid gap-10 md:grid-cols-3 items-start">
           {/* CALL */}
           <div className="space-y-3 text-center md:text-left">
-            <h1 className="text-xl font-bold text-white flex justify-center md:justify-start items-center gap-2">
-              <MdCall size={24} className="hover:animate-bounce" /> CALL
-            </h1>
+            {/* <h1 className="text-xl font-bold text-white flex justify-center md:justify-start items-center gap-2"> */}
+              {/* <MdCall size={24} className="hover:animate-bounce" /> CALL */}
+            {/* </h1> */}
             <a
               href="tel:443-768-8416"
               className="block font-bold text-lg md:text-2xl hover:text-BLUE duration-300"
