@@ -20,9 +20,9 @@ const Footer = ({ black }) => {
               href="tel:443-768-8416"
               className="block font-bold text-lg md:text-2xl hover:text-BLUE duration-300"
             >
-              443-768-8416
+              {/* 443-768-8416 */}
             </a>
-            <p className="font-light text-sm md:text-base">Get instant response</p>
+            {/* <p className="font-light text-sm md:text-base">Get instant response</p> */}
           </div>
 
           {/* EMAIL */}
