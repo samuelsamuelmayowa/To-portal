@@ -31,6 +31,7 @@ export default function StudentDashboard() {
     "dipeoluolatunji@gmail.com",
     "lybertyudochuu@gmail.com",
   ];
+   const [isAllowed, setIsAllowed] = useState(false);
    const [userEmail, setUserEmail] = useState("");
     const [darkMode, setDarkMode] = useState(false);
     useEffect(() => {
