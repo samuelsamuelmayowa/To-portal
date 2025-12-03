@@ -26,7 +26,7 @@ const Footer = ({ black }) => {
           </div>
 
           {/* EMAIL */}
-          <div className="space-y-3 text-center md:text-left">
+          <div className="space-y-3  md:text-left">
             <h1 className="text-xl font-bold text-white flex justify-center md:justify-start items-center gap-2">
               <IoMdMail size={24} className="hover:animate-bounce" /> EMAIL
             </h1>
