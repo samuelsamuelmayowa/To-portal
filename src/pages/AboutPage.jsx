@@ -99,7 +99,7 @@ const AboutPage = () => {
                 </div>
             </motion.section>
             <motion.section ref={clientRef} initial={{scale: 0}} transition={{duration: 0.5}} style={{scale: isInView ? 1 : 0,transition: "400ms"}} className={`relative z-10 bg-BLUE py-2 md:py-8`}>
-                <div className="text-white rounded-lg border-[1px] border-PURPLE mx-2 md:mx-10 grid grid-cols-1 lg:grid-cols-2">
+                {/* <div className="text-white rounded-lg border-[1px] border-PURPLE mx-2 md:mx-10 grid grid-cols-1 lg:grid-cols-2">
   <div className="flex justify-center items-center">
     <div className="p-4">
       <img src={client} className="w-[450px] md:border-[1px] border-PURPLE rounded-2xl" alt="" />
@@ -129,7 +129,7 @@ const AboutPage = () => {
       Tomide’s vision is fueled by his belief that with faith, hard work, and discipline, any dream can become a reality. Whether he is mentoring aspiring traders, training future cybersecurity leaders, growing his real estate portfolio, or building innovative data solutions, his passion for empowerment and excellence continues to inspire professionals and entrepreneurs across industries.
     </p>
   </div>
-</div>
+</div> */}
 
                 {/* <div className="text-white rounded-lg border-[1px] border-PURPLE mx-2 md:mx-10 grid grid-cols-1 lg:grid-cols-2">
                     <div className="flex justify-center items-center">
