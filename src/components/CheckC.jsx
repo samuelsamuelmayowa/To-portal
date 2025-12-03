@@ -86,7 +86,7 @@ export default function StudentDashboard() {
               </div>
           <br/>
       <h1 className="text-2xl font-bold mb-4 text-gray-800">
-        Class Schedule
+        {/* Class Schedule */}
       </h1>
       <ClassCalendar />
     </div>
