@@ -32,7 +32,7 @@ const ClassM = () => {
         // },
         {
           id: 3,
-          title: "Splunk Class 5 Assignment",
+          title: "Splunk Class 6 Assignment",
           url: "https://drive.google.com/file/d/1SDDn63LQqEidjk2ZBRejqYfE-LnbiY76/preview",
           dueDate: "2025-12-02",
         },
