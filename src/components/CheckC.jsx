@@ -3,7 +3,34 @@ import ClassCalendar from "./Days";
 import DashboardDropdown from "./Dropdown";
 
 
+
 export default function StudentDashboard() {
+   const allowedEmails = [
+    "basseyvera018@gmail.com",
+    "codeverseprogramming23@gmail.com",
+    "ooolajuyigbe@gmail.com",
+    "fadeleolutola@gmail.com",
+    "jahdek76@gmail.com",
+    "samuelsamuelmayowa@gmail.com",
+    "oluwaferanmiolulana@gmail.com",
+    "adenusitimi@gmail.com",
+    "Adenusi.timi@gmail.com",
+    "tomideolulana@gmail.com",
+    "yinkalola51@gmail.com",
+    "toanalyticsllc@gmail.com",
+    "kevwe_oberiko@yahoo.com",
+    "lybertyudochuu@gmail.com",
+    "denisgsam@gmail.com",
+    "oluwaferanmi.olulana@gmail.com",
+    "fpasamuelmayowa51@gmail.com",
+    "oluwatiroyeamoye@gmail.com",
+    "trbanjo@gmail.com",
+    "emanfrimpong@gmail.com",
+    "oluwaferanmiolulana@gmail.com",
+    "randommayowa@gmail.com",
+    "dipeoluolatunji@gmail.com",
+    "lybertyudochuu@gmail.com",
+  ];
    const [userEmail, setUserEmail] = useState("");
     const [darkMode, setDarkMode] = useState(false);
     useEffect(() => {
