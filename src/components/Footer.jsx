@@ -51,7 +51,7 @@ const Footer = ({ black }) => {
                   { name: "Blog", to: "/blog" },
                   { name: "Contact", to: "/contact" },
                   { name: "Career", to: "/career" },
-                  { name: "Partners", to: "/partner" },
+                
                 ].map((link) => (
                   <li key={link.name}>
                     <NavLink
