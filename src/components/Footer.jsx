@@ -7,14 +7,16 @@ import { NavLink } from "react-router-dom";
 const Footer = ({ black }) => {
   const { token } = useStateContext();
   return (
-    <footer className={`${black} border-t border-gray-300 dark:border-gray-700`}>
+    <footer
+      className={`${black} border-t border-gray-300 dark:border-gray-700`}
+    >
       <div className="max-w-7xl mx-auto w-full px-6 md:px-10 lg:px-20 py-12">
         {/* MAIN GRID */}
         <div className="grid gap-10 md:grid-cols-3 items-start">
           {/* CALL */}
           <div className="space-y-3 text-center md:text-left">
             {/* <h1 className="text-xl font-bold text-white flex justify-center md:justify-start items-center gap-2"> */}
-              {/* <MdCall size={24} className="hover:animate-bounce" /> CALL */}
+            {/* <MdCall size={24} className="hover:animate-bounce" /> CALL */}
             {/* </h1> */}
             <a
               href="tel:443-768-8416"
@@ -51,7 +53,6 @@ const Footer = ({ black }) => {
                   { name: "Blog", to: "/blog" },
                   { name: "Contact", to: "/contact" },
                   { name: "Career", to: "/career" },
-                
                 ].map((link) => (
                   <li key={link.name}>
                     <NavLink
@@ -79,7 +80,9 @@ const Footer = ({ black }) => {
         {/* SOCIAL + COPYRIGHT */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-center text-xs md:text-sm font-medium tracking-wide">
-            <span className="font-light text-lg md:text-2xl align-middle">&copy;</span>{" "}
+            <span className="font-light text-lg md:text-2xl align-middle">
+              &copy;
+            </span>{" "}
             T.O Analytics {new Date().getFullYear()}, All Rights Reserved
           </p>
 
@@ -121,16 +124,12 @@ Footer.propTypes = {
 
 export default Footer;
 
-
-
-
 // import PropTypes from 'prop-types';
 // import { MdCall } from "react-icons/md";
 // import { IoMdMail } from "react-icons/io"
 
 // import { useStateContext } from '../context/ContextProvider';
 // import { NavLink } from 'react-router-dom';
-
 
 // const Footer = ({black}) => {
 //     const { token } = useStateContext();
@@ -151,7 +150,7 @@ export default Footer;
 //                 </a>
 //                 <p className="font-light text-sm md:text-base">Get response within 24 hours</p>
 //             </div>
-//             {token && 
+//             {token &&
 //             <div className='text-center lg:text-left'>
 //                 <h1 className='font-bold'>Useful Links</h1>
 //                 <ul>
