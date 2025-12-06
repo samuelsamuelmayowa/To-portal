@@ -56,6 +56,8 @@ import StockDashboard from "./components/StockPage";
 import StockPortal from "./components/StockPortal";
 import Commands from "./components/Commands";
 import SplunkDictionary from "./components/Dictionary";
+import StockCard from "./StockPublic";
+import MassiveStockDashboard from "./StockPublic";
 
 // 🟣 GLOBAL THEME HELPER
 function applySavedTheme() {
@@ -157,8 +159,8 @@ const router = createBrowserRouter([
         path: "/liveCourses",
         element: <LiveCourses />,
       },
-            { path: "/commands", element: <Commands /> },
-             { path: "/dictionary", element: <SplunkDictionary /> },
+      { path: "/commands", element: <Commands /> },
+      { path: "/dictionary", element: <SplunkDictionary /> },
       {
         path: "/result",
         element: <QuizResults />,
@@ -178,6 +180,8 @@ const router = createBrowserRouter([
     path: "/admininfo",
     element: <AdminLoginForm />,
   },
+
+ 
 
   {
     path: "/createAccount",
@@ -224,17 +228,21 @@ const router = createBrowserRouter([
       { index: true, element: <MyCourses /> },
       { path: "checkout", element: <CheckOut /> },
       { path: "quiz", element: <SplunkQuiz /> },
-        { path: "dictionary", element: <SplunkDictionary /> },
+      { path: "dictionary", element: <SplunkDictionary /> },
       { path: "classmaterials", element: <ClassM /> },
       { path: "myCourses", element: <MyCourses /> },
       { path: "mentorship", element: <Mentorship /> },
       { path: "comment", element: <StudentCommentPage /> },
       { path: "links", element: <Links /> },
-       { path: "commands", element: <Commands /> },
+      { path: "commands", element: <Commands /> },
       { path: "materials", element: <Materials /> },
       { path: "stockside", element: <StockDashboard /> },
-        { path: "result", element: <QuizResults /> },
+      { path: "result", element: <QuizResults /> },
       { path: "stockportal", element: <StockPortal /> },
+       {
+    path: "stock",
+    element: <MassiveStockDashboard/>,
+  },
       { path: "takequiz", element: <MainQuiz /> },
       { path: "check", element: <StudentDashboard /> },
       { path: "makePayment", element: <PaymentPage /> },
@@ -255,15 +263,21 @@ const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <h1 className="text-center font-bold md:text-4xl">ALL COURSES</h1>,
+            element: (
+              <h1 className="text-center font-bold md:text-4xl">ALL COURSES</h1>
+            ),
           },
           {
             path: "published",
-            element: <h1 className="text-center font-bold md:text-4xl">PUBLISHED</h1>,
+            element: (
+              <h1 className="text-center font-bold md:text-4xl">PUBLISHED</h1>
+            ),
           },
           {
             path: "draft",
-            element: <h1 className="text-center font-bold md:text-4xl">DRAFT</h1>,
+            element: (
+              <h1 className="text-center font-bold md:text-4xl">DRAFT</h1>
+            ),
           },
         ],
       },
@@ -284,18 +298,15 @@ function App() {
   return (
     <CartItemProvider>
       <div className="">
-
         <AnimatePresence>
           <RouterProvider router={router} />
         </AnimatePresence>
-
       </div>
     </CartItemProvider>
   );
 }
 
 export default App;
-
 
 // import React from "react";
 // import { CartItemProvider } from "./context/CartItemContext";
@@ -337,9 +348,6 @@ export default App;
 // import Contractors from "./components/Contractors";
 // import StudentCommentPage from "./components/StudentCommentPage";
 // import MyProfile from "./pages/MyProfile";
-
-
-
 
 // // import DashboardCourses from "./dashboard/components/DashboardCourses";
 // import PaymentPage from "./pages/PaymentPage";

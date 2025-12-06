@@ -40,6 +40,14 @@ const DashboardDropdown = () => {
             Take Splunk Quiz
           </NavLink>
 
+    <NavLink
+            to="/dashboard/stock"
+            className="block px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 transition-all duration-200"
+            onClick={() => setOpen(false)}
+          >
+            Take Splunk Quiz
+          </NavLink>
+
           <NavLink
             to="/dashboard/classmaterials"
             className="block px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 transition-all duration-200"
