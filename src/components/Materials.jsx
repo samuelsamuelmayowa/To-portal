@@ -24,6 +24,7 @@ import Player from "@vimeo/player";
 import { NavLink } from "react-router-dom";
 import DashboardDropdown from "./Dropdown";
 import NewFeaturePopup from "./Newapp";
+import TOAnnouncementBar from "./TOAnnouncementBar";
 
 const API_BASE = import.meta.env.VITE_HOME_OO || "http://localhost:8000";
 
@@ -759,6 +760,7 @@ export default function CoursePortal() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4">
+        <TOAnnouncementBar />
          <AssignmentToast
       show={showNewAssignmentAlert}
       onClose={() => setShowNewAssignmentAlert(false)}
