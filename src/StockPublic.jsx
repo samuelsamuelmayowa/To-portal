@@ -250,7 +250,7 @@ export default function MassiveStockDashboard({ defaultSymbol = "AAPL" }) {
             US Stocks & Options Dashboard
           </h1>
           <p style={{ fontSize: "0.9rem", opacity: 0.8 }}>
-            Powered by Massive REST API — delayed data based on your plan.
+            Powered by Massive REST API — 
           </p>
         </div>
 
