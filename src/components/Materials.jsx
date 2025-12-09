@@ -387,9 +387,9 @@ const sampleCourses = [
         desc: "",
         videos: [
           {
-            id: "v2",
-            title: "",
-            url: "",
+             id: "v2",
+            title: "To-analytics Splunk Class 7",
+            url: "https://player.vimeo.com/video/1145017764",
           },
         ],
         docs: [
