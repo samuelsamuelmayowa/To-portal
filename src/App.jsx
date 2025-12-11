@@ -58,6 +58,7 @@ import Commands from "./components/Commands";
 import SplunkDictionary from "./components/Dictionary";
 import StockCard from "./StockPublic";
 import MassiveStockDashboard from "./StockPublic";
+import SplunkCareerRoadmap from "./components/SplunkCareerRoadmap";
 
 // 🟣 GLOBAL THEME HELPER
 function applySavedTheme() {
@@ -242,6 +243,10 @@ const router = createBrowserRouter([
        {
     path: "stock",
     element: <MassiveStockDashboard/>,
+  },
+     {
+    path: "map",
+    element: <SplunkCareerRoadmap/>,
   },
       { path: "takequiz", element: <MainQuiz /> },
       { path: "check", element: <StudentDashboard /> },
