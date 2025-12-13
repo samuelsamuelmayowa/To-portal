@@ -182,8 +182,6 @@ const router = createBrowserRouter([
     element: <AdminLoginForm />,
   },
 
- 
-
   {
     path: "/createAccount",
     element: <CreateAccountForm />,
@@ -240,14 +238,14 @@ const router = createBrowserRouter([
       { path: "stockside", element: <StockDashboard /> },
       { path: "result", element: <QuizResults /> },
       { path: "stockportal", element: <StockPortal /> },
-       {
-    path: "stock",
-    element: <MassiveStockDashboard/>,
-  },
-     {
-    path: "map",
-    element: <SplunkCareerRoadmap/>,
-  },
+      {
+        path: "stock",
+        element: <MassiveStockDashboard />,
+      },
+      {
+        path: "map",
+        element: <SplunkCareerRoadmap />,
+      },
       { path: "takequiz", element: <MainQuiz /> },
       { path: "check", element: <StudentDashboard /> },
       { path: "makePayment", element: <PaymentPage /> },
