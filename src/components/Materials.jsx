@@ -383,7 +383,30 @@ const sampleCourses = [
 
       {
         id: "class7",
-        title: "Class 7  —  Splunk Dashboard",
+        // title: "Class 7  —  Splunk Dashboard",
+        title:"Class 7 Splunk Lab Knowledge Objects",
+        desc: "",
+        videos: [
+          {
+             id: "v2",
+            title: "To-analytics Splunk Class 7",
+            url: "https://player.vimeo.com/video/1145017764",
+          },
+        ],
+        docs: [
+          {
+            id: "d3",
+            title: "",
+            url: "",
+          },
+        ],
+      },
+
+
+      {
+        id: "class8",
+        // title: "Class 7  —  Splunk Dashboard",
+        title:"Class 8 Splunk Lab Knowledge Objects",
         desc: "",
         videos: [
           {
