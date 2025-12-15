@@ -59,6 +59,7 @@ import SplunkDictionary from "./components/Dictionary";
 import StockCard from "./StockPublic";
 import MassiveStockDashboard from "./StockPublic";
 import SplunkCareerRoadmap from "./components/SplunkCareerRoadmap";
+import MarketOverview from "./components/MarketOverview";
 
 // 🟣 GLOBAL THEME HELPER
 function applySavedTheme() {
@@ -249,6 +250,7 @@ const router = createBrowserRouter([
       { path: "takequiz", element: <MainQuiz /> },
       { path: "check", element: <StudentDashboard /> },
       { path: "makePayment", element: <PaymentPage /> },
+       { path: "overview", element: <MarketOverview/> },
       { path: "/dashboard/post", element: <Dashboard /> },
     ],
   },
