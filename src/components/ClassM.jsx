@@ -18,12 +18,12 @@ const ClassM = () => {
       description:
         "Read all the documents below carefully and complete the required tasks.",
       docs: [
-        // {
-        //   id: 1,
-        //   title: "Assignment Instructions",
-        //   url: "https://drive.google.com/file/d/1bf5cRkcEC3yDJ5MnzpRKDpRLhRhdUH90/preview",
-        //   dueDate: "2025-11-08",
-        // },
+        {
+          id: 1,
+          title: "Assignment Instructions",
+          url: "https://drive.google.com/file/d/1APZ-0shpvdjNJ9OFppVVrE5KqPwwHL49/preview",
+          dueDate: "2025-12-13",
+        },
         // {
         //   id: 2,
         //   title: "Sample Log Files",

@@ -411,15 +411,27 @@ const sampleCourses = [
         videos: [
           {
              id: "v2",
-            title: "To-analytics Splunk Class 7",
-            // url: "https://player.vimeo.com/video/1145017764",
+            title: "To-analytics Splunk Class 8",
+            url: "https://player.vimeo.com/video/1146557656",
           },
         ],
         docs: [
           {
             id: "d3",
-            title: "",
-            url: "",
+            title: "T.O_Analytics_Splunk_Class_8",
+            url: "https://drive.google.com/file/d/1jBaWruZc2sgrmzuLFWuwtcNMHrOiab8K/preview",
+          },
+
+            {
+            id: "d3",
+            title: "T.O_Analytics_Splunk_Class_8 Note",
+            url: "https://drive.google.com/file/d/1EvVwiUgfR8Vl1q4MIIUPCmHnFDDKvPg4/preview",
+          },
+
+           {
+            id: "d3",
+            title: "T.O_Analytics_Splunk_Class_8 Assignment",
+            url: "https://drive.google.com/file/d/1APZ-0shpvdjNJ9OFppVVrE5KqPwwHL49/preview",
           },
         ],
       },
