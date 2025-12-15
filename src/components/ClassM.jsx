@@ -20,7 +20,8 @@ const ClassM = () => {
       docs: [
         {
           id: 1,
-          title: "Assignment Instructions",
+          title: "Splunk Class 8 Assignment",
+          // title: "Assignment Instructions",
           url: "https://drive.google.com/file/d/1APZ-0shpvdjNJ9OFppVVrE5KqPwwHL49/preview",
           dueDate: "2025-12-13",
         },
