@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Badge } from "../ui/Badge";
 // import { Badge } from "lucide-react";
 // import Badge
-import { getMarketOverview } from "@/lib/marketApi";
+// import { getMarketOverview } from "@/lib/marketApi";
+import { getMarketOverview } from "../lib/marketApi";
 
 export default function MarketOverview() {
   const { data, isLoading, error } = useQuery({
