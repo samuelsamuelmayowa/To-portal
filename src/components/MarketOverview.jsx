@@ -105,7 +105,36 @@ function MarketTable({ title, data, positive }) {
       </div>
 
       <div className="divide-y divide-white/10">
-        {data.map((stock) => {
+      {data.map((stock) => {
+  const price = Number(stock.price ?? 0);
+  const change = Number(stock.changePercent ?? 0);
+  const isUp = change >= 0;
+
+  return (
+    <div
+      key={stock.symbol}
+      className="flex items-center justify-between px-5 py-3 hover:bg-white/5 transition"
+    >
+      <div>
+        <p className="font-medium text-white">{stock.symbol}</p>
+        <p className="text-xs text-gray-400">
+          ${price.toFixed(2)}
+        </p>
+      </div>
+
+      <span
+        className={`text-sm font-semibold ${
+          isUp ? "text-green-400" : "text-red-400"
+        }`}
+      >
+        {isUp ? "+" : ""}
+        {change.toFixed(2)}%
+      </span>
+    </div>
+  );
+})}
+
+        {/* {data.map((stock) => {
         //   const isUp = stock.changePercent >= 0;
 const change = Number(stock.changePercent ?? 0);
 const isUp = change >= 0;
@@ -132,7 +161,7 @@ const isUp = change >= 0;
               </span>
             </div>
           );
-        })}
+        })} */}
       </div>
     </div>
   );
