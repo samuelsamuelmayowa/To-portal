@@ -35,14 +35,33 @@ export default function MarketOverview() {
           iconColor="text-red-400"
         />
 
-        <SummaryCard
+        {/* <SummaryCard
           title="Most Active"
           symbol={data.mostActive.symbol}
-          value={`${data.mostActive.volume.toLocaleString()} vol`}
+          value={
+  data.mostActive?.volume
+    ? `${Number(data.mostActive.volume).toLocaleString()} vol`
+    : "N/A"
+}
+
+        //   value={`${data.mostActive.volume.toLocaleString()} vol`}
           icon={Activity}
           gradient="from-blue-500/20 to-blue-700/20"
           iconColor="text-blue-400"
-        />
+        /> */}
+        <SummaryCard
+  title="Most Active"
+  symbol={data.mostActive?.symbol ?? "—"}
+  value={
+    data.mostActive?.volume
+      ? `${Number(data.mostActive.volume).toLocaleString()} vol`
+      : "Volume N/A"
+  }
+  icon={Activity}
+  gradient="from-blue-500/20 to-blue-700/20"
+  iconColor="text-blue-400"
+/>
+
       </div>
 
       {/* ===== TABLES ===== */}
@@ -87,7 +106,9 @@ function MarketTable({ title, data, positive }) {
 
       <div className="divide-y divide-white/10">
         {data.map((stock) => {
-          const isUp = stock.changePercent >= 0;
+        //   const isUp = stock.changePercent >= 0;
+const change = Number(stock.changePercent ?? 0);
+const isUp = change >= 0;
 
           return (
             <div
