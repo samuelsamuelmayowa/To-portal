@@ -1,7 +1,8 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { TrendingUp, TrendingDown, Activity } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
+// import { Card } from "../ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { getMarketOverview } from "@/lib/marketApi";
 
