@@ -4,7 +4,7 @@ import { ChevronDown } from "lucide-react";
 
 const Dropdownstock = () => {
   const [open, setOpen] = useState(false);
-
+const d=1 
   return (
     <div className="relative inline-block text-left">
       {/* Dropdown Button */}
