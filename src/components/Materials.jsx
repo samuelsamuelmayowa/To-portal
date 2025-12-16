@@ -406,7 +406,7 @@ const sampleCourses = [
       {
         id: "class8",
         // title: "Class 7  —  Splunk Dashboard",
-        title:"Class 8 Splunk Lab Knowledge Objects",
+        title:"Class 8 Splunk Dashboard ",
         desc: "",
         videos: [
           {

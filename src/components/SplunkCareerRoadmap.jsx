@@ -136,7 +136,7 @@ export default function SplunkCareerRoadmapMap() {
         </div>
       </div>
     </div>
-  );
+  ); 
 }
 
 // import { useState } from "react";
