@@ -5,7 +5,7 @@ import { internalLogs } from "../data/internalLogs";
 import { LOGS } from "../data/logs";
 import { runSPL } from "../utils/splEngine";
 // import { runSPL } from "./utils/runSPL";
-import { runSPL } from "../utils/runSPL";
+// import { runSPL } from "../utils/runSPL";
 export default function SplunkPracticeLab() {
   const [query, setQuery] = useState("index=_internal");
   const [results, setResults] = useState([]);
