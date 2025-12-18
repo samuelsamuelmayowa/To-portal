@@ -203,7 +203,7 @@ export default function SplunkPracticeLab() {
       <div className="grid lg:grid-cols-[320px_1fr] gap-6">
         {/* Left: Guided Labs */}
         <div className="bg-[#111827] border border-gray-800 rounded-2xl p-4 h-fit">
-          <div className="font-semibold mb-2">🎯 Guided Labs</div>
+          <div className="font-semibold mb-2"> Guided Labs</div>
 
           <div className="space-y-2">
             {LABS.map((l) => (
