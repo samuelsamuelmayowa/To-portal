@@ -40,6 +40,13 @@ console.log('HELOO')
             Take Splunk Quiz
           </NavLink>
 
+ <NavLink
+            to="/dashboard/lab"
+            className="block px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 transition-all duration-200"
+            onClick={() => setOpen(false)}
+          >
+            Splunk Lab --Beta Mode
+          </NavLink>
           <NavLink
             to="/dashboard/map"
             className="block px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 transition-all duration-200"
