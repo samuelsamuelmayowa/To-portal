@@ -285,7 +285,7 @@ export default function StockPortal() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
-      <NewFeaturePopup />
+      {/* <NewFeaturePopup /> */}
       {/* <DashboardDropdown /> */}
     <Dropdownstock/>
       <div className="max-w-7xl mx-auto grid grid-cols-12 gap-6">
