@@ -447,7 +447,15 @@ const sampleCourses = [
             title: "To-analytics Splunk Class 9",
             url: "https://player.vimeo.com/video/1149696096",
           },
-        ],}
+        ],
+        docs: [
+          {
+            id: "",
+            title: "",
+            url: "",
+          },
+        ]
+      }
       // {
       //   id: "class6",
       //   title: "Class 5  — Splunk Knowledge Objects",
