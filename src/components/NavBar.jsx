@@ -203,9 +203,9 @@ const NavBar = () => {
             Courses
           </NavLink>
 
-          <NavLink to="/mentorship" className="hover:text-BLUE">
+          {/* <NavLink to="/mentorship" className="hover:text-BLUE">
             Mentorship
-          </NavLink>
+          </NavLink> */}
 
           <NavLink to="/about" className="hover:text-BLUE">
             About
