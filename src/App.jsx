@@ -257,6 +257,7 @@ const router = createBrowserRouter([
       { path: "makePayment", element: <PaymentPage /> },
        { path: "overview", element: <MarketOverview/> },
         { path: "splunk-studio", element: <SplunkStudio/> },
+          { path: "lab", element: <SplunkStudio/> },
 
       { path: "/dashboard/post", element: <Dashboard /> },
     ],
