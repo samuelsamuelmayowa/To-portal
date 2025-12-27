@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Search, CheckCircle2, AlertTriangle } from "lucide-react";
 import { LOGS } from "../../data/logs";
 import { runSPL } from "../../utils/splEngine";
@@ -43,12 +43,20 @@ const LABS = [
 ];
 
 export default function SearchLab({ onSaveSearch }) {
+  
+
   const [query, setQuery] = useState("index=_internal");
   const [res, setRes] = useState(null);
   const [error, setError] = useState("");
   const [tab, setTab] = useState("events");
   const [showHints, setShowHints] = useState(false);
-
+  useEffect(() => {
+  const runOnce = sessionStorage.getItem("to_splunk_run_once");
+  if (runOnce) {
+    setQuery(runOnce);
+    sessionStorage.removeItem("to_splunk_run_once");
+  }
+}, []);
   const [activeLabId, setActiveLabId] = useState(LABS[0].id);
   const [labOk, setLabOk] = useState(null);
 
