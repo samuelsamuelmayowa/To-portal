@@ -402,7 +402,7 @@ const sampleCourses = [
         ],
       },
 
-
+// https://player.vimeo.com/video/1149696096
       {
         id: "class8",
         // title: "Class 7  —  Splunk Dashboard",
@@ -435,6 +435,19 @@ const sampleCourses = [
           },
         ],
       },
+
+       {
+        id: "class9",
+        // title: "Class 7  —  Splunk Dashboard",
+        title:"Class 9 Splunk Dashboard ",
+        desc: "",
+        videos: [
+          {
+             id: "v2",
+            title: "To-analytics Splunk Class 9",
+            url: "https://player.vimeo.com/video/1149696096",
+          },
+        ],}
       // {
       //   id: "class6",
       //   title: "Class 5  — Splunk Knowledge Objects",
