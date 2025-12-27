@@ -52,8 +52,8 @@ const NewFeaturePopup = () => {
               </h2>
 
           <p className="text-gray-300 text-center leading-relaxed mb-6">
-  SPLUNK LAB  <span className="text-blue-400 font-semibold"></span>{" "}
-  <span className="text-purple-400 font-semibold">Dashboard section</span>.
+  OUR SPLUNK LAB JUST GOT BETTER   <span className="text-blue-400 font-semibold"></span>{" "}
+  <span className="text-purple-400 font-semibold"></span>.
 </p>
               <motion.button
                 whileHover={{ scale: 1.05 }}
