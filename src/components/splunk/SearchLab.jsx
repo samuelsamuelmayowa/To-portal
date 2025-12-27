@@ -3,6 +3,16 @@ import { Search, CheckCircle2, AlertTriangle } from "lucide-react";
 import { LOGS } from "../../data/logs";
 import { runSPL } from "../../utils/splEngine";
 import { GlassCard, PrimaryButton, SoftButton } from "./Glass";
+
+import ChartSelector from "./charts/ChartSelector";
+import ChartRenderer from "./charts/ChartRenderer";
+import  recommendChart  from "./charts/chartRegistry";
+
+
+// import ChartSelector from "@/components/splunk/charts/ChartSelector";
+// import ChartRenderer from "@/components/splunk/charts/ChartRenderer";
+// import { recommendChart } from "@/components/splunk/charts/chartRegistry";
+
 import { MiniBarChart, PrettyTable } from "./Viz";
 
 const SUGGESTIONS = [
@@ -50,6 +60,13 @@ export default function SearchLab({ onSaveSearch }) {
   const [error, setError] = useState("");
   const [tab, setTab] = useState("events");
   const [showHints, setShowHints] = useState(false);
+
+  const recommendedChart = recommendChart(res);
+const [chartType, setChartType] = useState(recommendedChart);
+useEffect(() => {
+  setChartType(recommendChart(res));
+}, [res]);
+
   useEffect(() => {
   const runOnce = sessionStorage.getItem("to_splunk_run_once");
   if (runOnce) {
@@ -243,14 +260,44 @@ export default function SearchLab({ onSaveSearch }) {
           ) : rows.length === 0 ? (
             <div className="text-sm text-gray-400">No results</div>
           ) : tab === "chart" && chartConfig ? (
-            <MiniBarChart
-              rows={rows.slice(0, 18).map((r) => ({
-                ...r,
-                _time: r._time ? new Date(r._time).toLocaleTimeString() : r[chartConfig.xKey],
-              }))}
-              xKey={chartConfig.xKey === "_time" ? "_time" : chartConfig.xKey}
-              yKey={chartConfig.yKey}
-            />
+            // <MiniBarChart
+            //   rows={rows.slice(0, 18).map((r) => ({
+            //     ...r,
+            //     _time: r._time ? new Date(r._time).toLocaleTimeString() : r[chartConfig.xKey],
+            //   }))}
+            //   xKey={chartConfig.xKey === "_time" ? "_time" : chartConfig.xKey}
+            //   yKey={chartConfig.yKey}
+            // />
+            <>
+  {/* Chart Controls */}
+  <div className="mb-4">
+    <div className="text-xs text-gray-400 mb-2">
+      Recommended chart:
+      <span className="text-cyan-300 ml-1">
+        {recommendedChart}
+      </span>
+    </div>
+
+    <ChartSelector
+      value={chartType}
+      onChange={setChartType}
+    />
+  </div>
+
+  {/* Chart Renderer */}
+  <ChartRenderer
+    type={chartType}
+    rows={rows}
+    xKey={chartConfig.xKey}
+    yKey={chartConfig.yKey}
+    res={res}
+  />
+
+  <div className="mt-4 text-xs text-gray-500">
+    💡 Same data, different visualization — this is how dashboards work.
+  </div>
+</>
+
           ) : (
             <PrettyTable rows={rows} />
           )}
