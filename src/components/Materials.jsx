@@ -795,11 +795,12 @@ export default function CoursePortal() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4">
-      
+{/*       
          <AssignmentToast
       show={showNewAssignmentAlert}
       onClose={() => setShowNewAssignmentAlert(false)}
-    />
+    /> */}
+    <NewFeaturePopup/>
       {/* Header */}
 
       <div className="max-w-7xl mx-auto mb-6">
