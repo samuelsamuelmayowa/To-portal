@@ -61,6 +61,7 @@ import MassiveStockDashboard from "./StockPublic";
 import SplunkCareerRoadmap from "./components/SplunkCareerRoadmap";
 import MarketOverview from "./components/MarketOverview";
 import SplunkPracticeLab from "./components/SplunkPracticeLab";
+import SplunkStudio from "./pages/SplunkStudio";
 
 // 🟣 GLOBAL THEME HELPER
 function applySavedTheme() {
@@ -204,6 +205,9 @@ const router = createBrowserRouter([
     path: "/OTP",
     element: <OTP_Verification />,
   },
+  { path:"/splunk-studio" ,element:<SplunkStudio/>
+
+  },
   {
     path: "/createNewPassword",
     element: <CreateNewPassword />,
@@ -252,7 +256,8 @@ const router = createBrowserRouter([
       { path: "check", element: <StudentDashboard /> },
       { path: "makePayment", element: <PaymentPage /> },
        { path: "overview", element: <MarketOverview/> },
-        { path: "lab", element: <SplunkPracticeLab/> },
+        { path: "splunk-studio", element: <SplunkStudio/> },
+
       { path: "/dashboard/post", element: <Dashboard /> },
     ],
   },
