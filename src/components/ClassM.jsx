@@ -19,7 +19,15 @@ const ClassM = () => {
         "Read all the documents below carefully and complete the required tasks.",
       docs: [
         {
-          id: 1,
+              // https://docs.google.com/presentation/d/1iorNGrxkfRYvm4_C3x0gyb3levapMdaL/preview
+              id: 1,
+          title: "Splunk Class 9 Assignment",
+          // title: "Assignment Instructions",
+          url: "https://docs.google.com/presentation/d/1iorNGrxkfRYvm4_C3x0gyb3levapMdaL/preview",
+          // dueDate: "2025-12-13",
+        }, 
+        {
+          id: 2,
           title: "Splunk Class 8 Assignment",
           // title: "Assignment Instructions",
           url: "https://drive.google.com/file/d/1APZ-0shpvdjNJ9OFppVVrE5KqPwwHL49/preview",
