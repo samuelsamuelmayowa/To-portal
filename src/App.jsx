@@ -252,7 +252,7 @@ const router = createBrowserRouter([
       { path: "check", element: <StudentDashboard /> },
       { path: "makePayment", element: <PaymentPage /> },
        { path: "overview", element: <MarketOverview/> },
-        { path: "lab", element: <SplunkPracticeLab/> },
+        { path: "lab", element: <StockPortal/> },
       { path: "/dashboard/post", element: <Dashboard /> },
     ],
   },
