@@ -60,7 +60,7 @@ const MainQuiz = () => {
   // ✅ Fetch assignments
   useEffect(() => {
     if (isAllowed) {
-      fetch("https://to-backendapi-v1.onrender.com/api/assignment")
+      fetch("https://to-backendapi-v1-x0zt.onrender.com/api/assignment")
         .then((res) => res.json())
         .then((data) => {
           setAssignments(data.data || []);
