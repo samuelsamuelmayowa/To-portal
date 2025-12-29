@@ -101,39 +101,39 @@ const MainQuiz = () => {
   }
 
   // 🚫 Access Denied
-  if (!isAllowed) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-gray-50 to-red-50 text-center px-6"
-      >
-        <FiLock className="text-red-500 text-7xl mb-6 animate-bounce" />
-        <h1 className="text-3xl font-bold text-red-600 mb-2">
-          Access Denied 🚫
-        </h1>
-        <p className="text-gray-700 text-lg mb-4 max-w-md">
-          Only verified <span className="font-semibold">To-Analytics</span>{" "}
-          members have access to the Splunk Quiz Center.
-        </p>
-        {userEmail ? (
-          <p className="text-sm text-gray-500">
-            Your email: <span className="font-medium">{userEmail}</span>
-          </p>
-        ) : (
-          <p className="text-sm text-gray-500">
-            Please log in with your authorized account.
-          </p>
-        )}
-        <NavLink
-          to="/"
-          className="mt-6 px-6 py-3 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 hover:scale-[1.03] transition-all duration-300"
-        >
-          Go Back Home
-        </NavLink>
-      </motion.div>
-    );
-  }
+  // if (!isAllowed) {
+  //   return (
+  //     <motion.div
+  //       initial={{ opacity: 0, y: 30 }}
+  //       animate={{ opacity: 1, y: 0 }}
+  //       className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-gray-50 to-red-50 text-center px-6"
+  //     >
+  //       <FiLock className="text-red-500 text-7xl mb-6 animate-bounce" />
+  //       <h1 className="text-3xl font-bold text-red-600 mb-2">
+  //         Access Denied 🚫
+  //       </h1>
+  //       <p className="text-gray-700 text-lg mb-4 max-w-md">
+  //         Only verified <span className="font-semibold">To-Analytics</span>{" "}
+  //         members have access to the Splunk Quiz Center.
+  //       </p>
+  //       {userEmail ? (
+  //         <p className="text-sm text-gray-500">
+  //           Your email: <span className="font-medium">{userEmail}</span>
+  //         </p>
+  //       ) : (
+  //         <p className="text-sm text-gray-500">
+  //           Please log in with your authorized account.
+  //         </p>
+  //       )}
+  //       <NavLink
+  //         to="/"
+  //         className="mt-6 px-6 py-3 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 hover:scale-[1.03] transition-all duration-300"
+  //       >
+  //         Go Back Home
+  //       </NavLink>
+  //     </motion.div>
+  //   );
+  // }
 
   // 🎯 Main Content
   return (
