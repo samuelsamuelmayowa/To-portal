@@ -85,11 +85,34 @@ const Quiz = ({ data }) => {
   }, [timeLeft, submitted, notAllowed]);
 
   const handleAnswerSelect = (questionIndex, option) => {
-    setAnswers((prev) => ({
+  const q = questions[questionIndex];
+
+  setAnswers((prev) => {
+    // MULTI-SELECT QUESTION
+    if (q.multi) {
+      const prevAnswers = prev[questionIndex] || [];
+      return {
+        ...prev,
+        [questionIndex]: prevAnswers.includes(option)
+          ? prevAnswers.filter((o) => o !== option)
+          : [...prevAnswers, option],
+      };
+    }
+
+    // SINGLE-SELECT QUESTION
+    return {
       ...prev,
       [questionIndex]: option,
-    }));
-  };
+    };
+  });
+};
+
+  // const handleAnswerSelect = (questionIndex, option) => {
+  //   setAnswers((prev) => ({
+  //     ...prev,
+  //     [questionIndex]: option,
+  //   }));
+  // };
   // ✅ Submit logic with missed questions
   // const handleSubmit = async () => {
   //   let correctCount = 0;
@@ -144,20 +167,46 @@ const Quiz = ({ data }) => {
     let correctCount = 0;
     const missed = [];
 
-    questions.forEach((q, index) => {
-      const userAnswer = answers[index];
-      const correctAnswers = Array.isArray(q.correct) ? q.correct : [q.correct];
+    // questions.forEach((q, index) => {
+    //   const userAnswer = answers[index];
+    //   const correctAnswers = Array.isArray(q.correct) ? q.correct : [q.correct];
 
-      if (correctAnswers.includes(userAnswer)) {
-        correctCount++;
-      } else {
-        missed.push({
-          question: q.question,
-          selected: userAnswer || "No answer",
-          correct: correctAnswers.join(", "),
-        });
-      }
+    //   if (correctAnswers.includes(userAnswer)) {
+    //     correctCount++;
+    //   } else {
+    //     missed.push({
+    //       question: q.question,
+    //       selected: userAnswer || "No answer",
+    //       correct: correctAnswers.join(", "),
+    //     });
+    //   }
+    // });
+questions.forEach((q, index) => {
+  const userAnswer = answers[index];
+  const correctAnswers = q.correct;
+
+  let isCorrect = false;
+
+  if (q.multi) {
+    if (Array.isArray(userAnswer)) {
+      isCorrect =
+        userAnswer.length === correctAnswers.length &&
+        correctAnswers.every((ans) => userAnswer.includes(ans));
+    }
+  } else {
+    isCorrect = correctAnswers.includes(userAnswer);
+  }
+
+  if (isCorrect) {
+    correctCount++;
+  } else {
+    missed.push({
+      question: q.question,
+      selected: userAnswer || "No answer",
+      correct: correctAnswers.join(", "),
     });
+  }
+});
 
     const totalQuestions = questions.length;
     // ✅ Now score = number of correct answers
@@ -501,6 +550,35 @@ const Quiz = ({ data }) => {
 
         {/* Options */}
         <div className="space-y-3">
+  {q.options.map((option, i) => {
+    const isMulti = q.multi;
+    const selected = isMulti
+      ? (answers[currentQuestion] || []).includes(option)
+      : answers[currentQuestion] === option;
+
+    return (
+      <label
+        key={i}
+        className={`block p-3 border rounded-lg cursor-pointer transition ${
+          selected
+            ? "bg-blue-600 border-blue-600 text-white"
+            : "hover:bg-blue-50 border-gray-300"
+        }`}
+      >
+        <input
+          type={isMulti ? "checkbox" : "radio"}
+          name={`question-${currentQuestion}`}
+          checked={selected}
+          onChange={() => handleAnswerSelect(currentQuestion, option)}
+          className="mr-2"
+        />
+        {option}
+      </label>
+    );
+  })}
+</div>
+
+        {/* <div className="space-y-3">
           {q.options.map((option, i) => (
             <label
               key={i}
@@ -521,7 +599,7 @@ const Quiz = ({ data }) => {
               {option}
             </label>
           ))}
-        </div>
+        </div> */}
       </div>
 
       {/* Navigation */}
