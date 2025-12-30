@@ -72,28 +72,50 @@ const Quiz = ({ data }) => {
       setNotAllowed(true);
     }
   }, [userEmail]);
-  useEffect(() => {
-  // const q = questions[currentQuestion];
-  const q = questions?.[currentQuestion];
+//   useEffect(() => {
+//   // const q = questions[currentQuestion];
+//   const q = questions?.[currentQuestion];
 
-if (!q) {
-  return (
-    <div className="p-6 text-center text-gray-600">
-      Loading question…
-    </div>
-  );
-}
+// if (!q) {
+//   return (
+//     <div className="p-6 text-center text-gray-600">
+//       Loading question…
+//     </div>
+//   );
+// }
 
 
+//   if (!q) return;
+
+//   setAnswers((prev) => {
+//     // MULTI question must always be an array
+//     if (q.multi && !Array.isArray(prev[currentQuestion])) {
+//       return { ...prev, [currentQuestion]: [] };
+//     }
+
+//     // SINGLE question must always be a string
+//     if (!q.multi && Array.isArray(prev[currentQuestion])) {
+//       return { ...prev, [currentQuestion]: "" };
+//     }
+
+//     return prev;
+//   });
+// }, [currentQuestion, questions]);
+
+
+useEffect(() => {
+  if (!questions.length) return;
+
+  const q = questions[currentQuestion];
   if (!q) return;
 
   setAnswers((prev) => {
-    // MULTI question must always be an array
+    // multi must always be array
     if (q.multi && !Array.isArray(prev[currentQuestion])) {
       return { ...prev, [currentQuestion]: [] };
     }
 
-    // SINGLE question must always be a string
+    // single must always be string
     if (!q.multi && Array.isArray(prev[currentQuestion])) {
       return { ...prev, [currentQuestion]: "" };
     }
@@ -604,9 +626,12 @@ if (!q) {
           Question {currentQuestion + 1} of {questions.length}
         </h3>
         <p className="text-gray-700 mb-6">{q.question}</p>
-<pre className="bg-gray-100 text-xs p-2 rounded mb-4">
+{q && (
+  <pre className="bg-gray-100 text-xs p-2 rounded mb-4">
     {JSON.stringify(answers[currentQuestion], null, 2)}
   </pre>
+)}
+
         {/* Options */}
         <div className="space-y-3">
   {q.options.map((option, i) => {
