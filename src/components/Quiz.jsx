@@ -675,9 +675,14 @@ if (!q) {
         <div className="space-y-3">
   {q.options.map((option, i) => {
     const isMulti = q.multi;
+    // const selected = isMulti
+    //   ? (answers[currentQuestion] || []).includes(option)
+    //   : answers[currentQuestion] === option;
     const selected = isMulti
-      ? (answers[currentQuestion] || []).includes(option)
-      : answers[currentQuestion] === option;
+  ? Array.isArray(answers[currentQuestion]) &&
+    answers[currentQuestion].includes(option)
+  : answers[currentQuestion] === option;
+
 
     return (
       <label
