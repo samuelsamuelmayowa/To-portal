@@ -606,7 +606,8 @@ questions.forEach((q, index) => {
     );
 
   // const q = questions[currentQuestion];
-  const q = questions?.[currentQuestion];
+  // const q = questions?.[currentQuestion];
+  const q = questions.length > 0 ? questions[currentQuestion] : null;
 
 if (!q) {
   return (
@@ -615,6 +616,15 @@ if (!q) {
     </div>
   );
 }
+
+
+// if (!q) {
+//   return (
+//     <div className="p-6 text-center text-gray-600">
+//       Loading question…
+//     </div>
+//   );
+// }
 
 
   return (
