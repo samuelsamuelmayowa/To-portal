@@ -73,7 +73,17 @@ const Quiz = ({ data }) => {
     }
   }, [userEmail]);
   useEffect(() => {
-  const q = questions[currentQuestion];
+  // const q = questions[currentQuestion];
+  const q = questions?.[currentQuestion];
+
+if (!q) {
+  return (
+    <div className="p-6 text-center text-gray-600">
+      Loading question…
+    </div>
+  );
+}
+
 
   if (!q) return;
 
@@ -544,7 +554,17 @@ questions.forEach((q, index) => {
       </div>
     );
 
-  const q = questions[currentQuestion];
+  // const q = questions[currentQuestion];
+  const q = questions?.[currentQuestion];
+
+if (!q) {
+  return (
+    <div className="p-6 text-center text-gray-600">
+      Loading question…
+    </div>
+  );
+}
+
 
   return (
     <div className="p-6 bg-white rounded-xl shadow-md text-gray-800">
