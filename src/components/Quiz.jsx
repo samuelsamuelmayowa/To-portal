@@ -217,12 +217,38 @@ useEffect(() => {
   //   }
   // };
   
-  const handleAnswerSelect = (questionIndex, option) => {
+//   const handleAnswerSelect = (questionIndex, option) => {
+//   const q = questions[questionIndex];
+//   if (!q) return;
+
+//   setAnswers((prev) => {
+//     // MULTI
+//     if (q.multi === true) {
+//       const prevAnswers = Array.isArray(prev[questionIndex])
+//         ? prev[questionIndex]
+//         : [];
+
+//       return {
+//         ...prev,
+//         [questionIndex]: prevAnswers.includes(option)
+//           ? prevAnswers.filter((o) => o !== option)
+//           : [...prevAnswers, option],
+//       };
+//     }
+
+//     // SINGLE
+//     return {
+//       ...prev,
+//       [questionIndex]: option,
+//     };
+//   });
+// };
+
+const handleAnswerSelect = (questionIndex, option) => {
   const q = questions[questionIndex];
   if (!q) return;
 
   setAnswers((prev) => {
-    // MULTI
     if (q.multi === true) {
       const prevAnswers = Array.isArray(prev[questionIndex])
         ? prev[questionIndex]
@@ -236,13 +262,13 @@ useEffect(() => {
       };
     }
 
-    // SINGLE
     return {
       ...prev,
       [questionIndex]: option,
     };
   });
 };
+
 
   const handleSubmit = async () => {
     let correctCount = 0;
