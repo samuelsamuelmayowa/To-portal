@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import jsPDF from "jspdf";
 const Quiz = ({ data }) => {
   const api = import.meta.env.VITE_HOME_OO;
+   const questions = data?.questions ?? [];
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});
   const [score, setScore] = useState(null);
@@ -124,7 +125,7 @@ useEffect(() => {
   });
 }, [currentQuestion, questions]);
 
-  const questions = data?.questions || [];
+  // const questions = data?.questions || [];
   // 🕒 Countdown Timer
   useEffect(() => {
     if (submitted || notAllowed) return;
