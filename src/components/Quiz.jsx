@@ -719,13 +719,21 @@ if (!q) {
             : "hover:bg-blue-50 border-gray-300"
         }`}
       >
-        <input
+        {/* <input
           type={isMulti ? "checkbox" : "radio"}
           name={`question-${currentQuestion}`}
           checked={selected}
           onChange={() => handleAnswerSelect(currentQuestion, option)}
           className="mr-2"
-        />
+        /> */}
+        <input
+  type={isMulti ? "checkbox" : "radio"}
+  name={isMulti ? undefined : `question-${currentQuestion}`}
+  checked={selected}
+  onChange={() => handleAnswerSelect(currentQuestion, option)}
+  className="mr-2"
+/>
+
         {option}
       </label>
     );
