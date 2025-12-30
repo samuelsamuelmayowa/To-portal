@@ -348,15 +348,15 @@ questions.forEach((q, index) => {
   };
 
   // 🛑 Not allowed to take the test
-  // if (notAllowed) {
-  //   return (
-  //     <div className="text-center py-20 text-red-600 font-bold text-xl bg-gray-100 rounded-lg shadow-md">
-  //       🚫 You are not allowed to take this quiz.
-  //       <br />
-  //       Please contact your instructor for access.
-  //     </div>
-  //   );
-  // }
+  if (notAllowed) {
+    return (
+      <div className="text-center py-20 text-red-600 font-bold text-xl bg-gray-100 rounded-lg shadow-md">
+        🚫 You are not allowed to take this quiz.
+        <br />
+        Please contact your instructor for access.
+      </div>
+    );
+  }
 
   if (!questions.length)
     return (
