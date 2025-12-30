@@ -72,6 +72,26 @@ const Quiz = ({ data }) => {
       setNotAllowed(true);
     }
   }, [userEmail]);
+  useEffect(() => {
+  const q = questions[currentQuestion];
+
+  if (!q) return;
+
+  setAnswers((prev) => {
+    // MULTI question must always be an array
+    if (q.multi && !Array.isArray(prev[currentQuestion])) {
+      return { ...prev, [currentQuestion]: [] };
+    }
+
+    // SINGLE question must always be a string
+    if (!q.multi && Array.isArray(prev[currentQuestion])) {
+      return { ...prev, [currentQuestion]: "" };
+    }
+
+    return prev;
+  });
+}, [currentQuestion, questions]);
+
   const questions = data?.questions || [];
   // 🕒 Countdown Timer
   useEffect(() => {
@@ -302,7 +322,13 @@ questions.forEach((q, index) => {
     questions.forEach((q, idx) => {
       const userAnswer = answers[idx];
       const correctAnswers = Array.isArray(q.correct) ? q.correct : [q.correct];
-      const isCorrect = correctAnswers.includes(userAnswer);
+      // const isCorrect = correctAnswers.includes(userAnswer);
+      const isCorrect = q.multi
+  ? Array.isArray(userAnswer) &&
+    userAnswer.length === correctAnswers.length &&
+    correctAnswers.every((ans) => userAnswer.includes(ans))
+  : correctAnswers.includes(userAnswer);
+
 
       // Question text
       doc.setFont("helvetica", "bold");
@@ -398,7 +424,13 @@ questions.forEach((q, index) => {
               const correctAnswers = Array.isArray(q.correct)
                 ? q.correct
                 : [q.correct];
-              const isCorrect = correctAnswers.includes(userAnswer);
+              // const isCorrect = correctAnswers.includes(userAnswer);
+              const isCorrect = q.multi
+  ? Array.isArray(userAnswer) &&
+    userAnswer.length === correctAnswers.length &&
+    correctAnswers.every((ans) => userAnswer.includes(ans))
+  : correctAnswers.includes(userAnswer);
+
 
               return (
                 <div
@@ -426,7 +458,12 @@ questions.forEach((q, index) => {
                           : "text-red-700 font-medium"
                       }`}
                     >
-                      {userAnswer || "No answer"}
+                      {/* {userAnswer || "No answer"} */}
+                      Your Answer:{" "}
+{Array.isArray(userAnswer)
+  ? userAnswer.join(", ")
+  : userAnswer || "No answer"}
+
                     </span>
                   </p>
 
