@@ -137,28 +137,28 @@ useEffect(() => {
     return () => clearInterval(timer);
   }, [timeLeft, submitted, notAllowed]);
 
-  const handleAnswerSelect = (questionIndex, option) => {
-  const q = questions[questionIndex];
+//   const handleAnswerSelect = (questionIndex, option) => {
+//   const q = questions[questionIndex];
 
-  setAnswers((prev) => {
-    // MULTI-SELECT QUESTION
-    if (q.multi) {
-      const prevAnswers = prev[questionIndex] || [];
-      return {
-        ...prev,
-        [questionIndex]: prevAnswers.includes(option)
-          ? prevAnswers.filter((o) => o !== option)
-          : [...prevAnswers, option],
-      };
-    }
+//   setAnswers((prev) => {
+//     // MULTI-SELECT QUESTION
+//     if (q.multi) {
+//       const prevAnswers = prev[questionIndex] || [];
+//       return {
+//         ...prev,
+//         [questionIndex]: prevAnswers.includes(option)
+//           ? prevAnswers.filter((o) => o !== option)
+//           : [...prevAnswers, option],
+//       };
+//     }
 
-    // SINGLE-SELECT QUESTION
-    return {
-      ...prev,
-      [questionIndex]: option,
-    };
-  });
-};
+//     // SINGLE-SELECT QUESTION
+//     return {
+//       ...prev,
+//       [questionIndex]: option,
+//     };
+//   });
+// };
 
   // const handleAnswerSelect = (questionIndex, option) => {
   //   setAnswers((prev) => ({
@@ -216,6 +216,34 @@ useEffect(() => {
   //     alert("⚠️ An error occurred while saving your result.");
   //   }
   // };
+  
+  const handleAnswerSelect = (questionIndex, option) => {
+  const q = questions[questionIndex];
+  if (!q) return;
+
+  setAnswers((prev) => {
+    // MULTI
+    if (q.multi === true) {
+      const prevAnswers = Array.isArray(prev[questionIndex])
+        ? prev[questionIndex]
+        : [];
+
+      return {
+        ...prev,
+        [questionIndex]: prevAnswers.includes(option)
+          ? prevAnswers.filter((o) => o !== option)
+          : [...prevAnswers, option],
+      };
+    }
+
+    // SINGLE
+    return {
+      ...prev,
+      [questionIndex]: option,
+    };
+  });
+};
+
   const handleSubmit = async () => {
     let correctCount = 0;
     const missed = [];
