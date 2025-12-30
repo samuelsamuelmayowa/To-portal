@@ -584,7 +584,9 @@ questions.forEach((q, index) => {
           Question {currentQuestion + 1} of {questions.length}
         </h3>
         <p className="text-gray-700 mb-6">{q.question}</p>
-
+<pre className="bg-gray-100 text-xs p-2 rounded mb-4">
+    {JSON.stringify(answers[currentQuestion], null, 2)}
+  </pre>
         {/* Options */}
         <div className="space-y-3">
   {q.options.map((option, i) => {
