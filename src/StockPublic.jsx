@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
 import DashboardDropdown from "./components/Dropdown";
-import Dropdownstock from "./components/DropdownStock";
 
 // Single all-in-one Massive dashboard for US stocks + options + news
 export default function MassiveStockDashboard({ defaultSymbol = "AAPL" }) {
@@ -202,7 +201,7 @@ export default function MassiveStockDashboard({ defaultSymbol = "AAPL" }) {
         fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
       }}
     >
-<Dropdownstock/>
+
            {/* <div className="max-w-7xl mx-auto mb-6">
                 <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow flex items-center justify-between">
                   <div>
@@ -219,7 +218,7 @@ export default function MassiveStockDashboard({ defaultSymbol = "AAPL" }) {
                       {userEmail}
                     </div>
         
-                    {/* Remove if not imported */}
+                 
                     {DashboardDropdown && <DashboardDropdown />}
         
                     <button
