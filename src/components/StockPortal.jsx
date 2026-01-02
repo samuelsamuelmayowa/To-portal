@@ -121,6 +121,7 @@ function storageProgressKey(email) {
 }
 
 export default function StockPortal() {
+   const [darkMode, setDarkMode] = useState(false);
   const [courses] = useState(sampleCourses);
   const [selectedCourse, setSelectedCourse] = useState(courses[0]);
   const [selectedClass, setSelectedClass] = useState(courses[0].classes[0]);
@@ -210,7 +211,10 @@ export default function StockPortal() {
       } catch {}
       vimeoPlayerRef.current = null;
     }
-
+   const [darkMode, setDarkMode] = useState(false);
+    useEffect(() => {
+      document.documentElement.classList.toggle("dark", darkMode);
+    }, [darkMode]);
     const iframe = document.createElement("iframe");
     iframe.setAttribute("src", `${selectedVideo.url}?transparent=0&autoplay=0`);
     iframe.setAttribute("allow", "autoplay; fullscreen; picture-in-picture");
@@ -287,7 +291,48 @@ export default function StockPortal() {
     <div className="min-h-screen bg-gray-50 p-4">
       {/* <NewFeaturePopup /> */}
       {/* <DashboardDropdown /> */}
-    <Dropdownstock/>
+    {/* <Dropdownstock/> */}
+    <div className="max-w-7xl mx-auto mb-6">
+                <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow flex items-center justify-between">
+                  {/* LEFT SIDE - TITLE */}
+                  <div>
+                    <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+                      To-Analytics Learning Portal
+                    </h1>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Professional Splunk Bootcamp Dashboard
+                    </p>
+                  </div>
+        
+                  {/* RIGHT SIDE - ACTIONS */}
+                  <div className="flex items-center gap-4">
+                    {/* User Email */}
+                    <div className="text-sm text-gray-600 dark:text-gray-300">
+                      {userEmail}
+                    </div>
+        
+                    {/* Profile Button */}
+                    {/* <button
+                      onClick={() => setProfileOpen(true)}
+                      className="px-3 py-1 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 transition"
+                    >
+                      My Profile
+                    </button> */}
+        
+        <Dropdownstock/>
+                    {/* Dark Mode Toggle */}
+                    <button
+                      onClick={() => setDarkMode(!darkMode)}
+                      className="px-3 py-1 rounded text-sm 
+                bg-gray-200 text-gray-800 
+                dark:bg-gray-800 dark:text-white
+                hover:opacity-90 transition"
+                    >
+                      {darkMode ? "Light Mode" : "Dark Mode"}
+                    </button>
+                  </div>
+                </div>
+              </div>
       <div className="max-w-7xl mx-auto grid grid-cols-12 gap-6">
         {/* Sidebar */}
         <aside className="col-span-12 md:col-span-3 bg-white rounded-2xl p-4 shadow-sm">

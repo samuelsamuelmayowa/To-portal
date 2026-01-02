@@ -10,7 +10,6 @@ export default function MassiveStockDashboard({ defaultSymbol = "AAPL" }) {
     const [assignment, setAssignment] = useState(null);
     const [userEmail, setUserEmail] = useState("");
     const [selectedDoc, setSelectedDoc] = useState(null);
-    const [darkMode, setDarkMode] = useState(false);
   
     useEffect(() => {
       const e = localStorage.getItem("user") || "";
@@ -32,6 +31,10 @@ export default function MassiveStockDashboard({ defaultSymbol = "AAPL" }) {
   // Simple check so we don't call Massive without a key
   const hasApiKey = Boolean(API_KEY && API_KEY !== "YOUR_MASSIVE_API_KEY");
 
+   const [darkMode, setDarkMode] = useState(false);
+    useEffect(() => {
+      document.documentElement.classList.toggle("dark", darkMode);
+    }, [darkMode]);
   useEffect(() => {
     if (!hasApiKey) return;
     fetchAllForSymbol(symbol);
