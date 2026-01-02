@@ -300,7 +300,7 @@ export default function StockPortal() {
                       To-Analytics Learning Portal
                     </h1>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Professional Splunk Bootcamp Dashboard
+                      Professional Stock's and Options Bootcamp Dashboard
                     </p>
                   </div>
         

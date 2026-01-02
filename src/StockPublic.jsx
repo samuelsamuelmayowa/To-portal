@@ -193,18 +193,8 @@ export default function MassiveStockDashboard({ defaultSymbol = "AAPL" }) {
   }
 
   return (
-    <div
-      style={{
-        // maxWidth: "100px",
-        // margin: "2rem auto",
-        padding: "1.5rem",
-        borderRadius: "1rem",
-        border: "1px solid #e5e7eb",
-        background: "#0f172a",
-        color: "#e5e7eb",
-        fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
-      }}
-    >
+    <>
+
      <div className="max-w-7xl mx-auto mb-6">
             <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow flex items-center justify-between">
               {/* LEFT SIDE - TITLE */}
@@ -213,7 +203,8 @@ export default function MassiveStockDashboard({ defaultSymbol = "AAPL" }) {
                   To-Analytics Learning Portal
                 </h1>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Professional Splunk Bootcamp Dashboard
+                  {/* Professional Splunk Bootcamp Dashboard */}
+                    Professional Stock's and Options Bootcamp Dashboard
                 </p>
               </div>
     
@@ -246,6 +237,19 @@ export default function MassiveStockDashboard({ defaultSymbol = "AAPL" }) {
               </div>
             </div>
           </div>
+    <div
+      style={{
+        // maxWidth: "100px",
+        // margin: "2rem auto",
+        padding: "1.5rem",
+        borderRadius: "1rem",
+        border: "1px solid #e5e7eb",
+        background: "#0f172a",
+        color: "#e5e7eb",
+        fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+      }}
+    >
+    
 
            {/* <div className="max-w-7xl mx-auto mb-6">
                 <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow flex items-center justify-between">
@@ -725,6 +729,7 @@ export default function MassiveStockDashboard({ defaultSymbol = "AAPL" }) {
         </div>
       </div>
     </div>
+    </>
   );
 }
 
