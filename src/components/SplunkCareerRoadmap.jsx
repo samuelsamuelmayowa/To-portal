@@ -220,8 +220,20 @@ function clamp(n, min, max) {
 }
 
 export default function SplunkCareerRoadmapMap() {
+  const [darkMode, setDarkMode] = useState(false);
+    const [userEmail, setUserEmail] = useState("");
   const [active, setActive] = useState(null); // index of open card
   const [path, setPath] = useState("all"); // selected path key
+   useEffect(() => {
+        document.documentElement.classList.toggle("dark", darkMode);
+      }, [darkMode]);
+  useEffect(() => {
+      const e = localStorage.getItem("user") || "";
+      setUserEmail(e);
+  
+      // Check permission
+    
+   }, []);
   const [progress, setProgress] = useState({
     all: 0,
     soc: 0,
