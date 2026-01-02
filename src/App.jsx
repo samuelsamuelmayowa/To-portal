@@ -57,7 +57,7 @@ import StockPortal from "./components/StockPortal";
 import Commands from "./components/Commands";
 import SplunkDictionary from "./components/Dictionary";
 import StockCard from "./StockPublic";
-import MassiveStockDashboard from "./StockPublic";
+import MassiveStockDashboard from "./StockPublic"
 import SplunkCareerRoadmap from "./components/SplunkCareerRoadmap";
 import MarketOverview from "./components/MarketOverview";
 import SplunkPracticeLab from "./components/SplunkPracticeLab";
