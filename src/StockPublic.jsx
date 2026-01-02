@@ -248,6 +248,7 @@ export default function MassiveStockDashboard({ defaultSymbol = "AAPL" }) {
         color: "#e5e7eb",
         fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
       }}
+      className="max-w-7xl mx-auto mb-6"
     >
     
 
