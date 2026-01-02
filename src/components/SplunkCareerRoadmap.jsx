@@ -339,7 +339,7 @@ export default function SplunkCareerRoadmapMap() {
       {/* Header */}
       <div className="text-center">
         <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">
-          🧠 Splunk Career Roadmap
+          Your  Splunk Career Roadmap
         </h2>
         <p className="mt-3 text-gray-400">
           Choose a path, follow the levels, complete projects, build your portfolio.
