@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { TrendingUp, TrendingDown, Activity } from "lucide-react";
 import { getMarketOverview } from "../lib/marketApi";
+import Dropdownstock from "./DropdownStock";
 
 export default function MarketOverview() {
    const [userEmail, setUserEmail] = useState("");
