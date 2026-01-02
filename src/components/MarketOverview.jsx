@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { TrendingUp, TrendingDown, Activity } from "lucide-react";
 import { getMarketOverview } from "../lib/marketApi";
@@ -66,7 +66,7 @@ export default function MarketOverview() {
                   </div>
                 </div>
               </div>
-    <div className="p-6 space-y-8">
+    <div className="max-w-7xl mx-auto mb-6">
       {/* ===== SUMMARY ===== */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <SummaryCard
