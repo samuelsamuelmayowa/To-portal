@@ -455,6 +455,28 @@ const sampleCourses = [
             url: "",
           },
         ]
+      },
+      // 
+
+       {
+        id: "class10",
+        // title: "Class 7  —  Splunk Dashboard",
+        title:"Class 10 Certification Exam, Job & Assignment Review",
+        desc: "",
+        videos: [
+          {
+             id: "v2",
+            title: "To-analytics Splunk Class 10",
+            url: "https://player.vimeo.com/video/1153292493",
+          },
+        ],
+        docs: [
+          {
+            id: "",
+            title: "Assignment",
+            url: "https://docs.google.com/presentation/d/1iorNGrxkfRYvm4_C3x0gyb3levapMdaL/preview",
+          },
+        ]
       }
       // {
       //   id: "class6",
