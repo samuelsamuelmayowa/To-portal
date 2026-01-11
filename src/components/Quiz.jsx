@@ -364,6 +364,15 @@ questions.forEach((q, index) => {
     if (currentQuestion > 0) setCurrentQuestion((prev) => prev - 1);
   };
 
+
+  const isAnswered = () => {
+  const q = questions[currentQuestion];
+  const a = answers[currentQuestion];
+
+  if (q.multi) return Array.isArray(a) && a.length > 0;
+  return typeof a === "string" && a.length > 0;
+};
+
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60)
       .toString()
@@ -781,7 +790,13 @@ if (!q) {
         {currentQuestion < questions.length - 1 ? (
           <button
             onClick={nextQuestion}
-            className="px-5 py-2 bg-blue-600 rounded-lg font-medium hover:bg-blue-700 transition"
+             disabled={!isAnswered()}
+  className={`px-5 py-2 rounded-lg ${
+    !isAnswered()
+      ? "bg-gray-300 cursor-not-allowed"
+      : "bg-blue-600 hover:bg-blue-700"
+  }`}
+            // className="px-5 py-2 bg-blue-600 rounded-lg font-medium hover:bg-blue-700 transition"
           >
             Next ➡
           </button>
