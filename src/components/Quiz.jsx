@@ -665,6 +665,10 @@ if (!q) {
   return (
     <div className="p-6 bg-white rounded-xl shadow-md text-gray-800">
       {/* Timer */}
+      <pre className="bg-red-100 text-xs p-2 mb-2">
+  {/* {JSON.stringify(q.multi , null, 2)} — {typeof q.multi} */}
+</pre>
+
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-bold text-gray-800">{data.title}</h2>
         {/* <div
@@ -790,13 +794,13 @@ if (!q) {
         {currentQuestion < questions.length - 1 ? (
           <button
             onClick={nextQuestion}
-             disabled={!isAnswered()}
-  className={`px-5 py-2 rounded-lg ${
-    !isAnswered()
-      ? "bg-gray-300 cursor-not-allowed"
-      : "bg-blue-600 hover:bg-blue-700"
-  }`}
-            // className="px-5 py-2 bg-blue-600 rounded-lg font-medium hover:bg-blue-700 transition"
+  //            disabled={!isAnswered()}
+  // className={`px-5 py-2 rounded-lg ${
+  //   !isAnswered()
+  //     ? "bg-gray-300 cursor-not-allowed"
+  //     : "bg-blue-600 hover:bg-blue-700"
+  // }`}
+            className="px-5 py-2 bg-blue-600 rounded-lg font-medium hover:bg-blue-700 transition"
           >
             Next ➡
           </button>
