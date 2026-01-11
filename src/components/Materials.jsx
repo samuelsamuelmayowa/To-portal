@@ -54,161 +54,262 @@ const allowedEmails = [
 ];
 
 // ✅ Full Splunk Syllabus data (linked to your real videos & docs where available)
-const fullSplunkSyllabus = [
+// const fullSplunkSyllabus = [
+//   {
+//     week: 1,
+//     title: "Introduction to Splunk",
+//     desc: "What is Splunk, use cases, architecture, and installation.",
+//     videos: [
+//       {
+//         title: "To-analytics Orientation",
+//         url: "https://player.vimeo.com/video/1126909883",
+//       },
+//     ],
+//     docs: [
+//       {
+//         title: "Orientation Slides",
+//         url: "https://drive.google.com/file/d/1VzC-nTY7XhLagAeLIFdN1e6_MQMUkXiv/preview",
+//       },
+//     ],
+//   },
+//   {
+//     week: 2,
+//     title: "Splunk Basics",
+//     desc: "Splunk web interface, adding data, fields, basic search commands.",
+//     videos: [
+//       {
+//         title: "To-analytics Splunk Class 1",
+//         url: "https://player.vimeo.com/video/1127004938",
+//       },
+//     ],
+//     docs: [
+//       {
+//         title: "Splunk Class 1 Intro",
+//         url: "https://drive.google.com/file/d/1bf5cRkcEC3yDJ5MnzpRKDpRLhRhdUH90/preview",
+//       },
+//       {
+//         title: "Splunk Class 1 Note",
+//         url: "https://drive.google.com/file/d/1VYiqPwen5Dc1tV2x8_ohR55n6toGBm1G/preview",
+//       },
+//     ],
+//   },
+//   {
+//     week: 3,
+//     title: "SPL – Part 1",
+//     desc: "Intro to SPL, search, where, eval, working with fields, filtering.",
+//     videos: [
+//       {
+//         title: "To-analytics Splunk Class 2",
+//         url: "https://player.vimeo.com/video/1131114931",
+//       },
+//     ],
+//     docs: [
+//       {
+//         title: "Splunk Class 2 Slides",
+//         url: "https://drive.google.com/file/d/1V3zqvISvQLDZlQKUryIna4xnmAzcNRSC/preview",
+//       },
+//       {
+//         title: "Splunk Class 2 Note",
+//         url: "https://drive.google.com/file/d/1sf-kifLwlcAvM9qLcJTde9qWX3OCvd78/preview",
+//       },
+//     ],
+//   },
+//   {
+//     week: 4,
+//     title: "SPL – Part 2",
+//     desc: "stats, eventstats, chart, timechart, transforming commands, lookups.",
+//     videos: [
+//       {
+//         title: "To-analytics Splunk Class 3",
+//         url: "https://player.vimeo.com/video/1133357923",
+//       },
+//     ],
+//     docs: [
+//       {
+//         title: "Splunk Class 3 Slides",
+//         url: "https://drive.google.com/file/d/1mSIZVzbvnkdJylb8_nlcKhCDTcIRuQKM/preview",
+//       },
+//       {
+//         title: "Splunk Class 3 Note",
+//         url: "https://drive.google.com/file/d/1YVWoCLqrk4JhcML-mloJ53RDZlq7v7Pc/preview",
+//       },
+//     ],
+//   },
+//   {
+//     week: 5,
+//     title: "Reports & Dashboards",
+//     desc: "Creating reports, dashboards, visualizations, inputs and filters..",
+//     videos: [],
+
+//     docs: [
+//       {
+//         title: "Splunk Class 5 Slides",
+//         url: "https://drive.google.com/file/d/1ekO5jcujdct0aofS4QBgd3P8BOPonsek/preview",
+//         // url: "https://drive.google.com/file/d/1v7YRwUFvIBenhRSiS-f2evqh2ia2xuq6/preview",
+//       },
+//     ],
+//   },
+//   {
+//     week: 6,
+//     title: "Splunk Knowledge Objects",
+//     // desc: "Creating reports, dashboards, visualizations, inputs and filters.",
+//     videos: [],
+//     docs: [],
+//   },
+//   {
+//     week: 7,
+//     title: "Alerts & Monitoring",
+//     desc: "Alert types, alert actions (email, script, webhook), real-time vs scheduled alerts.",
+//     videos: [],
+//     docs: [],
+//   },
+//   {
+//     week: 8,
+//     title: "Splunk Apps & Add-ons",
+//     desc: "What are apps, installing base apps, popular add-ons, configuration.",
+//     videos: [],
+//     docs: [],
+//   },
+//   {
+//     week: 9,
+//     title: "Data Inputs & Indexing",
+//     desc: "Types of inputs, forwarders (UF/HF), indexing pipeline, indexes and buckets.",
+//     videos: [],
+//     docs: [],
+//   },
+//   {
+//     week: 10,
+//     title: "User Management & Security",
+//     desc: "Roles, users, authentication methods, managing permissions, securing Splunk.",
+//     videos: [],
+//     docs: [],
+//   },
+//   {
+//     week: 11,
+//     title: "Advanced SPL",
+//     desc: "Subsearches, joins, macros, workflow actions, CIM.",
+//     videos: [],
+//     docs: [],
+//   },
+//   {
+//     week: 12,
+//     title: "Performance & Optimization",
+//     desc: "Search optimization, indexing/storage best practices, troubleshooting.",
+//     videos: [],
+//     docs: [],
+//   },
+//   {
+//     week: 13,
+//     title: "Enterprise Deployment",
+//     desc: "Distributed architecture, clustering, SmartStore, high availability & scaling.",
+//     videos: [],
+//     docs: [],
+//   },
+//   {
+//     week: 14,
+//     title: "Final Project & Review",
+//     desc: "Capstone project, dashboard + alerting system, review & exam prep.",
+//     videos: [],
+//     docs: [],
+//   },
+// ];
+
+ const fullSplunkSyllabus = [
   {
     week: 1,
     title: "Introduction to Splunk",
-    desc: "What is Splunk, use cases, architecture, and installation.",
-    videos: [
-      {
-        title: "To-analytics Orientation",
-        url: "https://player.vimeo.com/video/1126909883",
-      },
-    ],
-    docs: [
-      {
-        title: "Orientation Slides",
-        url: "https://drive.google.com/file/d/1VzC-nTY7XhLagAeLIFdN1e6_MQMUkXiv/preview",
-      },
-    ],
+    desc: "Overview of Splunk, its features, use cases, architecture, and installation options.",
+    videos: [],
+    docs: [],
   },
   {
     week: 2,
     title: "Splunk Basics",
-    desc: "Splunk web interface, adding data, fields, basic search commands.",
-    videos: [
-      {
-        title: "To-analytics Splunk Class 1",
-        url: "https://player.vimeo.com/video/1127004938",
-      },
-    ],
-    docs: [
-      {
-        title: "Splunk Class 1 Intro",
-        url: "https://drive.google.com/file/d/1bf5cRkcEC3yDJ5MnzpRKDpRLhRhdUH90/preview",
-      },
-      {
-        title: "Splunk Class 1 Note",
-        url: "https://drive.google.com/file/d/1VYiqPwen5Dc1tV2x8_ohR55n6toGBm1G/preview",
-      },
-    ],
+    desc: "Tour of Splunk Web, adding data, understanding fields, and basic search commands.",
+    videos: [],
+    docs: [],
   },
   {
     week: 3,
-    title: "SPL – Part 1",
-    desc: "Intro to SPL, search, where, eval, working with fields, filtering.",
-    videos: [
-      {
-        title: "To-analytics Splunk Class 2",
-        url: "https://player.vimeo.com/video/1131114931",
-      },
-    ],
-    docs: [
-      {
-        title: "Splunk Class 2 Slides",
-        url: "https://drive.google.com/file/d/1V3zqvISvQLDZlQKUryIna4xnmAzcNRSC/preview",
-      },
-      {
-        title: "Splunk Class 2 Note",
-        url: "https://drive.google.com/file/d/1sf-kifLwlcAvM9qLcJTde9qWX3OCvd78/preview",
-      },
-    ],
+    title: "Splunk Processing & SPL – Part 1",
+    desc: "Introduction to SPL, using search, where, eval, filtering results, and working with fields.",
+    videos: [],
+    docs: [],
   },
   {
     week: 4,
     title: "SPL – Part 2",
-    desc: "stats, eventstats, chart, timechart, transforming commands, lookups.",
-    videos: [
-      {
-        title: "To-analytics Splunk Class 3",
-        url: "https://player.vimeo.com/video/1133357923",
-      },
-    ],
-    docs: [
-      {
-        title: "Splunk Class 3 Slides",
-        url: "https://drive.google.com/file/d/1mSIZVzbvnkdJylb8_nlcKhCDTcIRuQKM/preview",
-      },
-      {
-        title: "Splunk Class 3 Note",
-        url: "https://drive.google.com/file/d/1YVWoCLqrk4JhcML-mloJ53RDZlq7v7Pc/preview",
-      },
-    ],
+    desc: "Statistical and transforming commands, charts, timecharts, and lookup tables.",
+    videos: [],
+    docs: [],
   },
   {
     week: 5,
-    title: "Reports & Dashboards",
-    desc: "Creating reports, dashboards, visualizations, inputs and filters..",
+    title: "Splunk Knowledge Objects",
+    desc: "Creating and managing knowledge objects, field extractions, event types, tags, and transactions.",
     videos: [],
-
-    docs: [
-      {
-        title: "Splunk Class 5 Slides",
-        url: "https://drive.google.com/file/d/1ekO5jcujdct0aofS4QBgd3P8BOPonsek/preview",
-        // url: "https://drive.google.com/file/d/1v7YRwUFvIBenhRSiS-f2evqh2ia2xuq6/preview",
-      },
-    ],
+    docs: [],
   },
   {
     week: 6,
-    title: "Splunk Knowledge Objects",
-    // desc: "Creating reports, dashboards, visualizations, inputs and filters.",
+    title: "Splunk Reports & Dashboards",
+    desc: "Creating reports, dashboards, visualizations, and dashboard inputs and filters.",
     videos: [],
     docs: [],
   },
   {
     week: 7,
-    title: "Alerts & Monitoring",
-    desc: "Alert types, alert actions (email, script, webhook), real-time vs scheduled alerts.",
+    title: "Splunk Alerts & Monitoring",
+    desc: "Setting up alerts, alert actions, real-time vs scheduled alerts, and monitoring best practices.",
     videos: [],
     docs: [],
   },
   {
     week: 8,
     title: "Splunk Apps & Add-ons",
-    desc: "What are apps, installing base apps, popular add-ons, configuration.",
+    desc: "Installing Splunkbase apps, popular add-ons, and configuring Splunk applications.",
     videos: [],
     docs: [],
   },
   {
     week: 9,
-    title: "Data Inputs & Indexing",
-    desc: "Types of inputs, forwarders (UF/HF), indexing pipeline, indexes and buckets.",
+    title: "Splunk Data Inputs & Indexing",
+    desc: "Data input types, forwarders, indexing pipeline, and managing indexes and buckets.",
     videos: [],
     docs: [],
   },
   {
     week: 10,
-    title: "User Management & Security",
-    desc: "Roles, users, authentication methods, managing permissions, securing Splunk.",
+    title: "Splunk User Management & Security",
+    desc: "Roles, authentication methods, permissions, and securing Splunk environments.",
     videos: [],
     docs: [],
   },
   {
     week: 11,
-    title: "Advanced SPL",
-    desc: "Subsearches, joins, macros, workflow actions, CIM.",
+    title: "Splunk Advanced SPL",
+    desc: "Subsearches, joins, macros, workflow actions, advanced field extraction, and CIM.",
     videos: [],
     docs: [],
   },
   {
     week: 12,
-    title: "Performance & Optimization",
-    desc: "Search optimization, indexing/storage best practices, troubleshooting.",
+    title: "Splunk Performance & Optimization",
+    desc: "Search optimization, indexing best practices, deployment considerations, and troubleshooting.",
     videos: [],
     docs: [],
   },
   {
     week: 13,
-    title: "Enterprise Deployment",
-    desc: "Distributed architecture, clustering, SmartStore, high availability & scaling.",
+    title: "Splunk Enterprise Features",
+    desc: "Distributed architecture, clustering, SmartStore, high availability, and scaling.",
     videos: [],
     docs: [],
   },
   {
     week: 14,
     title: "Final Project & Review",
-    desc: "Capstone project, dashboard + alerting system, review & exam prep.",
+    desc: "Capstone project, full topic review, Q&A, and certification exam preparation.",
     videos: [],
     docs: [],
   },
@@ -494,107 +595,83 @@ function storageProgressKey(email) {
 }
 
 // ✅ Syllabus renderer component (center panel for Syllabus mode)
-export const fullSplunkSyllabus = [
-  {
-    week: 1,
-    title: "Introduction to Splunk",
-    desc: "Overview of Splunk, its features, use cases, architecture, and installation options.",
-    videos: [],
-    docs: [],
-  },
-  {
-    week: 2,
-    title: "Splunk Basics",
-    desc: "Tour of Splunk Web, adding data, understanding fields, and basic search commands.",
-    videos: [],
-    docs: [],
-  },
-  {
-    week: 3,
-    title: "Splunk Processing & SPL – Part 1",
-    desc: "Introduction to SPL, using search, where, eval, filtering results, and working with fields.",
-    videos: [],
-    docs: [],
-  },
-  {
-    week: 4,
-    title: "SPL – Part 2",
-    desc: "Statistical and transforming commands, charts, timecharts, and lookup tables.",
-    videos: [],
-    docs: [],
-  },
-  {
-    week: 5,
-    title: "Splunk Knowledge Objects",
-    desc: "Creating and managing knowledge objects, field extractions, event types, tags, and transactions.",
-    videos: [],
-    docs: [],
-  },
-  {
-    week: 6,
-    title: "Splunk Reports & Dashboards",
-    desc: "Creating reports, dashboards, visualizations, and dashboard inputs and filters.",
-    videos: [],
-    docs: [],
-  },
-  {
-    week: 7,
-    title: "Splunk Alerts & Monitoring",
-    desc: "Setting up alerts, alert actions, real-time vs scheduled alerts, and monitoring best practices.",
-    videos: [],
-    docs: [],
-  },
-  {
-    week: 8,
-    title: "Splunk Apps & Add-ons",
-    desc: "Installing Splunkbase apps, popular add-ons, and configuring Splunk applications.",
-    videos: [],
-    docs: [],
-  },
-  {
-    week: 9,
-    title: "Splunk Data Inputs & Indexing",
-    desc: "Data input types, forwarders, indexing pipeline, and managing indexes and buckets.",
-    videos: [],
-    docs: [],
-  },
-  {
-    week: 10,
-    title: "Splunk User Management & Security",
-    desc: "Roles, authentication methods, permissions, and securing Splunk environments.",
-    videos: [],
-    docs: [],
-  },
-  {
-    week: 11,
-    title: "Splunk Advanced SPL",
-    desc: "Subsearches, joins, macros, workflow actions, advanced field extraction, and CIM.",
-    videos: [],
-    docs: [],
-  },
-  {
-    week: 12,
-    title: "Splunk Performance & Optimization",
-    desc: "Search optimization, indexing best practices, deployment considerations, and troubleshooting.",
-    videos: [],
-    docs: [],
-  },
-  {
-    week: 13,
-    title: "Splunk Enterprise Features",
-    desc: "Distributed architecture, clustering, SmartStore, high availability, and scaling.",
-    videos: [],
-    docs: [],
-  },
-  {
-    week: 14,
-    title: "Final Project & Review",
-    desc: "Capstone project, full topic review, Q&A, and certification exam preparation.",
-    videos: [],
-    docs: [],
-  },
-];
+function SyllabusSection() {
+  return (
+    <div className="mt-6">
+      <div className="bg-white rounded-2xl border p-4 shadow-sm">
+        <h2 className="text-lg font-bold mb-3">
+          📘 Full Splunk Course Syllabus
+        </h2>
+        <p className="text-sm text-gray-600 mb-4">
+          This is the full 14-week roadmap for your Splunk training: videos,
+          topics, and supporting documents where available.
+        </p>
 
+        <div className="space-y-4 max-h-[480px] overflow-y-auto pr-1">
+          {fullSplunkSyllabus.map((w, i) => (
+            <div
+              key={i}
+              className="rounded-xl border bg-gray-50 p-3 hover:bg-gray-100 transition-all"
+            >
+              <h3 className="font-semibold text-blue-700 text-sm">
+                Week {w.week} — {w.title}
+              </h3>
+              <p className="text-xs text-gray-600 mt-1">{w.desc}</p>
+
+              {/* Videos for this week */}
+              <div className="mt-2">
+                <div className="text-xs font-medium text-gray-800">
+                  🎬 Videos
+                </div>
+                {w.videos && w.videos.length > 0 ? (
+                  w.videos.map((v, j) => (
+                    <a
+                      key={j}
+                      href={v.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block text-xs text-blue-600 underline mt-1"
+                    >
+                      {v.title}
+                    </a>
+                  ))
+                ) : (
+                  <div className="text-[11px] text-gray-400">
+                    No videos attached yet
+                  </div>
+                )}
+              </div>
+
+              {/* Docs for this week */}
+              <div className="mt-2">
+                <div className="text-xs font-medium text-gray-800">
+                  📄 Documents
+                </div>
+                {w.docs && w.docs.length > 0 ? (
+                  w.docs.map((d, j) => (
+                    <a
+                      key={j}
+                      href={d.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block text-xs text-purple-600 underline mt-1"
+                    >
+                      {d.title}
+                    </a>
+                  ))
+                ) : (
+                  <div className="text-[11px] text-gray-400">
+                    No documents attached yet
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /**
  * CoursePortal (single-file)
