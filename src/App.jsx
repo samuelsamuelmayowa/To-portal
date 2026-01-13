@@ -63,6 +63,7 @@ import MarketOverview from "./components/MarketOverview";
 import SplunkPracticeLab from "./components/SplunkPracticeLab";
 import SplunkStudio from "./pages/SplunkStudio";
 import QuotePage from "./components/QuotePage";
+import MarketOverviewAdvanced from "./components/MarketOverviewAdvanced";
 
 // 🟣 GLOBAL THEME HELPER
 function applySavedTheme() {
@@ -90,6 +91,10 @@ const router = createBrowserRouter([
       {
         path: "/cancel",
         element: <Cancel />,
+      },
+      {
+        path:"ad",
+        element:<MarketOverviewAdvanced/>
       },
       {
         path:"/quote",
