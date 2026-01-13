@@ -4,7 +4,7 @@ const BASE = import.meta.env.VITE_MASSIVE_BASE;
 const API_KEY = import.meta.env.VITE_MASSIVE_API_KEY
 
 export const massive = axios.create({
-  baseURL: BASE,
+  baseURL: "https://api.massive.com/v3",
   headers: {
     Authorization: `Bearer ${API_KEY}`,
   },
