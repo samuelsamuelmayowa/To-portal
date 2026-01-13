@@ -54,7 +54,7 @@ export async function getMarketOverview() {
   }
 
   // 2️⃣ Fetch quotes
-  const quotesRes = await massive.get("/quotes", {
+  const quotesRes = await massive.get("/snapshot/quotes", {
     params: { symbols },
   });
 
