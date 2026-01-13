@@ -4,7 +4,7 @@ import { massive } from "./massive";
  * Ensures we ALWAYS return an array
  */
 const safeArray = (value) => {
-  if (Array.isArray(value)) return value;
+  if (Array.isArray(value)) return value
   if (Array.isArray(value?.data)) return value.data;
   if (Array.isArray(value?.results)) return value.results;
   return [];

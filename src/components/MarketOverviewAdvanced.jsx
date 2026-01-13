@@ -160,7 +160,8 @@ export default function MarketOverviewAdvanced() {
     if (tab === "losers") return losers;
     if (tab === "active") return active;
     // overview uses "active" as default table
-    return active;
+    // return active;
+      return [...gainers, ...losers, ...active];
   }, [tab, gainers, losers, active]);
 
   const filteredSorted = useMemo(() => {
