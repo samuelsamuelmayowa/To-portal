@@ -87,7 +87,7 @@ const MainQuiz = () => {
       console.error("Error loading quiz:", err);
     }
   };
-const bossEmail = ['t.oanalyticsllc@gmail.com']
+const bossEmail = ['toanalyticsllc@gmail.com',"tomideolulana@gmail.com"]
 const isBoss = bossEmail.includes(userEmail?.toLowerCase());
   // 🌀 Loading Animation
   if (loading) {
