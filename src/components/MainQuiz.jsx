@@ -87,7 +87,8 @@ const MainQuiz = () => {
       console.error("Error loading quiz:", err);
     }
   };
-
+const bossEmail = ['t.oanalyticsllc@gmail.com']
+const isBoss = bossEmail.includes(userEmail?.toLowerCase());
   // 🌀 Loading Animation
   if (loading) {
     return (
@@ -99,6 +100,7 @@ const MainQuiz = () => {
       </div>
     );
   }
+
 
   // 🚫 Access Denied
   if (!isAllowed) {
@@ -214,7 +216,12 @@ const MainQuiz = () => {
          
            <option value="T.O Analytics Splunk Class 7 Quiz">Splunk Class 7 Quiz</option>
  <option value="T.O Analytics  Splunk Class 9 Quiz">Splunk Class 9 Quiz</option>
-          {userEmail=== 't.oanalyticsllc@gmail.com' ?  <option value="T.O Analytics – SPLK-2002 Practice Quiz">T.O Analytics – SPLK-2002 Practice Quiz</option>  : null }
+        {isBoss && (
+  <option value="T.O Analytics – SPLK-2002 Practice Quiz">
+    T.O Analytics – SPLK-2002 Practice Quiz
+  </option>
+)}
+
            
           <option value="T.O Analytics Power User Exam Quiz">Power User Exam</option>
           <option value="T.O Analytics Splunk Admin Exam Quiz">Admin Exam</option>
