@@ -92,10 +92,10 @@ const router = createBrowserRouter([
         path: "/cancel",
         element: <Cancel />,
       },
-      {
-        path:"ad",
-        element:<MarketOverviewAdvanced/>
-      },
+      // {
+      //   path:"ad",
+      //   element:<MarketOverviewAdvanced/>
+      // },
       {
         path:"/quote",
         element:<QuotePage/>
@@ -254,6 +254,11 @@ const router = createBrowserRouter([
       { path: "stockside", element: <StockDashboard /> },
       { path: "result", element: <QuizResults /> },
       { path: "stockportal", element: <StockPortal /> },
+
+      {
+        path:"stockmarkert",
+        element:<MarketOverviewAdvanced/>
+      },
       {
         path: "stock",
         element: <MassiveStockDashboard />,

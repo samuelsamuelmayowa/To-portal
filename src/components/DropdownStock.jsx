@@ -31,6 +31,15 @@ const d=1
           >
             Home
           </NavLink>
+         
+
+           <NavLink
+            to="/dashboard/stockmarkert"
+            className="block px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 transition-all duration-200"
+            onClick={() => setOpen(false)}
+          >
+            Stock Overview
+          </NavLink>
 
           <NavLink
             to="/dashboard/stockside"
