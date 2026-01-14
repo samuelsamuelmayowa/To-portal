@@ -12,13 +12,34 @@ export async function getMarketOverview() {
   const tickers = safeArray(snapRes.data?.tickers);
 
   // limit for performance
-  const quotes = tickers.slice(0, 50).map((t) => {
+  // const quotes = tickers.slice(0, 50).map((t) => {
+  //   const price = Number(t.lastTrade?.p ?? 0);
+  //   const prev = Number(t.prevDay?.c ?? 0);
+  //   const volume = Number(t.day?.v ?? 0);
+
+  //   const changePercent =
+  //     prev > 0 ? ((price - prev) / prev) * 100 : 0;
+
+  //   return {
+  //     symbol: t.ticker,
+  //     price,
+  //     volume,
+  //     changePercent,
+  //   };
+  // });
+const quotes = tickers
+  .slice(0, 200) // take more, then filter
+  .map((t) => {
     const price = Number(t.lastTrade?.p ?? 0);
     const prev = Number(t.prevDay?.c ?? 0);
     const volume = Number(t.day?.v ?? 0);
 
-    const changePercent =
-      prev > 0 ? ((price - prev) / prev) * 100 : 0;
+    // 🚫 Remove junk / inactive symbols
+    if (price <= 0 || prev <= 0 || volume <= 0) {
+      return null;
+    }
+
+    const changePercent = ((price - prev) / prev) * 100;
 
     return {
       symbol: t.ticker,
@@ -26,7 +47,8 @@ export async function getMarketOverview() {
       volume,
       changePercent,
     };
-  });
+  })
+  .filter(Boolean); // remove nulls
 
   const gainers = [...quotes].sort(
     (a, b) => b.changePercent - a.changePercent
