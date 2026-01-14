@@ -219,7 +219,17 @@ export default function MarketOverviewAdvanced() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
-      <StickyHeader
+      {/* <StickyHeader
+        userEmail={userEmail}
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
+        isFetching={isFetching}
+        updatedLabel={updatedLabel}
+        onManualRefresh={() => refetch()}
+      /> */}
+
+      <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+          <StickyHeader
         userEmail={userEmail}
         darkMode={darkMode}
         setDarkMode={setDarkMode}
@@ -227,8 +237,6 @@ export default function MarketOverviewAdvanced() {
         updatedLabel={updatedLabel}
         onManualRefresh={() => refetch()}
       />
-
-      <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
         {/* Top controls + tabs */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
           <div className="lg:col-span-8">

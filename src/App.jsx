@@ -92,10 +92,10 @@ const router = createBrowserRouter([
         path: "/cancel",
         element: <Cancel />,
       },
-      // {
-      //   path:"ad",
-      //   element:<MarketOverviewAdvanced/>
-      // },
+      {
+        path:"ad",
+        element:<MarketOverviewAdvanced/>
+      },
       {
         path:"/quote",
         element:<QuotePage/>
