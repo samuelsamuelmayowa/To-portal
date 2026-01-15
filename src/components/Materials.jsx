@@ -213,106 +213,17 @@ const allowedEmails = [
 //     docs: [],
 //   },
 // ];
-export const fullSplunkSyllabus = [
-  {
-    week: 1,
-    title: "Introduction to Splunk",
-    desc: "What Splunk is used for, where it is applied, and basic overview of the Splunk interface.",
-    videos: [],
-    docs: [],
-  },
-  {
-    week: 2,
-    title: "Splunk Interface & Navigation",
-    desc: "Navigating Splunk Web, understanding the search bar, time picker, and fields sidebar.",
-    videos: [],
-    docs: [],
-  },
-  {
-    week: 3,
-    title: "Searching Data in Splunk",
-    desc: "Running basic searches, filtering events, using keywords, and understanding results.",
-    videos: [],
-    docs: [],
-  },
-  {
-    week: 4,
-    title: "Basic SPL Commands",
-    desc: "Using simple SPL commands such as table, sort, stats, count, and fields.",
-    videos: [],
-    docs: [],
-  },
-  {
-    week: 5,
-    title: "Working with Fields",
-    desc: "Understanding fields, extracting fields, and using fields in searches.",
-    videos: [],
-    docs: [],
-  },
-  {
-    week: 6,
-    title: "Simple Reports",
-    desc: "Creating basic reports from searches and saving them for reuse.",
-    videos: [],
-    docs: [],
-  },
-  {
-    week: 7,
-    title: "Dashboards (Basic)",
-    desc: "Creating simple dashboards and adding panels from existing reports.",
-    videos: [],
-    docs: [],
-  },
-  {
-    week: 8,
-    title: "Introduction to Alerts",
-    desc: "What alerts are, when to use them, and creating simple scheduled alerts.",
-    videos: [],
-    docs: [],
-  },
-  {
-    week: 9,
-    title: "Using Sample Data",
-    desc: "Working with Splunk sample data to practice searches, reports, and dashboards.",
-    videos: [],
-    docs: [],
-  },
-  {
-    week: 10,
-    title: "Basic Log Analysis",
-    desc: "Analyzing logs to identify errors, patterns, and unusual activity.",
-    videos: [],
-    docs: [],
-  },
-  {
-    week: 11,
-    title: "Introductory Security Searches",
-    desc: "Running simple searches related to failed logins, errors, and suspicious events.",
-    videos: [],
-    docs: [],
-  },
-  {
-    week: 12,
-    title: "Search Optimization Basics",
-    desc: "Improving searches by narrowing time ranges and reducing unnecessary fields.",
-    videos: [],
-    docs: [],
-  },
-  {
-    week: 13,
-    title: "Revision & Practice",
-    desc: "Review of all searches, dashboards, and alerts covered during the course.",
-    videos: [],
-    docs: [],
-  },
-  {
-    week: 14,
-    title: "Final Review & Assessment",
-    desc: "Final review session, questions and answers, and assessment based on sample course content.",
-    videos: [],
-    docs: [],
-  },
-];
+const fullSplunkSyllabus =
+  sampleCourses
+    .find(c => c.id === "splunk")
+    .classes
+    .map((cls, index) => ({
+      week: index + 1,
+      title: cls.title,
+      desc: cls.desc || "Session content delivered in the sample course.",
+      videos: cls.videos || [],
+      docs: cls.docs || [],
+    }));
 
 // Your existing sample course structure
 const sampleCourses = [
