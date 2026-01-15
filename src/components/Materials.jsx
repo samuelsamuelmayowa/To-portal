@@ -488,6 +488,48 @@ const sampleCourses = [
             url: "https://docs.google.com/presentation/d/1iorNGrxkfRYvm4_C3x0gyb3levapMdaL/preview",
           },
         ]
+      },
+
+       {
+        id: "class11",
+        // title: "Class 7  —  Splunk Dashboard",
+        title:"Class 11 Onboarding data",
+        desc: "",
+        videos: [
+          {
+             id: "v2",
+            title: "",
+            url: "",
+          },
+        ],
+        docs: [
+          {
+            id: "",
+            title: "",
+            url: "",
+          },
+        ]
+      },
+
+      {
+        id: "class12",
+        // title: "Class 7  —  Splunk Dashboard",
+        title:"Class 12 Data Onboarding Lab.",
+        desc: "",
+        videos: [
+          {
+             id: "v2",
+            title: "",
+            url: "",
+          },
+        ],
+        docs: [
+          {
+            id: "",
+            title: "",
+            url: "",
+          },
+        ]
       }
       // {
       //   id: "class6",
