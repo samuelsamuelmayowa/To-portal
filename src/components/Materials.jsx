@@ -213,17 +213,17 @@ const allowedEmails = [
 //     docs: [],
 //   },
 // ];
-const fullSplunkSyllabus =
-  sampleCourses
-    .find(c => c.id === "splunk")
-    .classes
-    .map((cls, index) => ({
-      week: index + 1,
-      title: cls.title,
-      desc: cls.desc || "Session content delivered in the sample course.",
-      videos: cls.videos || [],
-      docs: cls.docs || [],
-    }));
+// const fullSplunkSyllabus =
+//   sampleCourses
+//     .find(c => c.id === "splunk")
+//     .classes
+//     .map((cls, index) => ({
+//       week: index + 1,
+//       title: cls.title,
+//       desc: cls.desc || "Session content delivered in the sample course.",
+//       videos: cls.videos || [],
+//       docs: cls.docs || [],
+//     }));
 
 // Your existing sample course structure
 const sampleCourses = [
@@ -498,6 +498,18 @@ const sampleCourses = [
     ],
   },
 ];
+
+const fullSplunkSyllabus =
+  sampleCourses
+    .find(c => c.id === "splunk")
+    .classes
+    .map((cls, index) => ({
+      week: index + 1,
+      title: cls.title,
+      desc: cls.desc || "Session content delivered in the sample course.",
+      videos: cls.videos || [],
+      docs: cls.docs || [],
+    }));
 
 // Key for saving progress in localStorage per user
 function storageProgressKey(email) {
