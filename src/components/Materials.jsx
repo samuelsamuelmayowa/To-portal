@@ -36,6 +36,8 @@ const allowedEmails = [
     "davidayeni63@gmail.com",
   "adesh25416@gmail.com",
 
+
+
   "codeverseprogramming23@gmail.com",
   "ooolajuyigbe@gmail.com",
   "fadeleolutola@gmail.com",
