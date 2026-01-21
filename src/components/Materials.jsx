@@ -501,12 +501,12 @@ const sampleCourses = [
         id: "class11",
         // title: "Class 7  —  Splunk Dashboard",
         title:"Class 11 Onboarding data",
-        desc: "",
+        // desc: "https://docs.google.com/presentation/d/13XUnTdubkQnixedrIRay7ZqskHLSIRUY/view?usp=sharing",
         videos: [
           {
              id: "v2",
             title: "",
-            url: "",
+            url:  "https://docs.google.com/presentation/d/13XUnTdubkQnixedrIRay7ZqskHLSIRUY/preview",
           },
         ],
         docs: [
