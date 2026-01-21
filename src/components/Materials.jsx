@@ -506,13 +506,13 @@ const sampleCourses = [
           {
              id: "v2",
             title: "",
-            url:  "",
+            url: "https://player.vimeo.com/video/1156881908",
           },
         ],
         docs: [
           {
             id: "",
-            title: "",
+            title: "Onboarding data ",
             url: "https://docs.google.com/presentation/d/13XUnTdubkQnixedrIRay7ZqskHLSIRUY/preview",
           },
         ]
