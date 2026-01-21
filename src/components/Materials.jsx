@@ -506,14 +506,14 @@ const sampleCourses = [
           {
              id: "v2",
             title: "",
-            url:  "https://docs.google.com/presentation/d/13XUnTdubkQnixedrIRay7ZqskHLSIRUY/preview",
+            url:  "",
           },
         ],
         docs: [
           {
             id: "",
             title: "",
-            url: "",
+            url: "https://docs.google.com/presentation/d/13XUnTdubkQnixedrIRay7ZqskHLSIRUY/preview",
           },
         ]
       },
