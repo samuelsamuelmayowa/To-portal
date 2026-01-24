@@ -9,9 +9,9 @@ const api = 'http://localhost:8000/api/'
 import Messages from "../components/Messages";
 function AuthLayout() {
     const {  token ,  setToken , user, setUser } = useStateContext();
-    if (!token) {
-        return <Navigate to="/" />
-    }
+    // if (!token) {
+    //     return <Navigate to="/" />
+    // }
     const auth = getAuth(app);
     const signout = () => {
         signOut(auth).then((user) => {
