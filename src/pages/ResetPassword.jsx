@@ -16,7 +16,7 @@ export default function ResetPassword() {
     setLoading(true);
     try {
       const res = await axios.post(
-        `https://to-backendapi-v1.vercel.app/api/reset-password/${token}`,
+        `https://to-backendapi-v1-kctb.onrender.com/api/reset-password/${token}`,
         { password }
       );
       setMsg(res.data.message);
