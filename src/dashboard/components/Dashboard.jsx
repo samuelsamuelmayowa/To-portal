@@ -10,7 +10,7 @@ const Dashboard = () => {
     const signout = () => {
         signOut(auth).then((user) => {
             // window.localStorage.removeItem("ACCESS_TOKEN");
-            setToken(null)P
+            setToken(null)
         }).catch((err) => console.log(err.message))
     }
     return (
