@@ -17,7 +17,7 @@ const ForgotPassword = () => {
     setLoading(true);
 
     try {
-      const res = await axios.post("https://to-backendapi-v1.vercel.app/api/forgot-password", {
+      const res = await axios.post("https://to-backendapi-v1-kctb.onrender.com/api/forgot-password", {
         email,
       });
       setMsg(res.data.message || "Reset link sent successfully!");
