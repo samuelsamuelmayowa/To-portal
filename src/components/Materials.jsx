@@ -915,7 +915,7 @@ export default function CoursePortal() {
       show={showNewAssignmentAlert}
       onClose={() => setShowNewAssignmentAlert(false)}
     /> */}
-    <NewFeaturePopup/>
+    
       {/* Header */}
 
       <div className="max-w-7xl mx-auto mb-6">
