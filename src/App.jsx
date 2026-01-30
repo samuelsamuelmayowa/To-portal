@@ -65,6 +65,7 @@ import SplunkStudio from "./pages/SplunkStudio";
 import QuotePage from "./components/QuotePage";
 import MarketOverviewAdvanced from "./components/MarketOverviewAdvanced";
 import Home from "./pages/HomeSkill";
+import LabView from "./pages/skillab/LabView";
 
 // 🟣 GLOBAL THEME HELPER
 function applySavedTheme() {
@@ -210,6 +211,27 @@ const router = createBrowserRouter([
     path: "/toskillab",
     element: <Home />,
   },
+
+   {
+    path: "/labview",
+    element: <LabView />,
+  },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   {
     path: "/forgotPassword",
