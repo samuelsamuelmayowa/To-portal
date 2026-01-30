@@ -14,6 +14,7 @@ import {
   Sparkles,
   Lock,
 } from "lucide-react";
+import { Link, NavLink } from "react-router-dom";
 
 const Pill = ({ children }) => (
   <span className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/80 backdrop-blur">
@@ -280,9 +281,12 @@ export default function Home() {
             <a className="hover:text-white" href="#how-it-works">
               How it works
             </a>
-            <a className="hover:text-white" href="#tracks">
+
+            {/* <NavLink */}
+            <Link to={'/labview'}>LabView</Link>
+            {/* <a className="hover:text-white" href="#tracks">
               Tracks
-            </a>
+            </a> */}
             <a className="hover:text-white" href="#faq">
               FAQ
             </a>
