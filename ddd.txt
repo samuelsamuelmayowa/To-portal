@@ -1,1 +1,46 @@
-dfksnignfsingifsngisfnginfgin
+types of vunerabity in web app 
+types of vunerabity in mobile 
+log checking for your website and server 
+good code
+check your login and sighup and find issue and asjustment 
+interview question 
+real time working and task  in cybyer , splunk tasks 
+
+
+
+🧱 MVP STRUCTURE (Simple & Clear)
+Sections in the App:
+
+Web App Security
+
+Mobile Security
+
+Logs & Monitoring
+
+Secure Coding
+
+Interview Challenges
+
+Splunk Labs
+
+Each section has:
+
+Beginner
+
+Intermediate
+
+Advanced (later)
+
+
+
+
+
+
+
+📈 WHY IT’S DIFFERENT
+Other Platforms	TO SkillLab
+Watch videos	Do real work
+Theory-based	Job-based
+Practice mode	Interview pressure
+Completion badges	Skill proof
+“I learned”	“I can do it”

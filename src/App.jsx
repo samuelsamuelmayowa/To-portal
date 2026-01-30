@@ -64,6 +64,7 @@ import SplunkPracticeLab from "./components/SplunkPracticeLab";
 import SplunkStudio from "./pages/SplunkStudio";
 import QuotePage from "./components/QuotePage";
 import MarketOverviewAdvanced from "./components/MarketOverviewAdvanced";
+import Home from "./pages/HomeSkill";
 
 // 🟣 GLOBAL THEME HELPER
 function applySavedTheme() {
@@ -203,10 +204,18 @@ const router = createBrowserRouter([
     path: "/login",
     element: <LoginForm />,
   },
+
+
+  {
+    path: "/toskillab",
+    element: <Home />,
+  },
+
   {
     path: "/forgotPassword",
     element: <ForgotPassword />,
   },
+
   {
     path: "/reset-password/:token",   // there was // 
     element: <ResetPassword />,
