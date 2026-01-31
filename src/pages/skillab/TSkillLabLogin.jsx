@@ -1,20 +1,25 @@
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import LOGO from "../assets/images/logo.jpg";
-import GOOGLE from "../assets/images/google.png";
+// import LOGO from "../assets/images/logo.jpg";
+// import GOOGLE from "../assets/images/google.png";
+
+import GOOGLE from "../../assets/images/google.png";
+import LOGO from '../../assets/images/logo.jpg';
 import { FaXmark } from "react-icons/fa6";
 import React from "react";
 import axios from "axios";
 import { Toaster, toast } from "sonner";
 
-import { app } from "../../firebase.config";
+// import { app } from "../../firebase.config";
+import { app } from "../../../firebase.config";
 import {
   GoogleAuthProvider,
   getAuth,
   signInWithPopup,
 } from "firebase/auth";
 
-import { useStateContext } from "../context/ContextProvider";
+// import { useStateContext } from "../context/ContextProvider";
+import { useStateContext } from "../../context/ContextProvider";
 
 const api = import.meta.env.VITE_BACKEND_API;
 
