@@ -32,6 +32,7 @@ const API_BASE = import.meta.env.VITE_HOME_OO || "http://localhost:8000";
 const allowedEmails = [
     "kewizle.k@gmail.com",
   "basseyvera018@gmail.com",
+          "Kewizle.k@gmail.com",
   "Davidayeni63@gmail.com",
   "Adesh25416@gmail.com",
     "davidayeni63@gmail.com",
