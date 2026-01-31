@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import jsPDF from "jspdf";
 const Quiz = ({ data }) => {
   const api = import.meta.env.VITE_HOME_OO;
-   const questions = data?.questions ?? [];
+  const questions = data?.questions ?? [];
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});
   const [score, setScore] = useState(null);
@@ -44,8 +44,9 @@ const Quiz = ({ data }) => {
   // ✅ Allowed test-takers
   const allowedEmails = [
     "kevwe_oberiko@yahoo.com",
-      "kewizle.k@gmail.com",
-        "Kewizle.k@gmail.com",
+    "kewizle.k@gmail.com",
+     "kewizlek@gmail.com",
+    "Kewizle.k@gmail.com",
     "basseyvera018@gmail.com",
     "codeverseprogramming23@gmail.com",
     "ooolajuyigbe@gmail.com",
@@ -76,57 +77,55 @@ const Quiz = ({ data }) => {
       setNotAllowed(true);
     }
   }, [userEmail]);
-//   useEffect(() => {
-//   // const q = questions[currentQuestion];
-//   const q = questions?.[currentQuestion];
+  //   useEffect(() => {
+  //   // const q = questions[currentQuestion];
+  //   const q = questions?.[currentQuestion];
 
-// if (!q) {
-//   return (
-//     <div className="p-6 text-center text-gray-600">
-//       Loading question…
-//     </div>
-//   );
-// }
+  // if (!q) {
+  //   return (
+  //     <div className="p-6 text-center text-gray-600">
+  //       Loading question…
+  //     </div>
+  //   );
+  // }
 
+  //   if (!q) return;
 
-//   if (!q) return;
+  //   setAnswers((prev) => {
+  //     // MULTI question must always be an array
+  //     if (q.multi && !Array.isArray(prev[currentQuestion])) {
+  //       return { ...prev, [currentQuestion]: [] };
+  //     }
 
-//   setAnswers((prev) => {
-//     // MULTI question must always be an array
-//     if (q.multi && !Array.isArray(prev[currentQuestion])) {
-//       return { ...prev, [currentQuestion]: [] };
-//     }
+  //     // SINGLE question must always be a string
+  //     if (!q.multi && Array.isArray(prev[currentQuestion])) {
+  //       return { ...prev, [currentQuestion]: "" };
+  //     }
 
-//     // SINGLE question must always be a string
-//     if (!q.multi && Array.isArray(prev[currentQuestion])) {
-//       return { ...prev, [currentQuestion]: "" };
-//     }
+  //     return prev;
+  //   });
+  // }, [currentQuestion, questions]);
 
-//     return prev;
-//   });
-// }, [currentQuestion, questions]);
+  useEffect(() => {
+    if (!questions.length) return;
 
+    const q = questions[currentQuestion];
+    if (!q) return;
 
-useEffect(() => {
-  if (!questions.length) return;
+    setAnswers((prev) => {
+      // multi must always be array
+      if (q.multi && !Array.isArray(prev[currentQuestion])) {
+        return { ...prev, [currentQuestion]: [] };
+      }
 
-  const q = questions[currentQuestion];
-  if (!q) return;
+      // single must always be string
+      if (!q.multi && Array.isArray(prev[currentQuestion])) {
+        return { ...prev, [currentQuestion]: "" };
+      }
 
-  setAnswers((prev) => {
-    // multi must always be array
-    if (q.multi && !Array.isArray(prev[currentQuestion])) {
-      return { ...prev, [currentQuestion]: [] };
-    }
-
-    // single must always be string
-    if (!q.multi && Array.isArray(prev[currentQuestion])) {
-      return { ...prev, [currentQuestion]: "" };
-    }
-
-    return prev;
-  });
-}, [currentQuestion, questions]);
+      return prev;
+    });
+  }, [currentQuestion, questions]);
 
   // const questions = data?.questions || [];
   // 🕒 Countdown Timer
@@ -140,28 +139,28 @@ useEffect(() => {
     return () => clearInterval(timer);
   }, [timeLeft, submitted, notAllowed]);
 
-//   const handleAnswerSelect = (questionIndex, option) => {
-//   const q = questions[questionIndex];
+  //   const handleAnswerSelect = (questionIndex, option) => {
+  //   const q = questions[questionIndex];
 
-//   setAnswers((prev) => {
-//     // MULTI-SELECT QUESTION
-//     if (q.multi) {
-//       const prevAnswers = prev[questionIndex] || [];
-//       return {
-//         ...prev,
-//         [questionIndex]: prevAnswers.includes(option)
-//           ? prevAnswers.filter((o) => o !== option)
-//           : [...prevAnswers, option],
-//       };
-//     }
+  //   setAnswers((prev) => {
+  //     // MULTI-SELECT QUESTION
+  //     if (q.multi) {
+  //       const prevAnswers = prev[questionIndex] || [];
+  //       return {
+  //         ...prev,
+  //         [questionIndex]: prevAnswers.includes(option)
+  //           ? prevAnswers.filter((o) => o !== option)
+  //           : [...prevAnswers, option],
+  //       };
+  //     }
 
-//     // SINGLE-SELECT QUESTION
-//     return {
-//       ...prev,
-//       [questionIndex]: option,
-//     };
-//   });
-// };
+  //     // SINGLE-SELECT QUESTION
+  //     return {
+  //       ...prev,
+  //       [questionIndex]: option,
+  //     };
+  //   });
+  // };
 
   // const handleAnswerSelect = (questionIndex, option) => {
   //   setAnswers((prev) => ({
@@ -219,59 +218,58 @@ useEffect(() => {
   //     alert("⚠️ An error occurred while saving your result.");
   //   }
   // };
-  
-//   const handleAnswerSelect = (questionIndex, option) => {
-//   const q = questions[questionIndex];
-//   if (!q) return;
 
-//   setAnswers((prev) => {
-//     // MULTI
-//     if (q.multi === true) {
-//       const prevAnswers = Array.isArray(prev[questionIndex])
-//         ? prev[questionIndex]
-//         : [];
+  //   const handleAnswerSelect = (questionIndex, option) => {
+  //   const q = questions[questionIndex];
+  //   if (!q) return;
 
-//       return {
-//         ...prev,
-//         [questionIndex]: prevAnswers.includes(option)
-//           ? prevAnswers.filter((o) => o !== option)
-//           : [...prevAnswers, option],
-//       };
-//     }
+  //   setAnswers((prev) => {
+  //     // MULTI
+  //     if (q.multi === true) {
+  //       const prevAnswers = Array.isArray(prev[questionIndex])
+  //         ? prev[questionIndex]
+  //         : [];
 
-//     // SINGLE
-//     return {
-//       ...prev,
-//       [questionIndex]: option,
-//     };
-//   });
-// };
+  //       return {
+  //         ...prev,
+  //         [questionIndex]: prevAnswers.includes(option)
+  //           ? prevAnswers.filter((o) => o !== option)
+  //           : [...prevAnswers, option],
+  //       };
+  //     }
 
-const handleAnswerSelect = (questionIndex, option) => {
-  const q = questions[questionIndex];
-  if (!q) return;
+  //     // SINGLE
+  //     return {
+  //       ...prev,
+  //       [questionIndex]: option,
+  //     };
+  //   });
+  // };
 
-  setAnswers((prev) => {
-    if (q.multi === true) {
-      const prevAnswers = Array.isArray(prev[questionIndex])
-        ? prev[questionIndex]
-        : [];
+  const handleAnswerSelect = (questionIndex, option) => {
+    const q = questions[questionIndex];
+    if (!q) return;
+
+    setAnswers((prev) => {
+      if (q.multi === true) {
+        const prevAnswers = Array.isArray(prev[questionIndex])
+          ? prev[questionIndex]
+          : [];
+
+        return {
+          ...prev,
+          [questionIndex]: prevAnswers.includes(option)
+            ? prevAnswers.filter((o) => o !== option)
+            : [...prevAnswers, option],
+        };
+      }
 
       return {
         ...prev,
-        [questionIndex]: prevAnswers.includes(option)
-          ? prevAnswers.filter((o) => o !== option)
-          : [...prevAnswers, option],
+        [questionIndex]: option,
       };
-    }
-
-    return {
-      ...prev,
-      [questionIndex]: option,
-    };
-  });
-};
-
+    });
+  };
 
   const handleSubmit = async () => {
     let correctCount = 0;
@@ -291,32 +289,32 @@ const handleAnswerSelect = (questionIndex, option) => {
     //     });
     //   }
     // });
-questions.forEach((q, index) => {
-  const userAnswer = answers[index];
-  const correctAnswers = q.correct;
+    questions.forEach((q, index) => {
+      const userAnswer = answers[index];
+      const correctAnswers = q.correct;
 
-  let isCorrect = false;
+      let isCorrect = false;
 
-  if (q.multi) {
-    if (Array.isArray(userAnswer)) {
-      isCorrect =
-        userAnswer.length === correctAnswers.length &&
-        correctAnswers.every((ans) => userAnswer.includes(ans));
-    }
-  } else {
-    isCorrect = correctAnswers.includes(userAnswer);
-  }
+      if (q.multi) {
+        if (Array.isArray(userAnswer)) {
+          isCorrect =
+            userAnswer.length === correctAnswers.length &&
+            correctAnswers.every((ans) => userAnswer.includes(ans));
+        }
+      } else {
+        isCorrect = correctAnswers.includes(userAnswer);
+      }
 
-  if (isCorrect) {
-    correctCount++;
-  } else {
-    missed.push({
-      question: q.question,
-      selected: userAnswer || "No answer",
-      correct: correctAnswers.join(", "),
+      if (isCorrect) {
+        correctCount++;
+      } else {
+        missed.push({
+          question: q.question,
+          selected: userAnswer || "No answer",
+          correct: correctAnswers.join(", "),
+        });
+      }
     });
-  }
-});
 
     const totalQuestions = questions.length;
     // ✅ Now score = number of correct answers
@@ -367,14 +365,13 @@ questions.forEach((q, index) => {
     if (currentQuestion > 0) setCurrentQuestion((prev) => prev - 1);
   };
 
-
   const isAnswered = () => {
-  const q = questions[currentQuestion];
-  const a = answers[currentQuestion];
+    const q = questions[currentQuestion];
+    const a = answers[currentQuestion];
 
-  if (q.multi) return Array.isArray(a) && a.length > 0;
-  return typeof a === "string" && a.length > 0;
-};
+    if (q.multi) return Array.isArray(a) && a.length > 0;
+    return typeof a === "string" && a.length > 0;
+  };
 
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60)
@@ -423,11 +420,10 @@ questions.forEach((q, index) => {
       const correctAnswers = Array.isArray(q.correct) ? q.correct : [q.correct];
       // const isCorrect = correctAnswers.includes(userAnswer);
       const isCorrect = q.multi
-  ? Array.isArray(userAnswer) &&
-    userAnswer.length === correctAnswers.length &&
-    correctAnswers.every((ans) => userAnswer.includes(ans))
-  : correctAnswers.includes(userAnswer);
-
+        ? Array.isArray(userAnswer) &&
+          userAnswer.length === correctAnswers.length &&
+          correctAnswers.every((ans) => userAnswer.includes(ans))
+        : correctAnswers.includes(userAnswer);
 
       // Question text
       doc.setFont("helvetica", "bold");
@@ -451,7 +447,7 @@ questions.forEach((q, index) => {
       doc.text(
         `Result: ${isCorrect ? "✅ Correct" : "❌ Missed"}`,
         marginX + 10,
-        y
+        y,
       );
       doc.setTextColor("#000000");
       y += 20;
@@ -525,11 +521,10 @@ questions.forEach((q, index) => {
                 : [q.correct];
               // const isCorrect = correctAnswers.includes(userAnswer);
               const isCorrect = q.multi
-  ? Array.isArray(userAnswer) &&
-    userAnswer.length === correctAnswers.length &&
-    correctAnswers.every((ans) => userAnswer.includes(ans))
-  : correctAnswers.includes(userAnswer);
-
+                ? Array.isArray(userAnswer) &&
+                  userAnswer.length === correctAnswers.length &&
+                  correctAnswers.every((ans) => userAnswer.includes(ans))
+                : correctAnswers.includes(userAnswer);
 
               return (
                 <div
@@ -559,10 +554,9 @@ questions.forEach((q, index) => {
                     >
                       {/* {userAnswer || "No answer"} */}
                       Your Answer:{" "}
-{Array.isArray(userAnswer)
-  ? userAnswer.join(", ")
-  : userAnswer || "No answer"}
-
+                      {Array.isArray(userAnswer)
+                        ? userAnswer.join(", ")
+                        : userAnswer || "No answer"}
                     </span>
                   </p>
 
@@ -647,30 +641,26 @@ questions.forEach((q, index) => {
   // const q = questions?.[currentQuestion];
   const q = questions.length > 0 ? questions[currentQuestion] : null;
 
-if (!q) {
-  return (
-    <div className="p-6 text-center text-gray-600">
-      Loading question…
-    </div>
-  );
-}
+  if (!q) {
+    return (
+      <div className="p-6 text-center text-gray-600">Loading question…</div>
+    );
+  }
 
-
-// if (!q) {
-//   return (
-//     <div className="p-6 text-center text-gray-600">
-//       Loading question…
-//     </div>
-//   );
-// }
-
+  // if (!q) {
+  //   return (
+  //     <div className="p-6 text-center text-gray-600">
+  //       Loading question…
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="p-6 bg-white rounded-xl shadow-md text-gray-800">
       {/* Timer */}
       <pre className="bg-red-100 text-xs p-2 mb-2">
-  {/* {JSON.stringify(q.multi , null, 2)} — {typeof q.multi} */}
-</pre>
+        {/* {JSON.stringify(q.multi , null, 2)} — {typeof q.multi} */}
+      </pre>
 
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-bold text-gray-800">{data.title}</h2>
@@ -707,54 +697,53 @@ if (!q) {
           Question {currentQuestion + 1} of {questions.length}
         </h3>
         <p className="text-gray-700 mb-6">{q.question}</p>
-{q && (
-  <pre className="bg-gray-100 text-xs p-2 rounded mb-4">
-    {JSON.stringify(answers[currentQuestion], null, 2)}
-  </pre>
-)}
+        {q && (
+          <pre className="bg-gray-100 text-xs p-2 rounded mb-4">
+            {JSON.stringify(answers[currentQuestion], null, 2)}
+          </pre>
+        )}
 
         {/* Options */}
         <div className="space-y-3">
-  {q.options.map((option, i) => {
-    const isMulti = q.multi;
-    // const selected = isMulti
-    //   ? (answers[currentQuestion] || []).includes(option)
-    //   : answers[currentQuestion] === option;
-    const selected = isMulti
-  ? Array.isArray(answers[currentQuestion]) &&
-    answers[currentQuestion].includes(option)
-  : answers[currentQuestion] === option;
+          {q.options.map((option, i) => {
+            const isMulti = q.multi;
+            // const selected = isMulti
+            //   ? (answers[currentQuestion] || []).includes(option)
+            //   : answers[currentQuestion] === option;
+            const selected = isMulti
+              ? Array.isArray(answers[currentQuestion]) &&
+                answers[currentQuestion].includes(option)
+              : answers[currentQuestion] === option;
 
-
-    return (
-      <label
-        key={i}
-        className={`block p-3 border rounded-lg cursor-pointer transition ${
-          selected
-            ? "bg-blue-600 border-blue-600 text-white"
-            : "hover:bg-blue-50 border-gray-300"
-        }`}
-      >
-        {/* <input
+            return (
+              <label
+                key={i}
+                className={`block p-3 border rounded-lg cursor-pointer transition ${
+                  selected
+                    ? "bg-blue-600 border-blue-600 text-white"
+                    : "hover:bg-blue-50 border-gray-300"
+                }`}
+              >
+                {/* <input
           type={isMulti ? "checkbox" : "radio"}
           name={`question-${currentQuestion}`}
           checked={selected}
           onChange={() => handleAnswerSelect(currentQuestion, option)}
           className="mr-2"
         /> */}
-        <input
-  type={isMulti ? "checkbox" : "radio"}
-  name={isMulti ? undefined : `question-${currentQuestion}`}
-  checked={selected}
-  onChange={() => handleAnswerSelect(currentQuestion, option)}
-  className="mr-2"
-/>
+                <input
+                  type={isMulti ? "checkbox" : "radio"}
+                  name={isMulti ? undefined : `question-${currentQuestion}`}
+                  checked={selected}
+                  onChange={() => handleAnswerSelect(currentQuestion, option)}
+                  className="mr-2"
+                />
 
-        {option}
-      </label>
-    );
-  })}
-</div>
+                {option}
+              </label>
+            );
+          })}
+        </div>
 
         {/* <div className="space-y-3">
           {q.options.map((option, i) => (
@@ -797,12 +786,12 @@ if (!q) {
         {currentQuestion < questions.length - 1 ? (
           <button
             onClick={nextQuestion}
-  //            disabled={!isAnswered()}
-  // className={`px-5 py-2 rounded-lg ${
-  //   !isAnswered()
-  //     ? "bg-gray-300 cursor-not-allowed"
-  //     : "bg-blue-600 hover:bg-blue-700"
-  // }`}
+            //            disabled={!isAnswered()}
+            // className={`px-5 py-2 rounded-lg ${
+            //   !isAnswered()
+            //     ? "bg-gray-300 cursor-not-allowed"
+            //     : "bg-blue-600 hover:bg-blue-700"
+            // }`}
             className="px-5 py-2 bg-blue-600 rounded-lg font-medium hover:bg-blue-700 transition"
           >
             Next ➡

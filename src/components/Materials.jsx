@@ -9,10 +9,7 @@ function AssignmentToast({ show, onClose }) {
       <h2 className="font-medium text-sm  font-bold">
         New assignment has been released!
       </h2>
-      <button
-        onClick={onClose}
-        className="text-xs underline mt-2"
-      >
+      <button onClick={onClose} className="text-xs underline mt-2">
         Close
       </button>
     </div>
@@ -30,16 +27,14 @@ const API_BASE = import.meta.env.VITE_HOME_OO || "http://localhost:8000";
 
 // Allowed users
 const allowedEmails = [
-    "kewizle.k@gmail.com",
+  "kewizle.k@gmail.com",
+  "kewizlek@gmail.com",
   "basseyvera018@gmail.com",
-          "Kewizle.k@gmail.com",
+  "Kewizle.k@gmail.com",
   "Davidayeni63@gmail.com",
   "Adesh25416@gmail.com",
-    "davidayeni63@gmail.com",
+  "davidayeni63@gmail.com",
   "adesh25416@gmail.com",
-
-
-
   "codeverseprogramming23@gmail.com",
   "ooolajuyigbe@gmail.com",
   "fadeleolutola@gmail.com",
@@ -404,11 +399,11 @@ const sampleCourses = [
       {
         id: "class7",
         // title: "Class 7  —  Splunk Dashboard",
-        title:"Class 7 Splunk Lab Knowledge Objects",
+        title: "Class 7 Splunk Lab Knowledge Objects",
         desc: "",
         videos: [
           {
-             id: "v2",
+            id: "v2",
             title: "To-analytics Splunk Class 7",
             url: "https://player.vimeo.com/video/1145017764",
           },
@@ -422,15 +417,15 @@ const sampleCourses = [
         ],
       },
 
-// https://player.vimeo.com/video/1149696096
+      // https://player.vimeo.com/video/1149696096
       {
         id: "class8",
         // title: "Class 7  —  Splunk Dashboard",
-        title:"Class 8 Splunk Dashboard ",
+        title: "Class 8 Splunk Dashboard ",
         desc: "",
         videos: [
           {
-             id: "v2",
+            id: "v2",
             title: "To-analytics Splunk Class 8",
             url: "https://player.vimeo.com/video/1146557656",
           },
@@ -442,13 +437,13 @@ const sampleCourses = [
             url: "https://drive.google.com/file/d/1jBaWruZc2sgrmzuLFWuwtcNMHrOiab8K/preview",
           },
 
-            {
+          {
             id: "d3",
             title: "T.O_Analytics_Splunk_Class_8 Note",
             url: "https://drive.google.com/file/d/1EvVwiUgfR8Vl1q4MIIUPCmHnFDDKvPg4/preview",
           },
 
-           {
+          {
             id: "d3",
             title: "T.O_Analytics_Splunk_Class_8 Assignment",
             url: "https://drive.google.com/file/d/1APZ-0shpvdjNJ9OFppVVrE5KqPwwHL49/preview",
@@ -456,14 +451,14 @@ const sampleCourses = [
         ],
       },
 
-       {
+      {
         id: "class9",
         // title: "Class 7  —  Splunk Dashboard",
-        title:"Class 9 Splunk Dashboard Lab",
+        title: "Class 9 Splunk Dashboard Lab",
         desc: "",
         videos: [
           {
-             id: "v2",
+            id: "v2",
             title: "To-analytics Splunk Class 9",
             url: "https://player.vimeo.com/video/1149696096",
           },
@@ -474,18 +469,18 @@ const sampleCourses = [
             title: "",
             url: "",
           },
-        ]
+        ],
       },
-      // 
+      //
 
-       {
+      {
         id: "class10",
         // title: "Class 7  —  Splunk Dashboard",
-        title:"Class 10 Certification Exam, Job & Assignment Review",
+        title: "Class 10 Certification Exam, Job & Assignment Review",
         desc: "",
         videos: [
           {
-             id: "v2",
+            id: "v2",
             title: "To-analytics Splunk Class 10",
             url: "https://player.vimeo.com/video/1153292493",
           },
@@ -496,17 +491,17 @@ const sampleCourses = [
             title: "Assignment",
             url: "https://docs.google.com/presentation/d/1iorNGrxkfRYvm4_C3x0gyb3levapMdaL/preview",
           },
-        ]
+        ],
       },
 
-       {
+      {
         id: "class11",
         // title: "Class 7  —  Splunk Dashboard",
-        title:"Class 11 Onboarding data",
+        title: "Class 11 Onboarding data",
         // desc: "https://docs.google.com/presentation/d/13XUnTdubkQnixedrIRay7ZqskHLSIRUY/view?usp=sharing",
         videos: [
           {
-             id: "v2",
+            id: "v2",
             title: "",
             url: "https://player.vimeo.com/video/1156881908",
           },
@@ -517,17 +512,17 @@ const sampleCourses = [
             title: "Onboarding data ",
             url: "https://docs.google.com/presentation/d/13XUnTdubkQnixedrIRay7ZqskHLSIRUY/preview",
           },
-        ]
+        ],
       },
 
       {
         id: "class12",
         // title: "Class 7  —  Splunk Dashboard",
-        title:"Class 12 Data Onboarding Lab.",
+        title: "Class 12 Data Onboarding Lab.",
         desc: "",
         videos: [
           {
-             id: "v2",
+            id: "v2",
             title: "Class 12 Data Onboarding Lab",
             url: "https://player.vimeo.com/video/1158631944",
             // url: "",
@@ -539,8 +534,8 @@ const sampleCourses = [
             title: "Class 12 Data Onboarding Lab",
             url: "",
           },
-        ]
-      }
+        ],
+      },
       // {
       //   id: "class6",
       //   title: "Class 5  — Splunk Knowledge Objects",
@@ -551,17 +546,15 @@ const sampleCourses = [
   },
 ];
 
-const fullSplunkSyllabus =
-  sampleCourses
-    .find(c => c.id === "splunk")
-    .classes
-    .map((cls, index) => ({
-      week: index + 1,
-      title: cls.title,
-      desc: cls.desc || "Session content delivered in the sample course.",
-      videos: cls.videos || [],
-      docs: cls.docs || [],
-    }));
+const fullSplunkSyllabus = sampleCourses
+  .find((c) => c.id === "splunk")
+  .classes.map((cls, index) => ({
+    week: index + 1,
+    title: cls.title,
+    desc: cls.desc || "Session content delivered in the sample course.",
+    videos: cls.videos || [],
+    docs: cls.docs || [],
+  }));
 
 // Key for saving progress in localStorage per user
 function storageProgressKey(email) {
@@ -683,9 +676,8 @@ export default function CoursePortal() {
     setIsAllowed(
       allowedEmails
         .map((a) => a.toLowerCase())
-        .includes((e || "").toLowerCase())
+        .includes((e || "").toLowerCase()),
     );
-
 
     // Load progress (from backend instead of localStorage)
     async function fetchProgress() {
@@ -694,7 +686,7 @@ export default function CoursePortal() {
       try {
         // 1️⃣ Try to load from backend
         const res = await fetch(
-          `${import.meta.env.VITE_API_BASE}/api/progress/${e}`
+          `${import.meta.env.VITE_API_BASE}/api/progress/${e}`,
         );
         if (!res.ok) throw new Error("Failed to fetch backend data");
 
@@ -719,7 +711,7 @@ export default function CoursePortal() {
         // Fallback to localStorage
         try {
           const saved = JSON.parse(
-            localStorage.getItem(storageProgressKey(e)) || "{}"
+            localStorage.getItem(storageProgressKey(e)) || "{}",
           );
           setProgressState(saved || {});
         } catch {
@@ -752,7 +744,7 @@ export default function CoursePortal() {
               ? v.url.replace("player.", "")
               : v.url;
             const oembed = `https://vimeo.com/api/oembed.json?url=${encodeURIComponent(
-              videoUrl
+              videoUrl,
             )}`;
             const res = await fetch(oembed);
             if (!res.ok) throw new Error("no oembed");
@@ -761,7 +753,7 @@ export default function CoursePortal() {
           } catch (e) {
             vmap[v.id] = null;
           }
-        })
+        }),
       );
       setThumbnails(vmap);
       setLoadingThumbs(false);
@@ -805,7 +797,7 @@ export default function CoursePortal() {
     // restore last-time for this class/video if present
     try {
       const saved = JSON.parse(
-        localStorage.getItem(storageProgressKey(userEmail)) || "{}"
+        localStorage.getItem(storageProgressKey(userEmail)) || "{}",
       );
       const cls = saved[selectedClass.id] || {};
       if (cls.videoId === selectedVideo.id && cls.time > 0) {
@@ -847,7 +839,7 @@ export default function CoursePortal() {
     setShowClassDetails(true);
     try {
       const saved = JSON.parse(
-        localStorage.getItem(storageProgressKey(userEmail)) || "{}"
+        localStorage.getItem(storageProgressKey(userEmail)) || "{}",
       );
       const cls = saved[selectedClass.id] || {};
       if (cls.videoId) {
@@ -857,10 +849,9 @@ export default function CoursePortal() {
     } catch (e) {}
   }, [selectedClass, userEmail]);
 
-  
-    useEffect(() => {
-      document.documentElement.classList.toggle("dark", darkMode);
-    }, [darkMode]);
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", darkMode);
+  }, [darkMode]);
 
   // helpers: update progress & mark complete
   function updateVideoProgress(classId, videoId, timeSec, durationSec) {
@@ -913,12 +904,12 @@ export default function CoursePortal() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4">
-{/*       
+      {/*       
          <AssignmentToast
       show={showNewAssignmentAlert}
       onClose={() => setShowNewAssignmentAlert(false)}
     /> */}
-    
+
       {/* Header */}
 
       <div className="max-w-7xl mx-auto mb-6">
@@ -948,7 +939,7 @@ export default function CoursePortal() {
               My Profile
             </button> */}
 
-<DashboardDropdown/>
+            <DashboardDropdown />
             {/* Dark Mode Toggle */}
             <button
               onClick={() => setDarkMode(!darkMode)}
@@ -962,7 +953,7 @@ export default function CoursePortal() {
           </div>
         </div>
       </div>
-  <TOAnnouncementBar />
+      <TOAnnouncementBar />
       <div className="max-w-7xl mx-auto grid grid-cols-12 gap-6">
         {/* LEFT SIDEBAR */}
         <aside className="col-span-12 md:col-span-3 bg-white rounded-2xl p-4 shadow-lg">
@@ -1042,13 +1033,13 @@ export default function CoursePortal() {
                                 width: progress?.completed
                                   ? "100%"
                                   : progress?.time
-                                  ? `${Math.min(
-                                      (progress.time /
-                                        (progress.duration || 1)) *
+                                    ? `${Math.min(
+                                        (progress.time /
+                                          (progress.duration || 1)) *
+                                          100,
                                         100,
-                                      100
-                                    )}%`
-                                  : "5%",
+                                      )}%`
+                                    : "5%",
                               }}
                             />
                           </div>
@@ -1199,7 +1190,7 @@ export default function CoursePortal() {
               placeholder="Write your notes..."
               value={(() => {
                 const saved = JSON.parse(
-                  localStorage.getItem(storageProgressKey(userEmail)) || "{}"
+                  localStorage.getItem(storageProgressKey(userEmail)) || "{}",
                 );
                 return saved[selectedClass.id]?.note || "";
               })()}

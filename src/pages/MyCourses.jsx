@@ -19,18 +19,19 @@ const MyCourses = () => {
 
   // ✅ Main allowed emails (for the entire page)
   const allowedEmails = [
-      "kewizle.k@gmail.com",
-              "Kewizle.k@gmail.com",
+    "kewizle.k@gmail.com",
+     "kewizlek@gmail.com",
+    "Kewizle.k@gmail.com",
     "dafdfda",
-      "Davidayeni63@gmail.com",
-  "Adesh25416@gmail.com",
+    "Davidayeni63@gmail.com",
+    "Adesh25416@gmail.com",
     "davidayeni63@gmail.com",
-  "adesh25416@gmail.com",
+    "adesh25416@gmail.com",
     "basseyvera018@gmail.com",
-      "codeverseprogramming23@gmail.com",
+    "codeverseprogramming23@gmail.com",
     "fadeleolutola@gmail.com",
     "ooolajuyigbe@gmail.com",
-        "jahdek76@gmail.com",
+    "jahdek76@gmail.com",
     "samuelsamuelmayowa@gmail.com",
     "oluwaferanmiolulana@gmail.com",
     "tomideolulana@gmail.com",
@@ -68,10 +69,7 @@ const MyCourses = () => {
   }
 
   // ✅ Special access list for "Stock & Options"
-  const stockAccess = [
-    "tomideolulana@gmail.com",
-    "toanalyticsllc@gmail.com",
-  ];
+  const stockAccess = ["tomideolulana@gmail.com", "toanalyticsllc@gmail.com"];
 
   // 🎓 Authorized View
   return (
@@ -87,7 +85,6 @@ const MyCourses = () => {
 
       {/* ✅ Course Cards */}
       <div className="flex flex-wrap gap-6 justify-center">
-
         {/* Splunk Course — visible to all authorized users */}
         <NavLink
           to="/dashboard/materials"
@@ -135,7 +132,6 @@ const MyCourses = () => {
 };
 
 export default MyCourses;
-
 
 // import { useEffect, useState } from "react";
 // import { NavLink } from "react-router-dom";
@@ -259,7 +255,6 @@ export default MyCourses;
 
 // export default MyCourses;
 
-
 // import { useEffect, useState } from "react";
 // import { Link, NavLink, useLocation } from "react-router-dom";
 // import COURSES from "../coursesAPI/api";
@@ -297,7 +292,7 @@ export default MyCourses;
 //     "dipeoluolatunji@gmail.com",
 //     "lybertyudochuu@gmail.com",
 //     "yinkalola51@gmail.com",
-//   ]; 
+//   ];
 
 //   useEffect(() => {
 //     if (allowedEmails.includes(userEmail)) {
