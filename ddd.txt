@@ -6,36 +6,23 @@ check your login and sighup and find issue and asjustment
 interview question 
 real time working and task  in cybyer , splunk tasks 
 
+cyber pentest people come and test api code and moveile app 
+make it look real you pass an interview and collect a salary 
 
 
 🧱 MVP STRUCTURE (Simple & Clear)
 Sections in the App:
-
 Web App Security
-
 Mobile Security
-
 Logs & Monitoring
-
 Secure Coding
 
 Interview Challenges
-
 Splunk Labs
-
 Each section has:
-
 Beginner
-
 Intermediate
-
 Advanced (later)
-
-
-
-
-
-
 
 📈 WHY IT’S DIFFERENT
 Other Platforms	TO SkillLab

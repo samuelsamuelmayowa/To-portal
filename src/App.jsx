@@ -66,6 +66,7 @@ import QuotePage from "./components/QuotePage";
 import MarketOverviewAdvanced from "./components/MarketOverviewAdvanced";
 import Home from "./pages/HomeSkill";
 import LabView from "./pages/skillab/LabView";
+import Profile from "./pages/skillab/Profile";
 
 // 🟣 GLOBAL THEME HELPER
 function applySavedTheme() {
@@ -215,6 +216,11 @@ const router = createBrowserRouter([
    {
     path: "/labview",
     element: <LabView />,
+  },
+
+{
+    path: "/profile",
+    element: <Profile />,
   },
 
 

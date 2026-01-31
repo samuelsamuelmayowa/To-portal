@@ -526,14 +526,15 @@ const sampleCourses = [
         videos: [
           {
              id: "v2",
-            title: "",
-            url: "",
+            title: "Class 12 Data Onboarding Lab",
+            url: "https://player.vimeo.com/video/1158631944",
+            // url: "",
           },
         ],
         docs: [
           {
-            id: "",
-            title: "",
+            id: "dv",
+            title: "Class 12 Data Onboarding Lab",
             url: "",
           },
         ]
