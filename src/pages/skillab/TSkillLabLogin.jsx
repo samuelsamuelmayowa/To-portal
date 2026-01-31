@@ -104,6 +104,8 @@ const TSkillLabLogin = () => {
             Continue with Google
           </button>
 
+          <Link to={'home'}>TO-SKILL-LAB HOME</Link>
+
           <p className="text-xs text-center mt-6 text-gray-500">
             By continuing, you agree to TSkillLab Terms & Privacy Policy
           </p>

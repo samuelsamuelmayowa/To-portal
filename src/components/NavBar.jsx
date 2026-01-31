@@ -131,7 +131,7 @@ const NavBar = () => {
           Courses
         </NavLink>
 
-<NavLink to="/loginskill" className="hover:text-BLUE">
+<NavLink to="/toskillab" className="hover:text-BLUE">
           ToskillLab
         </NavLink>
 
