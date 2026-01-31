@@ -30,7 +30,7 @@ const formVariant = {
         opacity: 0,
     }
 }
-const Login= () => {
+const MyLogin= () => {
     const notifyfail = () => toast.warning("Kindly refresh your browser ");
     const navigate = useNavigate()
     const { setToken, setUser } = useStateContext();
@@ -169,4 +169,4 @@ const Login= () => {
     )
 }
 
-export default Login;
+export default MyLogin;

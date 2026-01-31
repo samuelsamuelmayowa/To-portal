@@ -19,7 +19,9 @@ import OTP_Verification from "./pages/OTP_Verification";
 import ForgotPassword from "./pages/ForgotPassword";
 import CreateNewPassword from "./pages/CreateNewPassword";
 import ConfirmNewPassword from "./pages/ConfirmNewPassword";
-import LoginForm from "./pages/LoginForm";
+// import LoginForm from "./pages/LoginForm";
+// import AdminLoginForm from "./pages/AdminLoginForm";
+import MyLogin from "./pages/mylogin";
 import AdminLoginForm from "./pages/AdminLoginForm";
 import CheckOut from "./pages/CheckOut";
 import SendLinks from "./components/SendLinks";
@@ -205,7 +207,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/login",
-    element: <LoginForm />,
+    element: <MyLogin />,
   },
 
 
