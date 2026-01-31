@@ -9,6 +9,7 @@ const MainQuiz = () => {
   const api = import.meta.env.VITE_HOME_OO;
 
   const allowedEmails = [
+     "kevwe_oberiko@yahoo.com",
     "Davidayeni63@gmail.com",
   "Adesh25416@gmail.com",
     "davidayeni63@gmail.com",

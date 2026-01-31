@@ -43,6 +43,7 @@ const Quiz = ({ data }) => {
   const userEmail = user?.email || "";
   // ✅ Allowed test-takers
   const allowedEmails = [
+    "kevwe_oberiko@yahoo.com",
     "basseyvera018@gmail.com",
     "codeverseprogramming23@gmail.com",
     "ooolajuyigbe@gmail.com",
