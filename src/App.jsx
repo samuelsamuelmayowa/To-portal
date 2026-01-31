@@ -67,6 +67,7 @@ import MarketOverviewAdvanced from "./components/MarketOverviewAdvanced";
 import Home from "./pages/HomeSkill";
 import LabView from "./pages/skillab/LabView";
 import Profile from "./pages/skillab/Profile";
+import TSkillLabLogin from "./pages/skillab/TSkillLabLogin";
 
 // 🟣 GLOBAL THEME HELPER
 function applySavedTheme() {
@@ -221,6 +222,11 @@ const router = createBrowserRouter([
 {
     path: "/profile",
     element: <Profile />,
+  },
+
+  {
+path:"/loginskill",
+element:<TSkillLabLogin/>
   },
 
 
