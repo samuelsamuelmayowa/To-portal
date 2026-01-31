@@ -221,6 +221,10 @@ const isBoss = bossEmail.includes(userEmail?.toLowerCase());
          
            <option value="T.O Analytics Splunk Class 7 Quiz">Splunk Class 7 Quiz</option>
  <option value="T.O Analytics  Splunk Class 9 Quiz">Splunk Class 9 Quiz</option>
+
+
+
+  <option value="T.O Analytics Splunk Class 12 Quiz"> T.O Analytics Splunk Class 12 Quiz</option>
         {isBoss && (
   <option value="T.O Analytics –- SPLK-2002 Practice Quiz">
     T.O Analytics – SPLK-2002 Practice Quiz
