@@ -299,12 +299,14 @@ export default function Home() {
             >
               Join early access
             </a>
-            <a
+            {/* <a
               href="#get-started"
               className="inline-flex items-center justify-center rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black hover:opacity-90"
             >
               Start
-            </a>
+            </a> */}
+
+              <Link to={'/loginskill'} clas  className="inline-flex items-center justify-center rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black hover:opacity-90">Start</Link>
           </div>
         </div>
       </header>

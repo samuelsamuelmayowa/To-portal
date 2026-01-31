@@ -103,8 +103,14 @@ const TSkillLabLogin = () => {
             <img src={GOOGLE} alt="Google" className="w-5" />
             Continue with Google
           </button>
+<Link
+  to="/toskillab"
+  className="inline-flex items-center gap-2 text-sm font-semibold tracking-wide
+             text-gray-700 hover:text-black transition"
+>
+  ← TSkillLab Home
+</Link>
 
-          <Link to={'home'}>TO-SKILL-LAB HOME</Link>
 
           <p className="text-xs text-center mt-6 text-gray-500">
             By continuing, you agree to TSkillLab Terms & Privacy Policy
