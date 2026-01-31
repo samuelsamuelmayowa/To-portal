@@ -91,7 +91,7 @@ const TSkillLabLogin = () => {
             />
           </div>
 
-          <h1 className="text-xl font-bold">TSkillLab</h1>
+          <h1 className="text-xl font-bold">TO-Skill-Lab</h1>
           <p className="text-sm text-gray-600 mb-6">
             Sign in to access labs, interviews & your profile
           </p>
