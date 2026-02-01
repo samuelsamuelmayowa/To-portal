@@ -22,6 +22,7 @@ import { NavLink } from "react-router-dom";
 import DashboardDropdown from "./Dropdown";
 import NewFeaturePopup from "./Newapp";
 import TOAnnouncementBar from "./TOAnnouncementBar";
+import SplunkKnowledgePopup from "./SplunkKnowledgePopup";
 
 const API_BASE = import.meta.env.VITE_HOME_OO || "http://localhost:8000";
 
@@ -953,7 +954,8 @@ export default function CoursePortal() {
           </div>
         </div>
       </div>
-      <TOAnnouncementBar />
+      {/* <TOAnnouncementBar /> */}
+       <SplunkKnowledgePopup />
       <div className="max-w-7xl mx-auto grid grid-cols-12 gap-6">
         {/* LEFT SIDEBAR */}
         <aside className="col-span-12 md:col-span-3 bg-white rounded-2xl p-4 shadow-lg">
