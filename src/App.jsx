@@ -98,6 +98,11 @@ const router = createBrowserRouter([
         path: "/cancel",
         element: <Cancel />,
       },
+
+       {
+        path:"stockmarkert",
+        element:<MarketOverviewAdvanced/>
+      },
       {
         path:"ad",
         element:<MarketOverviewAdvanced/>

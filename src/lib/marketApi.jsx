@@ -4,21 +4,32 @@ const safeArray = (v) =>
   Array.isArray(v) ? v : Array.isArray(v?.results) ? v.results : [];
 
 export async function getMarketOverview() {
-  // 1️⃣ Market snapshot (ALL stocks)
   const snapRes = await massive.get(
     "/v2/snapshot/locale/us/markets/stocks/tickers"
   );
 
   const tickers = safeArray(snapRes.data?.tickers);
 
-  // limit for performance
   const quotes = tickers.slice(0, 50).map((t) => {
-    const price = Number(t.lastTrade?.p ?? 0);
+    // ✅ PRICE: prefer day close
+    const price = Number(
+      t.day?.c ??
+      t.lastTrade?.p ??
+      t.prevDay?.c ??
+      0
+    );
+
+    // ✅ PREVIOUS CLOSE
     const prev = Number(t.prevDay?.c ?? 0);
+
+    // ✅ VOLUME
     const volume = Number(t.day?.v ?? 0);
 
+    // ✅ SAFE % CHANGE
     const changePercent =
-      prev > 0 ? ((price - prev) / prev) * 100 : 0;
+      price > 0 && prev > 0
+        ? ((price - prev) / prev) * 100
+        : 0;
 
     return {
       symbol: t.ticker,
@@ -26,7 +37,9 @@ export async function getMarketOverview() {
       volume,
       changePercent,
     };
-  });
+  })
+  // 🚨 IMPORTANT: remove broken tickers
+  .filter((q) => q.price > 0 && q.volume > 0);
 
   const gainers = [...quotes].sort(
     (a, b) => b.changePercent - a.changePercent
@@ -49,6 +62,58 @@ export async function getMarketOverview() {
     mostActive: mostActive[0],
   };
 }
+
+// import { massive } from "./massive";
+
+// const safeArray = (v) =>
+//   Array.isArray(v) ? v : Array.isArray(v?.results) ? v.results : [];
+
+// export async function getMarketOverview() {
+//   // 1️⃣ Market snapshot (ALL stocks)
+//   const snapRes = await massive.get(
+//     "/v2/snapshot/locale/us/markets/stocks/tickers"
+//   );
+
+//   const tickers = safeArray(snapRes.data?.tickers);
+
+//   // limit for performance
+//   const quotes = tickers.slice(0, 50).map((t) => {
+//     const price = Number(t.lastTrade?.p ?? 0);
+//     const prev = Number(t.prevDay?.c ?? 0);
+//     const volume = Number(t.day?.v ?? 0);
+
+//     const changePercent =
+//       prev > 0 ? ((price - prev) / prev) * 100 : 0;
+
+//     return {
+//       symbol: t.ticker,
+//       price,
+//       volume,
+//       changePercent,
+//     };
+//   });
+
+//   const gainers = [...quotes].sort(
+//     (a, b) => b.changePercent - a.changePercent
+//   );
+
+//   const losers = [...quotes].sort(
+//     (a, b) => a.changePercent - b.changePercent
+//   );
+
+//   const mostActive = [...quotes].sort(
+//     (a, b) => b.volume - a.volume
+//   );
+
+//   return {
+//     gainers,
+//     losers,
+//     mostActiveList: mostActive,
+//     topGainer: gainers[0],
+//     topLoser: losers[0],
+//     mostActive: mostActive[0],
+//   };
+// }
 
 
 // import { massive } from "./massive";

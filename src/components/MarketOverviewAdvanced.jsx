@@ -90,6 +90,8 @@ export default function MarketOverviewAdvanced() {
     localStorage.setItem(THEME_KEY, darkMode ? "dark" : "light");
   }, [darkMode]);
 
+ 
+
   // react-query refresh based on toggle
   const refetchInterval = autoRefresh ? refreshSeconds * 1000 : false;
 
@@ -117,8 +119,14 @@ export default function MarketOverviewAdvanced() {
   // Derived lists
   const gainers = data?.gainers || [];
   const losers = data?.losers || [];
+ 
   const active = data?.mostActiveList || [];
 
+   useEffect(() => {
+  if (data?.gainers?.length) {
+    console.log("Sample stock object:", data.gainers[0]);
+  }
+}, [data]);
   const overviewHighlights = useMemo(() => {
     return [
       {
