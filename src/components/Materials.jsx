@@ -536,7 +536,31 @@ const sampleCourses = [
             url: "",
           },
         ],
-      },
+      },     
+      
+
+       {
+        id: "class13",
+        // title: "Class 7  —  Splunk Dashboard",
+        title: "Class 13 Data Onboarding Lab.",
+        desc: "",
+        videos: [
+          {
+            id: "v2",
+            title: "Class 13 Data Onboarding Lab",
+            url: "https://player.vimeo.com/video/1158631944",
+            // url: "",
+          },
+        ],
+        docs: [
+          {
+            id: "dv",
+            title: "Class 13 Data Onboarding Lab",
+            url: "https://docs.google.com/presentation/d/16tCZ7QDzXSVXw7RnQFvKxO7mZEH1E87d/preview",
+          },
+        ],
+      },     
+
       // {
       //   id: "class6",
       //   title: "Class 5  — Splunk Knowledge Objects",
