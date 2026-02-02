@@ -548,7 +548,8 @@ const sampleCourses = [
           {
             id: "v2",
             title: "Class 13 Data Onboarding Lab",
-            url: "https://player.vimeo.com/video/1158631944",
+            url: "https://player.vimeo.com/video/1161024327"
+
             // url: "",
           },
         ],
