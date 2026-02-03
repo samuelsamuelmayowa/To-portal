@@ -18,6 +18,16 @@ const ClassM = () => {
       description:
         "Read all the documents below carefully and complete the required tasks.",
       docs: [
+
+
+        {
+              // https://docs.google.com/presentation/d/1iorNGrxkfRYvm4_C3x0gyb3levapMdaL/preview
+              id: 1,
+          title: "Splunk Class 13 Assignment",
+          // title: "Assignment Instructions",
+          url: "https://docs.google.com/presentation/d/1qhw9ejjWVco5QineUKqEQgTjoKg8STCR/preview",
+          // dueDate: "2025-12-13",
+        }, 
         {
               // https://docs.google.com/presentation/d/1iorNGrxkfRYvm4_C3x0gyb3levapMdaL/preview
               id: 1,
