@@ -90,8 +90,6 @@ export default function MarketOverviewAdvanced() {
     localStorage.setItem(THEME_KEY, darkMode ? "dark" : "light");
   }, [darkMode]);
 
- 
-
   // react-query refresh based on toggle
   const refetchInterval = autoRefresh ? refreshSeconds * 1000 : false;
 
@@ -108,6 +106,8 @@ export default function MarketOverviewAdvanced() {
     staleTime: 1000 * 30,
     refetchInterval,
     refetchOnWindowFocus: false,
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
   const updatedLabel = useMemo(() => {
@@ -116,17 +116,10 @@ export default function MarketOverviewAdvanced() {
     return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   }, [dataUpdatedAt]);
 
-  // Derived lists
-  const gainers = data?.gainers || [];
-  const losers = data?.losers || [];
- 
-  const active = data?.mostActiveList || [];
-
-   useEffect(() => {
-  if (data?.gainers?.length) {
-    console.log("Sample stock object:", data.gainers[0]);
-  }
-}, [data]);
+  // Derived lists - safely handle undefined/null data
+  const gainers = data?.gainers ?? [];
+  const losers = data?.losers ?? [];
+  const active = data?.mostActiveList ?? [];
   const overviewHighlights = useMemo(() => {
     return [
       {
@@ -210,7 +203,7 @@ export default function MarketOverviewAdvanced() {
   }, [currentList, query, minPrice, sortBy, sortDir, showOnlyWatchlist, watchlist]);
 
   const onToggleWatch = (symbol) => {
-    const sym = String(symbol || "").toUpperCase();
+    const sym = String(symbol || "").toUpperCase().trim();
     if (!sym) return;
     setWatchlist((prev) =>
       prev.includes(sym) ? prev.filter((x) => x !== sym) : [sym, ...prev]
@@ -694,11 +687,15 @@ function RowSkeleton() {
 }
 
 function StockRow({ stock, watched, onToggleWatch }) {
-  const symbol = String(stock.symbol || "").toUpperCase();
-  const price = Number(stock.price ?? 0);
-  const change = Number(stock.changePercent ?? 0);
-  const volume = Number(stock.volume ?? 0);
+  if (!stock) return null;
+
+  const symbol = String(stock?.symbol || "").toUpperCase().trim();
+  const price = Number(stock?.price ?? 0);
+  const change = Number(stock?.changePercent ?? 0);
+  const volume = Number(stock?.volume ?? 0);
   const isUp = change >= 0;
+
+  if (!symbol || price <= 0) return null;
 
   // Fake mini-trend if you don't have history.
   // If later you add real "history" array, just swap it in.
