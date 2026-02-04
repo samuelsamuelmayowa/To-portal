@@ -6,6 +6,7 @@ const LazyHomePage = React.lazy(() => import("./pages/HomePage"));
 const LazyCourses = React.lazy(() => import("./pages/Courses"));
 const LazyAbout = React.lazy(() => import("./pages/AboutPage"));
 const LazyCareer = React.lazy(() => import("./pages/CareerPage"));
+const LazyNextxCareer = React.lazy(() => import("./pages/NextxCareerPage"));
 const LazyCOURSE = React.lazy(() => import("./pages/COURSE"));
 const LazyBlogPage = React.lazy(() => import("./pages/BlogPage"));
 import ContactPage from "./pages/ContactPage";
@@ -152,6 +153,14 @@ const router = createBrowserRouter([
         element: (
           <React.Suspense fallback={<Loader />}>
             <LazyCareer />
+          </React.Suspense>
+        ),
+      },
+      {
+        path: "/carrerpage",
+        element: (
+          <React.Suspense fallback={<Loader />}>
+            <LazyNextxCareer />
           </React.Suspense>
         ),
       },
