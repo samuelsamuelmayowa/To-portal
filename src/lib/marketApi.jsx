@@ -31,7 +31,8 @@ export async function getMarketOverview() {
       return processTickers(FALLBACK_DATA);
     }
 
-    return processTickers(tickers.slice(0, 50));
+    // Process more tickers to ensure we have enough for each tab
+    return processTickers(tickers.slice(0, 500));
   } catch (error) {
     console.error("API Error, using fallback data:", error.message);
     return processTickers(FALLBACK_DATA);
@@ -63,25 +64,27 @@ function processTickers(tickers) {
         changePercent,
       };
     })
-    // 🚨 Filter: keep only valid quotes (has symbol AND price > 0)
-    .filter((q) => q.symbol && q.price > 0);
+    // 🚨 Filter: keep only valid quotes (has symbol AND price > 0 AND volume > 0)
+    .filter((q) => q.symbol && q.price > 0 && q.volume > 0)
+    // Remove duplicates by symbol
+    .filter((q, idx, arr) => arr.findIndex(a => a.symbol === q.symbol) === idx);
 
-  console.log("Processed quotes:", quotes.length, "from", tickers.length, "tickers");
-  if (quotes.length > 0) {
-    console.log("✅ Sample quotes:", quotes.slice(0, 3));
-  }
+  console.log("✅ Processed quotes:", quotes.length, "from", tickers.length, "tickers");
 
-  const gainers = [...quotes].sort(
-    (a, b) => b.changePercent - a.changePercent
-  );
+  // Sort for each tab
+  const gainers = [...quotes]
+    .sort((a, b) => b.changePercent - a.changePercent)
+    .slice(0, 100); // Top 100 gainers
 
-  const losers = [...quotes].sort(
-    (a, b) => a.changePercent - b.changePercent
-  );
+  const losers = [...quotes]
+    .sort((a, b) => a.changePercent - b.changePercent)
+    .slice(0, 100); // Top 100 losers
 
-  const mostActive = [...quotes].sort(
-    (a, b) => b.volume - a.volume
-  );
+  const mostActive = [...quotes]
+    .sort((a, b) => b.volume - a.volume)
+    .slice(0, 100); // Top 100 most active
+
+  console.log("📊 Gainers:", gainers.length, "| Losers:", losers.length, "| Active:", mostActive.length);
 
   return {
     gainers,

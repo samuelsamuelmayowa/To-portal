@@ -18,6 +18,7 @@ import {
 import { ResponsiveContainer, LineChart, Line } from "recharts";
 import Dropdownstock from "./DropdownStock";
 import { getMarketOverview } from "../lib/marketApi";
+import { formatPercent } from "../lib/formatters";
 
 /* =========================================================
    MarketOverviewAdvanced
@@ -127,7 +128,8 @@ export default function MarketOverviewAdvanced() {
         symbol: data?.topGainer?.symbol ?? "—",
         value:
           data?.topGainer?.changePercent != null
-            ? `+${Number(data.topGainer.changePercent).toFixed(2)}%`
+            // ? `+${Number(data.topGainer.changePercent).toFixed(2)}%`
+              ? formatPercent(data.topGainer.changePercent, { alwaysSign: true })
             : "N/A",
         icon: TrendingUp,
         tone: "green",
@@ -137,7 +139,7 @@ export default function MarketOverviewAdvanced() {
         symbol: data?.topLoser?.symbol ?? "—",
         value:
           data?.topLoser?.changePercent != null
-            ? `${Number(data.topLoser.changePercent).toFixed(2)}%`
+            ?formatPercent(data.topLoser.changePercent) 
             : "N/A",
         icon: TrendingDown,
         tone: "red",
@@ -686,12 +688,24 @@ function RowSkeleton() {
   );
 }
 
+function toFiniteNumber(v) {
+  if (v == null) return null;
+
+  // if it’s a string like "1.23%" or " 1,234.5 "
+  const cleaned =
+    typeof v === "string" ? v.replace(/[%,$,\s]/g, "") : v;
+
+  const n = Number(cleaned);
+  return Number.isFinite(n) ? n : null;
+}
+
 function StockRow({ stock, watched, onToggleWatch }) {
   if (!stock) return null;
 
   const symbol = String(stock?.symbol || "").toUpperCase().trim();
   const price = Number(stock?.price ?? 0);
   const change = Number(stock?.changePercent ?? 0);
+  const changeNum = toFiniteNumber(stock?.changePercent);
   const volume = Number(stock?.volume ?? 0);
   const isUp = change >= 0;
 
@@ -738,8 +752,9 @@ function StockRow({ stock, watched, onToggleWatch }) {
         {/* Change */}
         <div className="col-span-4 md:col-span-2 hidden md:block">
           <span className={`font-semibold ${isUp ? "text-emerald-500" : "text-red-500"}`}>
-            {isUp ? "+" : ""}
-            {change.toFixed(2)}%
+            {isUp ? "" : ""}
+            {/* {change.toFixed(2)}% */}
+             {formatPercent(changeNum, { alwaysSign: true })}
           </span>
         </div>
 
