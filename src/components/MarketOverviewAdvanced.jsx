@@ -713,7 +713,25 @@ function StockRow({ stock, watched, onToggleWatch }) {
 
   // Fake mini-trend if you don't have history.
   // If later you add real "history" array, just swap it in.
-  const spark = useMemo(() => makeSparklineData(price, change), [price, change]);
+  // const spark = useMemo(() => makeSparklineData(price, change), [price, change]);
+
+  const spark = useMemo(
+  () => makeSparklineData(price, changeNum, symbol),
+  [price, changeNum, symbol]
+);
+
+
+const trendLabel =
+  changeNum == null
+    ? "No data"
+    : changeNum > 1
+    ? "Strong uptrend"
+    : changeNum > 0
+    ? "Uptrend"
+    : changeNum < -1
+    ? "Strong downtrend"
+    : "Downtrend";
+
 
   return (
     <div className="px-5 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition">
@@ -759,8 +777,32 @@ function StockRow({ stock, watched, onToggleWatch }) {
         </div>
 
         {/* Sparkline */}
+
         <div className="col-span-8 md:col-span-3">
+  <div className="w-full">
+    <div className="text-[10px] text-gray-400 mb-1 leading-none">
+      {trendLabel}
+    </div>
+
+    <div className="h-10 w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={spark}>
+          <Line
+            type="monotone"
+            dataKey="v"
+            dot={false}
+            strokeWidth={2}
+            stroke={isUp ? "#10b981" : "#ef4444"}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  </div>
+</div>
+
+        {/* <div className="col-span-8 md:col-span-3">
           <div className="h-10 w-full">
+            <div className="text-[10px] text-gray-400 mb-1">{trendLabel}</div>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={spark}>
                 <Line
@@ -774,7 +816,7 @@ function StockRow({ stock, watched, onToggleWatch }) {
               </LineChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </div> */}
 
         {/* Volume */}
         <div className="col-span-12 md:col-span-2 text-right hidden md:block">
@@ -844,31 +886,53 @@ function FooterNote() {
 
 /* ============================ Sparkline Generator ============================ */
 
-function makeSparklineData(price, changePercent) {
-  // Creates a tiny synthetic curve (so UI looks premium even without history API).
-  // When you add real history, replace this with actual points.
+// function makeSparklineData(price, changePercent) {
+//   // Creates a tiny synthetic curve (so UI looks premium even without history API).
+//   // When you add real history, replace this with actual points.
+//   const base = Math.max(1, Number(price) || 1);
+//   const c = Number(changePercent) || 0;
+
+//   // 20 points
+//   const n = 20;
+//   const drift = (c / 100) * base;
+//   const start = base - drift;
+
+//   // random-ish but stable curve
+//   const seed = hashToFloat(String(base) + ":" + String(c));
+//   const data = [];
+
+//   let v = start;
+//   for (let i = 0; i < n; i++) {
+//     const t = i / (n - 1);
+//     const noise = (seed - 0.5) * 0.25 * base * 0.02;
+//     const step = (drift / (n - 1)) + noise * (Math.sin(i * 0.9) * 0.6);
+//     v = v + step;
+//     data.push({ i, v: Number(v.toFixed(2)) });
+//   }
+//   return data;
+// }
+
+function makeSparklineData(price, changePercent, seedKey) {
   const base = Math.max(1, Number(price) || 1);
   const c = Number(changePercent) || 0;
 
-  // 20 points
   const n = 20;
   const drift = (c / 100) * base;
   const start = base - drift;
 
-  // random-ish but stable curve
-  const seed = hashToFloat(String(base) + ":" + String(c));
+  const seed = hashToFloat(seedKey + ":" + base + ":" + c);
   const data = [];
 
   let v = start;
   for (let i = 0; i < n; i++) {
-    const t = i / (n - 1);
-    const noise = (seed - 0.5) * 0.25 * base * 0.02;
-    const step = (drift / (n - 1)) + noise * (Math.sin(i * 0.9) * 0.6);
-    v = v + step;
+    const noise = (seed - 0.5) * base * 0.01;
+    v += drift / (n - 1) + noise * Math.sin(i * 0.7);
     data.push({ i, v: Number(v.toFixed(2)) });
   }
+
   return data;
 }
+
 
 function hashToFloat(str) {
   let h = 2166136261;
