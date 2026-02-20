@@ -72,6 +72,7 @@ import LabView from "./pages/skillab/LabView";
 import Profile from "./pages/skillab/Profile";
 // import TSkillLabLogin from "./pages/skillab/TSkillLabLogin";
 import TSkillLabLogin from "./pages/skillab/TSkillLabLogin";
+import ChatComponent from "./components/ChatComponent";
 // 🟣 GLOBAL THEME HELPER
 function applySavedTheme() {
   const saved = localStorage.getItem("theme") || "light";
@@ -98,6 +99,11 @@ const router = createBrowserRouter([
       {
         path: "/cancel",
         element: <Cancel />,
+      },
+
+        {
+        path: "/chat",
+        element: <ChatComponent/>,
       },
 
        {
