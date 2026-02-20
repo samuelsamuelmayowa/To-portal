@@ -40,7 +40,7 @@ export default function ChatComponent() {
     setLoading(true);
 
     try {
-      const res = await axios.post(`${api}/api/chat`, {
+      const res = await axios.post(`${api}/chat`, {
         message: text
       });
 
