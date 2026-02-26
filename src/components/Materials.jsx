@@ -601,7 +601,7 @@ const sampleCourses = [
           {
             id: "v2",
             title: "Class 15 Data Onboarding Lab",
-            url: ""
+            url: "https://player.vimeo.com/video/1168322139"
 
             // url: "",
           },
