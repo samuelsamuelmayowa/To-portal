@@ -33,7 +33,374 @@ const API_BASE = import.meta.env.VITE_HOME_OO || "http://localhost:8000";
   const allowedEmails = [...]
   const sampleCourses = [...]
 */
+const allowedEmails = [
+  "kewizle.k@gmail.com",
+  "kewizlek@gmail.com",
+  "basseyvera018@gmail.com",
+  "Kewizle.k@gmail.com",
+  "Davidayeni63@gmail.com",
+  "Adesh25416@gmail.com",
+  "davidayeni63@gmail.com",
+  "adesh25416@gmail.com",
+  "codeverseprogramming23@gmail.com",
+  "ooolajuyigbe@gmail.com",
+  "fadeleolutola@gmail.com",
+  "jahdek76@gmail.com",
+  "samuelsamuelmayowa@gmail.com",
+  "adenusitimi@gmail.com",
+  "oluwaferanmiolulana@gmail.com",
+  "oluwaferanmi.olulana@gmail.com",
+  "tomideolulana@gmail.com",
+  "randommayowa@gmail.com",
+  "yinkalola51@gmail.com",
+  "toanalyticsllc@gmail.com",
+  "kevwe_oberiko@yahoo.com",
+  "denisgsam@gmail.com",
+  "fpasamuelmayowa51@gmail.com",
+  "oluwatiroyeamoye@gmail.com",
+  "trbanjo@gmail.com",
+  "emanfrimpong@gmail.com",
+  "dipeoluolatunji@gmail.com",
+  "lybertyudochuu@gmail.com",
+];
 
+ const sampleCourses = [
+  {
+    id: "splunk",
+    title: "Splunk Training",
+    classes: [
+      {
+        id: "class1",
+        title: "Orientation — Intro (1 Videos)",
+        videos: [
+          {
+            id: "v1",
+            title: "To-analytics Orientation",
+            url: "https://player.vimeo.com/video/1126909883",
+          },
+        ],
+        docs: [
+          {
+            id: "d1",
+            title: "To-analytics Orientation",
+            url: "https://drive.google.com/file/d/1VzC-nTY7XhLagAeLIFdN1e6_MQMUkXiv/preview",
+          },
+        ],
+      },
+      {
+        id: "class2",
+        title: "Class 1 — Splunk  SIEM (1 Videos)",
+        videos: [
+          {
+            id: "v2",
+            title: "To-analytics Splunk Class 1",
+            url: "https://player.vimeo.com/video/1127004938",
+          },
+        ],
+        docs: [
+          {
+            id: "d1",
+            title: "To-analytics Splunk Class 1 Intro",
+            url: "https://drive.google.com/file/d/1bf5cRkcEC3yDJ5MnzpRKDpRLhRhdUH90/preview",
+          },
+          {
+            id: "d2",
+            title: "To-analytics Splunk Class 1 Note",
+            url: "https://drive.google.com/file/d/1VYiqPwen5Dc1tV2x8_ohR55n6toGBm1G/preview",
+          },
+        ],
+      },
+      {
+        id: "class3",
+        title: "Class 2 —  Splunk Basics",
+        videos: [
+          {
+            id: "v2",
+            title: "To-analytics Splunk Class 2",
+            url: "https://player.vimeo.com/video/1131114931",
+          },
+        ],
+        docs: [
+          {
+            id: "d3",
+            title: "To-analytics Splunk Class 2",
+            url: "https://drive.google.com/file/d/1V3zqvISvQLDZlQKUryIna4xnmAzcNRSC/preview",
+          },
+          {
+            id: "d4",
+            title: "To-analytics Splunk  Class 2 Note",
+            url: "https://drive.google.com/file/d/1sf-kifLwlcAvM9qLcJTde9qWX3OCvd78/preview",
+          },
+        ],
+      },
+      {
+        id: "class4",
+        title: "Class 3 — Splunk SPL",
+        videos: [
+          {
+            id: "v2",
+            title: "To-analytics Splunk Class 3",
+            url: "https://player.vimeo.com/video/1133357923",
+          },
+        ],
+        docs: [
+          {
+            id: "d3",
+            title: "To-analytics Splunk Class 3",
+            url: "https://drive.google.com/file/d/1mSIZVzbvnkdJylb8_nlcKhCDTcIRuQKM/preview",
+          },
+          {
+            id: "d4",
+            title: "To-analytics Splunk Class 3 Note",
+            url: " https://drive.google.com/file/d/1YVWoCLqrk4JhcML-mloJ53RDZlq7v7Pc/preview",
+          },
+        ],
+      },
+      {
+        id: "class5",
+        title: "Class 4 — SPL Part 2",
+        videos: [
+          {
+            id: "v2",
+            title: "To-analytics Splunk Class 4",
+            url: "https://player.vimeo.com/video/1136469770",
+          },
+        ],
+        docs: [
+          {
+            id: "d3",
+            title: "To-analytics Splunk Class 4",
+            url: "https://drive.google.com/file/d/1XVZBJxSCe_bj-MP93nGyJPKG3qoKjrb_/preview",
+            // url: "https://drive.google.com/file/d/1mSIZVzbvnkdJylb8_nlcKhCDTcIRuQKM/preview",
+          },
+        ],
+      },
+
+      {
+        id: "class6",
+        title: "Class 5  — Splunk SPL  LAB",
+        desc: "Creating reports, dashboards, visualizations, inputs and filters. .",
+        videos: [
+          {
+            id: "v2",
+            title: "To-analytics Splunk Class 5",
+            url: "https://player.vimeo.com/video/1138152119",
+          },
+        ],
+        docs: [
+          {
+            id: "d3",
+            title: "Splunk Class 5 Slides",
+            url: "",
+            // https://drive.google.com/file/d/1v7YRwUFvIBenhRSiS-f2evqh2ia2xuq6/preview
+          },
+
+          {
+            id: "d3",
+            title: "Splunk Class 5 Note",
+            url: "https://drive.google.com/file/d/1RrF8dEuaUgyKiWhF8lQ4h-WiN9CUb4gE/preview",
+            // https://drive.google.com/file/d/1v7YRwUFvIBenhRSiS-f2evqh2ia2xuq6/preview
+          },
+        ],
+      },
+
+      {
+        id: "class8",
+        title: "Class 6  — Splunk Knowledge Objects.",
+        desc: "",
+        videos: [
+          {
+            id: "v2",
+            title: "To-analytics Splunk Class 6",
+            url: "https://player.vimeo.com/video/1140703570",
+          },
+        ],
+        docs: [
+          {
+            id: "d3",
+            title: "Splunk Class 6 Slides",
+            url: "https://drive.google.com/file/d/1cXBItLD6OpbOY6aDi5NGQ0-KXJbutCIS/view?usp=sharing",
+          },
+
+          {
+            id: "d3",
+            title: "Splunk Class 6 Note",
+            url: "https://drive.google.com/file/d/1fVtS0u-mPndEiVbSGm1f2H5Qm_Dx3CzV/preview",
+          },
+        ],
+      },
+
+      {
+        id: "class7",
+        // title: "Class 7  —  Splunk Dashboard",
+        title: "Class 7 Splunk Lab Knowledge Objects",
+        desc: "",
+        videos: [
+          {
+            id: "v2",
+            title: "To-analytics Splunk Class 7",
+            url: "https://player.vimeo.com/video/1145017764",
+          },
+        ],
+        docs: [
+          {
+            id: "d3",
+            title: "",
+            url: "",
+          },
+        ],
+      },
+
+      // https://player.vimeo.com/video/1149696096
+      {
+        id: "class8",
+        // title: "Class 7  —  Splunk Dashboard",
+        title: "Class 8 Splunk Dashboard ",
+        desc: "",
+        videos: [
+          {
+            id: "v2",
+            title: "To-analytics Splunk Class 8",
+            url: "https://player.vimeo.com/video/1146557656",
+          },
+        ],
+        docs: [
+          {
+            id: "d3",
+            title: "T.O_Analytics_Splunk_Class_8",
+            url: "https://drive.google.com/file/d/1jBaWruZc2sgrmzuLFWuwtcNMHrOiab8K/preview",
+          },
+
+          {
+            id: "d3",
+            title: "T.O_Analytics_Splunk_Class_8 Note",
+            url: "https://drive.google.com/file/d/1EvVwiUgfR8Vl1q4MIIUPCmHnFDDKvPg4/preview",
+          },
+
+          {
+            id: "d3",
+            title: "T.O_Analytics_Splunk_Class_8 Assignment",
+            url: "https://drive.google.com/file/d/1APZ-0shpvdjNJ9OFppVVrE5KqPwwHL49/preview",
+          },
+        ],
+      },
+
+      {
+        id: "class9",
+        // title: "Class 7  —  Splunk Dashboard",
+        title: "Class 9 Splunk Dashboard Lab",
+        desc: "",
+        videos: [
+          {
+            id: "v2",
+            title: "To-analytics Splunk Class 9",
+            url: "https://player.vimeo.com/video/1149696096",
+          },
+        ],
+        docs: [
+          {
+            id: "",
+            title: "",
+            url: "",
+          },
+        ],
+      },
+      //
+
+      {
+        id: "class10",
+        // title: "Class 7  —  Splunk Dashboard",
+        title: "Class 10 Certification Exam, Job & Assignment Review",
+        desc: "",
+        videos: [
+          {
+            id: "v2",
+            title: "To-analytics Splunk Class 10",
+            url: "https://player.vimeo.com/video/1153292493",
+          },
+        ],
+        docs: [
+          {
+            id: "",
+            title: "Assignment",
+            url: "https://docs.google.com/presentation/d/1iorNGrxkfRYvm4_C3x0gyb3levapMdaL/preview",
+          },
+        ],
+      },
+
+      {
+        id: "class11",
+        // title: "Class 7  —  Splunk Dashboard",
+        title: "Class 11 Onboarding data",
+        // desc: "https://docs.google.com/presentation/d/13XUnTdubkQnixedrIRay7ZqskHLSIRUY/view?usp=sharing",
+        videos: [
+          {
+            id: "v2",
+            title: "",
+            url: "https://player.vimeo.com/video/1156881908",
+          },
+        ],
+        docs: [
+          {
+            id: "",
+            title: "Onboarding data ",
+            url: "https://docs.google.com/presentation/d/13XUnTdubkQnixedrIRay7ZqskHLSIRUY/preview",
+          },
+        ],
+      },
+
+      {
+        id: "class12",
+        // title: "Class 7  —  Splunk Dashboard",
+        title: "Class 12 Data Onboarding Lab.",
+        desc: "",
+        videos: [
+          {
+            id: "v2",
+            title: "Class 12 Data Onboarding Lab",
+            url: "https://player.vimeo.com/video/1158631944",
+            // url: "",
+          },
+        ],
+        docs: [
+          {
+            id: "dv",
+            title: "Class 12 Data Onboarding Lab",
+            url: "",
+          },
+        ],
+      },     
+      
+
+       {
+        id: "class13",
+        // title: "Class 7  —  Splunk Dashboard",
+        title: "Class 13 Data Onboarding Lab.",
+        desc: "",
+        videos: [
+          {
+            id: "v2",
+            title: "Class 13 Data Onboarding Lab",
+            url: "https://player.vimeo.com/video/1161024327"
+
+            // url: "",
+          },
+        ],
+        docs: [
+          {
+            id: "dv",
+            title: "Class 13 Data Onboarding Lab",
+            url: "https://docs.google.com/presentation/d/16tCZ7QDzXSVXw7RnQFvKxO7mZEH1E87d/preview",
+          },
+        ],
+      }
+    ]
+
+    }
+    ]
+
+      
+  
 const fullSplunkSyllabus = sampleCourses
   .find((c) => c.id === "splunk")
   .classes.map((cls, index) => ({
