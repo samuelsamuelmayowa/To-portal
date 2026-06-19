@@ -86,6 +86,8 @@ export default function MyCourses() {
           "kewizle.k@gmail.com",
           "kewizlek@gmail.com",
           "davidayeni63@gmail.com",
+           "pamelaabina24@gmail.com",
+   "Pamelaabina24@gmail.com",
           "adesh25416@gmail.com",
           "basseyvera018@gmail.com",
           "codeverseprogramming23@gmail.com",
