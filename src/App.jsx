@@ -63,7 +63,7 @@ import StockCard from "./StockPublic";
 import MassiveStockDashboard from "./StockPublic"
 import SplunkCareerRoadmap from "./components/SplunkCareerRoadmap";
 import MarketOverview from "./components/MarketOverview";
-import SplunkPracticeLab from "./components/SplunkPracticeLab";
+import SplunkPracticeLab from "./pages/SplunkPracticeLab";
 import SplunkStudio from "./pages/SplunkStudio";
 import QuotePage from "./components/QuotePage";
 import MarketOverviewAdvanced from "./components/MarketOverviewAdvanced";
