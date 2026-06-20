@@ -131,8 +131,13 @@ const NavBar = () => {
           Courses
         </NavLink>
 
-<NavLink to="/toskillab" className="hover:text-BLUE">
+{/* <NavLink to="/toskillab" className="hover:text-BLUE">
           ToskillLab
+        </NavLink> */}
+
+
+        <NavLink to="/mylab" className="hover:text-BLUE">
+          Splunk Lab
         </NavLink>
 
         <NavLink to="/mentorship" className="hover:text-BLUE">

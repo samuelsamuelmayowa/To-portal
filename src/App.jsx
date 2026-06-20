@@ -149,7 +149,22 @@ const router = createBrowserRouter([
           </React.Suspense>
         ),
       },
+
+
+        {
+        path: "/mylab",
+        element: (
+          <React.Suspense fallback={<Loader />}>
+            <SplunkPracticeLab />
+          </React.Suspense>
+        ),
+      },
+
+
       {
+
+
+
         path: "/sessions",
         element: <Session />,
       },

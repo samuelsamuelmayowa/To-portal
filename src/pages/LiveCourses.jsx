@@ -4,7 +4,7 @@ import EducationalConsulting from "../assets/images/mentorshipIMG.jpg";
 
 const LiveCourses = () => {
   return (
-    <div className="flex sm:flex-row flex-col pt-28 pb-10 justify-center gap-6 lg:px-52 p-2">
+  <div className="flex sm:flex-row flex-col pt-28 pb-10 justify-center gap-6 lg:px-52 p-2">
         <Link to={`/courses/splunk`} className="">
             <div
               className={`rounded-xl`}

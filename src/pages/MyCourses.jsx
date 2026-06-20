@@ -86,8 +86,8 @@ export default function MyCourses() {
           "kewizle.k@gmail.com",
           "kewizlek@gmail.com",
           "davidayeni63@gmail.com",
-           "pamelaabina24@gmail.com",
-   "Pamelaabina24@gmail.com",
+          "pamelaabina24@gmail.com",
+          "Pamelaabina24@gmail.com",
           "adesh25416@gmail.com",
           "basseyvera018@gmail.com",
           "codeverseprogramming23@gmail.com",
@@ -392,9 +392,7 @@ function InfoCard({ icon, title, text }) {
       </div>
 
       <h3 className="text-xl font-black">{title}</h3>
-      <p className="mt-3 text-sm font-medium leading-7 text-white/55">
-        {text}
-      </p>
+      <p className="mt-3 text-sm font-medium leading-7 text-white/55">{text}</p>
     </div>
   );
 }
