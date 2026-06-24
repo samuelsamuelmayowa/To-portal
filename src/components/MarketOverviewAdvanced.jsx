@@ -18,7 +18,13 @@ import {
 import { ResponsiveContainer, LineChart, Line } from "recharts";
 import Dropdownstock from "./DropdownStock";
 import { getMarketOverview } from "../lib/marketApi";
-import { formatPercent } from "../lib/formatters";
+// import { formatPercent } from "../lib/formatters";
+import {
+  formatPercent,
+  formatMoney,
+  formatCompact,
+  formatSignedMoney,
+} from "../lib/formatters";
 
 /* =========================================================
    MarketOverviewAdvanced
@@ -51,7 +57,7 @@ const THEME_KEY = "theme";
 export default function MarketOverviewAdvanced() {
   const [userEmail, setUserEmail] = useState("");
   const [darkMode, setDarkMode] = useState(
-    () => localStorage.getItem(THEME_KEY) === "dark"
+    () => localStorage.getItem(THEME_KEY) === "dark",
   );
 
   const [tab, setTab] = useState("overview");
@@ -94,22 +100,16 @@ export default function MarketOverviewAdvanced() {
   // react-query refresh based on toggle
   const refetchInterval = autoRefresh ? refreshSeconds * 1000 : false;
 
-  const {
-    data,
-    isLoading,
-    isFetching,
-    error,
-    refetch,
-    dataUpdatedAt,
-  } = useQuery({
-    queryKey: ["market-overview"],
-    queryFn: getMarketOverview,
-    staleTime: 1000 * 30,
-    refetchInterval,
-    refetchOnWindowFocus: false,
-    retry: 2,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-  });
+  const { data, isLoading, isFetching, error, refetch, dataUpdatedAt } =
+    useQuery({
+      queryKey: ["market-overview"],
+      queryFn: getMarketOverview,
+      staleTime: 1000 * 30,
+      refetchInterval,
+      refetchOnWindowFocus: false,
+      retry: 2,
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    });
 
   const updatedLabel = useMemo(() => {
     if (!dataUpdatedAt) return "—";
@@ -121,50 +121,118 @@ export default function MarketOverviewAdvanced() {
   const gainers = data?.gainers ?? [];
   const losers = data?.losers ?? [];
   const active = data?.mostActiveList ?? [];
+  // const overviewHighlights = useMemo(() => {
+  //   return [
+  //     {
+  //       title: "Top Gainer",
+  //       symbol: data?.topGainer?.symbol ?? "—",
+  //       value:
+  //         data?.topGainer?.changePercent != null
+  //           // ? `+${Number(data.topGainer.changePercent).toFixed(2)}%`
+  //             ? formatPercent(data.topGainer.changePercent, { alwaysSign: true })
+  //           : "N/A",
+  //       icon: TrendingUp,
+  //       tone: "green",
+  //     },
+  //     {
+  //       title: "Top Loser",
+  //       symbol: data?.topLoser?.symbol ?? "—",
+  //       value:
+  //         data?.topLoser?.changePercent != null
+  //           ?formatPercent(data.topLoser.changePercent)
+  //           : "N/A",
+  //       icon: TrendingDown,
+  //       tone: "red",
+  //     },
+  //     {
+  //       title: "Most Active",
+  //       symbol: data?.mostActive?.symbol ?? "—",
+  //       value:
+  //         data?.mostActive?.volume != null
+  //           ? `${Number(data.mostActive.volume).toLocaleString()} vol`
+  //           : "Volume N/A",
+  //       icon: Activity,
+  //       tone: "blue",
+  //     },
+  //   ];
+  // }, [data]);
+
   const overviewHighlights = useMemo(() => {
     return [
       {
         title: "Top Gainer",
         symbol: data?.topGainer?.symbol ?? "—",
-        value:
-          data?.topGainer?.changePercent != null
-            // ? `+${Number(data.topGainer.changePercent).toFixed(2)}%`
-              ? formatPercent(data.topGainer.changePercent, { alwaysSign: true })
-            : "N/A",
+        value: formatPercent(data?.topGainer?.changePercent, {
+          alwaysSign: true,
+        }),
+        sub: data?.topGainer
+          ? `${formatMoney(data.topGainer.price)} • ${formatCompact(
+              data.topGainer.volume,
+            )} vol`
+          : "No data",
         icon: TrendingUp,
         tone: "green",
       },
       {
         title: "Top Loser",
         symbol: data?.topLoser?.symbol ?? "—",
-        value:
-          data?.topLoser?.changePercent != null
-            ?formatPercent(data.topLoser.changePercent) 
-            : "N/A",
+        value: formatPercent(data?.topLoser?.changePercent, {
+          alwaysSign: true,
+        }),
+        sub: data?.topLoser
+          ? `${formatMoney(data.topLoser.price)} • ${formatCompact(
+              data.topLoser.volume,
+            )} vol`
+          : "No data",
         icon: TrendingDown,
         tone: "red",
       },
       {
         title: "Most Active",
         symbol: data?.mostActive?.symbol ?? "—",
-        value:
-          data?.mostActive?.volume != null
-            ? `${Number(data.mostActive.volume).toLocaleString()} vol`
-            : "Volume N/A",
+        value: data?.mostActive
+          ? `${formatCompact(data.mostActive.volume)} vol`
+          : "—",
+        sub: data?.mostActive
+          ? `${formatMoney(data.mostActive.price)} • ${formatPercent(
+              data.mostActive.changePercent,
+              { alwaysSign: true },
+            )}`
+          : "No data",
         icon: Activity,
         tone: "blue",
       },
     ];
   }, [data]);
 
+  {
+    tab === "overview" && (
+      <MarketStatsGrid stats={data?.stats} loading={isLoading} />
+    );
+  }
   // pick current table list by tab
+  // const currentList = useMemo(() => {
+  //   if (tab === "gainers") return gainers;
+  //   if (tab === "losers") return losers;
+  //   if (tab === "active") return active;
+  //   // overview uses "active" as default table
+  //   // return active;
+  //   return [...gainers, ...losers, ...active];
+  // }, [tab, gainers, losers, active]);
+
   const currentList = useMemo(() => {
     if (tab === "gainers") return gainers;
     if (tab === "losers") return losers;
     if (tab === "active") return active;
-    // overview uses "active" as default table
-    // return active;
-      return [...gainers, ...losers, ...active];
+
+    const map = new Map();
+
+    [...gainers, ...losers, ...active].forEach((item) => {
+      if (!item?.symbol) return;
+      map.set(item.symbol, item);
+    });
+
+    return Array.from(map.values());
   }, [tab, gainers, losers, active]);
 
   const filteredSorted = useMemo(() => {
@@ -181,7 +249,9 @@ export default function MarketOverviewAdvanced() {
     // search
     if (q) {
       list = list.filter((s) =>
-        String(s.symbol || "").toUpperCase().includes(q)
+        String(s.symbol || "")
+          .toUpperCase()
+          .includes(q),
       );
     }
 
@@ -202,13 +272,23 @@ export default function MarketOverviewAdvanced() {
     });
 
     return list;
-  }, [currentList, query, minPrice, sortBy, sortDir, showOnlyWatchlist, watchlist]);
+  }, [
+    currentList,
+    query,
+    minPrice,
+    sortBy,
+    sortDir,
+    showOnlyWatchlist,
+    watchlist,
+  ]);
 
   const onToggleWatch = (symbol) => {
-    const sym = String(symbol || "").toUpperCase().trim();
+    const sym = String(symbol || "")
+      .toUpperCase()
+      .trim();
     if (!sym) return;
     setWatchlist((prev) =>
-      prev.includes(sym) ? prev.filter((x) => x !== sym) : [sym, ...prev]
+      prev.includes(sym) ? prev.filter((x) => x !== sym) : [sym, ...prev],
     );
   };
 
@@ -232,14 +312,14 @@ export default function MarketOverviewAdvanced() {
       /> */}
 
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-          <StickyHeader
-        userEmail={userEmail}
-        darkMode={darkMode}
-        setDarkMode={setDarkMode}
-        isFetching={isFetching}
-        updatedLabel={updatedLabel}
-        onManualRefresh={() => refetch()}
-      />
+        <StickyHeader
+          userEmail={userEmail}
+          darkMode={darkMode}
+          setDarkMode={setDarkMode}
+          isFetching={isFetching}
+          updatedLabel={updatedLabel}
+          onManualRefresh={() => refetch()}
+        />
         {/* Top controls + tabs */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
           <div className="lg:col-span-8">
@@ -343,7 +423,9 @@ export default function MarketOverviewAdvanced() {
         <section>
           <MarketTableAdvanced
             title={tabTitle(tab)}
-            subtitle={isLoading ? "Loading…" : `${filteredSorted.length} symbols`}
+            subtitle={
+              isLoading ? "Loading…" : `${filteredSorted.length} symbols`
+            }
             data={filteredSorted}
             loading={isLoading}
             watchlist={watchlist}
@@ -387,7 +469,14 @@ function tabTitle(tab) {
 
 /* ============================ UI Parts ============================ */
 
-function StickyHeader({ userEmail, darkMode, setDarkMode, isFetching, updatedLabel, onManualRefresh }) {
+function StickyHeader({
+  userEmail,
+  darkMode,
+  setDarkMode,
+  isFetching,
+  updatedLabel,
+  onManualRefresh,
+}) {
   return (
     <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/75 backdrop-blur dark:border-gray-800 dark:bg-gray-950/65">
       <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
@@ -466,7 +555,12 @@ function Tabs({ tab, setTab }) {
   );
 }
 
-function AutoRefreshControl({ autoRefresh, setAutoRefresh, refreshSeconds, setRefreshSeconds }) {
+function AutoRefreshControl({
+  autoRefresh,
+  setAutoRefresh,
+  refreshSeconds,
+  setRefreshSeconds,
+}) {
   return (
     <div className="flex items-center gap-3">
       <button
@@ -505,7 +599,10 @@ function AutoRefreshControl({ autoRefresh, setAutoRefresh, refreshSeconds, setRe
 function SearchInput({ value, onChange }) {
   return (
     <div className="flex-1 relative">
-      <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+      <Search
+        size={16}
+        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+      />
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -519,7 +616,9 @@ function SearchInput({ value, onChange }) {
 function Field({ label, right, value, onChange, placeholder, inputMode }) {
   return (
     <div className="min-w-[160px]">
-      <div className="text-[11px] text-gray-500 dark:text-gray-400 mb-1">{label}</div>
+      <div className="text-[11px] text-gray-500 dark:text-gray-400 mb-1">
+        {label}
+      </div>
       <div className="relative">
         {right && (
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
@@ -541,7 +640,9 @@ function Field({ label, right, value, onChange, placeholder, inputMode }) {
 function SortDropdown({ sortBy, setSortBy, sortDir, setSortDir }) {
   return (
     <div className="min-w-[200px]">
-      <div className="text-[11px] text-gray-500 dark:text-gray-400 mb-1">Sort</div>
+      <div className="text-[11px] text-gray-500 dark:text-gray-400 mb-1">
+        Sort
+      </div>
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
           <select
@@ -555,7 +656,10 @@ function SortDropdown({ sortBy, setSortBy, sortDir, setSortDir }) {
               </option>
             ))}
           </select>
-          <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <ChevronDown
+            size={16}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+          />
         </div>
 
         <button
@@ -574,40 +678,80 @@ function SortDropdown({ sortBy, setSortBy, sortDir, setSortDir }) {
 
 function Card({ children, className = "" }) {
   return (
-    <div className={`rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900 ${className}`}>
+    <div
+      className={`rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900 ${className}`}
+    >
       {children}
     </div>
   );
 }
 
-function SummaryCard({ title, symbol, value, icon: Icon, tone }) {
+// function SummaryCard({ title, symbol, value, icon: Icon, tone }) {
+//   const toneClass =
+//     tone === "green"
+//       ? "from-emerald-500/15 to-emerald-600/5 border-emerald-500/20"
+//       : tone === "red"
+//       ? "from-red-500/15 to-red-600/5 border-red-500/20"
+//       : "from-blue-500/15 to-blue-600/5 border-blue-500/20";
+
+//   const iconClass =
+//     tone === "green"
+//       ? "text-emerald-500"
+//       : tone === "red"
+//       ? "text-red-500"
+//       : "text-blue-500";
+
+//   return (
+//     <div
+//       className={`rounded-2xl p-5 border bg-gradient-to-br ${toneClass}
+//       hover:translate-y-[-2px] hover:shadow-md transition`}
+//     >
+//       <div className="flex items-center justify-between">
+//         <p className="text-sm text-gray-600 dark:text-gray-300">{title}</p>
+//         <Icon className={iconClass} size={22} />
+//       </div>
+
+//       <div className="mt-4">
+//         <p className="text-2xl font-bold">{symbol}</p>
+//         <p className="text-sm text-gray-600 dark:text-gray-300">{value}</p>
+//       </div>
+//     </div>
+//   );
+// }
+
+function SummaryCard({ title, symbol, value, sub, icon: Icon, tone }) {
   const toneClass =
     tone === "green"
-      ? "from-emerald-500/15 to-emerald-600/5 border-emerald-500/20"
+      ? "from-emerald-500/20 to-emerald-600/5 border-emerald-500/25"
       : tone === "red"
-      ? "from-red-500/15 to-red-600/5 border-red-500/20"
-      : "from-blue-500/15 to-blue-600/5 border-blue-500/20";
+        ? "from-red-500/20 to-red-600/5 border-red-500/25"
+        : "from-blue-500/20 to-blue-600/5 border-blue-500/25";
 
   const iconClass =
     tone === "green"
       ? "text-emerald-500"
       : tone === "red"
-      ? "text-red-500"
-      : "text-blue-500";
+        ? "text-red-500"
+        : "text-blue-500";
 
   return (
     <div
-      className={`rounded-2xl p-5 border bg-gradient-to-br ${toneClass}
-      hover:translate-y-[-2px] hover:shadow-md transition`}
+      className={`relative overflow-hidden rounded-3xl p-5 border bg-gradient-to-br ${toneClass}
+      hover:-translate-y-1 hover:shadow-xl transition-all duration-300`}
     >
-      <div className="flex items-center justify-between">
+      <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-white/20 dark:bg-white/5" />
+
+      <div className="relative flex items-center justify-between">
         <p className="text-sm text-gray-600 dark:text-gray-300">{title}</p>
-        <Icon className={iconClass} size={22} />
+        <div className="h-10 w-10 rounded-2xl bg-white/70 dark:bg-gray-950/60 flex items-center justify-center">
+          <Icon className={iconClass} size={22} />
+        </div>
       </div>
 
-      <div className="mt-4">
-        <p className="text-2xl font-bold">{symbol}</p>
-        <p className="text-sm text-gray-600 dark:text-gray-300">{value}</p>
+      <div className="relative mt-5">
+        <p className="text-3xl font-black tracking-tight">{symbol}</p>
+        <p className="mt-1 text-lg font-semibold">{value}</p>
+        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{sub}</p>
       </div>
     </div>
   );
@@ -628,13 +772,22 @@ function SummarySkeleton() {
   );
 }
 
-function MarketTableAdvanced({ title, subtitle, data, loading, watchlist, onToggleWatch }) {
+function MarketTableAdvanced({
+  title,
+  subtitle,
+  data,
+  loading,
+  watchlist,
+  onToggleWatch,
+}) {
   return (
     <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900 overflow-hidden">
       <div className="px-5 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between gap-3">
         <div>
           <h2 className="font-semibold">{title}</h2>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{subtitle}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            {subtitle}
+          </p>
         </div>
         <div className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">
           Tip: click ☆ to save symbols
@@ -666,7 +819,9 @@ function MarketTableAdvanced({ title, subtitle, data, loading, watchlist, onTogg
             <StockRow
               key={String(stock.symbol)}
               stock={stock}
-              watched={watchlist.includes(String(stock.symbol || "").toUpperCase())}
+              watched={watchlist.includes(
+                String(stock.symbol || "").toUpperCase(),
+              )}
               onToggleWatch={onToggleWatch}
             />
           ))}
@@ -692,8 +847,7 @@ function toFiniteNumber(v) {
   if (v == null) return null;
 
   // if it’s a string like "1.23%" or " 1,234.5 "
-  const cleaned =
-    typeof v === "string" ? v.replace(/[%,$,\s]/g, "") : v;
+  const cleaned = typeof v === "string" ? v.replace(/[%,$,\s]/g, "") : v;
 
   const n = Number(cleaned);
   return Number.isFinite(n) ? n : null;
@@ -702,12 +856,34 @@ function toFiniteNumber(v) {
 function StockRow({ stock, watched, onToggleWatch }) {
   if (!stock) return null;
 
-  const symbol = String(stock?.symbol || "").toUpperCase().trim();
+  // const symbol = String(stock?.symbol || "")
+  //   .toUpperCase()
+  //   .trim();
+  // const price = Number(stock?.price ?? 0);
+  // const change = Number(stock?.changePercent ?? 0);
+  // const changeNum = toFiniteNumber(stock?.changePercent);
+  // const volume = Number(stock?.volume ?? 0);
+  // const isUp = change >= 0;
+
+  const symbol = String(stock?.symbol || "")
+    .toUpperCase()
+    .trim();
   const price = Number(stock?.price ?? 0);
   const change = Number(stock?.changePercent ?? 0);
   const changeNum = toFiniteNumber(stock?.changePercent);
   const volume = Number(stock?.volume ?? 0);
+
+  const previousClose = Number(stock?.previousClose ?? 0);
+  const dollarChange = Number(
+    stock?.dollarChange ?? (previousClose ? price - previousClose : 0),
+  );
+  const dollarVolume = Number(stock?.dollarVolume ?? price * volume);
+
   const isUp = change >= 0;
+
+  // const dollarChange = Number(stock?.dollarChange ?? 0);
+  // const dollarVolume = Number(stock?.dollarVolume ?? 0);
+  const rangePercent = stock?.rangePercent;
 
   if (!symbol || price <= 0) return null;
 
@@ -716,22 +892,37 @@ function StockRow({ stock, watched, onToggleWatch }) {
   // const spark = useMemo(() => makeSparklineData(price, change), [price, change]);
 
   const spark = useMemo(
-  () => makeSparklineData(price, changeNum, symbol),
-  [price, changeNum, symbol]
-);
+    () => makeSparklineData(price, changeNum, symbol),
+    [price, changeNum, symbol],
+  );
 
+  // const trendLabel =
+  //   changeNum == null
+  //     ? "No data"
+  //     : changeNum > 1
+  //       ? "Strong uptrend"
+  //       : changeNum > 0
+  //         ? "Uptrend"
+  //         : changeNum < -1
+  //           ? "Strong downtrend"
+  //           : "Downtrend";
 
-const trendLabel =
-  changeNum == null
-    ? "No data"
-    : changeNum > 1
-    ? "Strong uptrend"
-    : changeNum > 0
-    ? "Uptrend"
-    : changeNum < -1
-    ? "Strong downtrend"
-    : "Downtrend";
-
+  const trendLabel =
+    changeNum == null
+      ? "No data"
+      : changeNum >= 5
+        ? "Explosive move"
+        : changeNum >= 2
+          ? "Strong uptrend"
+          : changeNum > 0
+            ? "Uptrend"
+            : changeNum <= -5
+              ? "Heavy selloff"
+              : changeNum <= -2
+                ? "Strong downtrend"
+                : changeNum < 0
+                  ? "Downtrend"
+                  : "Flat";
 
   return (
     <div className="px-5 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition">
@@ -759,46 +950,55 @@ const trendLabel =
         </div>
 
         {/* Price */}
-        <div className="col-span-4 md:col-span-2">
+        {/* <div className="col-span-4 md:col-span-2">
           <div className="font-medium">${price.toFixed(2)}</div>
           <div className="text-xs text-gray-500 dark:text-gray-400 md:hidden">
             {isUp ? "+" : ""}
             {change.toFixed(2)}%
           </div>
+        </div> */}
+        {/* Price */}
+        <div className="col-span-4 md:col-span-2">
+          <div className="font-semibold">{formatMoney(price)}</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">
+            {formatSignedMoney(dollarChange)}
+          </div>
         </div>
 
         {/* Change */}
         <div className="col-span-4 md:col-span-2 hidden md:block">
-          <span className={`font-semibold ${isUp ? "text-emerald-500" : "text-red-500"}`}>
+          <span
+            className={`font-semibold ${isUp ? "text-emerald-500" : "text-red-500"}`}
+          >
             {isUp ? "" : ""}
             {/* {change.toFixed(2)}% */}
-             {formatPercent(changeNum, { alwaysSign: true })}
+            {formatPercent(changeNum, { alwaysSign: true })}
           </span>
         </div>
 
         {/* Sparkline */}
 
         <div className="col-span-8 md:col-span-3">
-  <div className="w-full">
-    <div className="text-[10px] text-gray-400 mb-1 leading-none">
-      {trendLabel}
-    </div>
+          <div className="w-full">
+            <div className="text-[10px] text-gray-400 mb-1 leading-none">
+              {trendLabel}
+            </div>
 
-    <div className="h-10 w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={spark}>
-          <Line
-            type="monotone"
-            dataKey="v"
-            dot={false}
-            strokeWidth={2}
-            stroke={isUp ? "#10b981" : "#ef4444"}
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  </div>
-</div>
+            <div className="h-10 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={spark}>
+                  <Line
+                    type="monotone"
+                    dataKey="v"
+                    dot={false}
+                    strokeWidth={2}
+                    stroke={isUp ? "#10b981" : "#ef4444"}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
 
         {/* <div className="col-span-8 md:col-span-3">
           <div className="h-10 w-full">
@@ -819,11 +1019,21 @@ const trendLabel =
         </div> */}
 
         {/* Volume */}
-        <div className="col-span-12 md:col-span-2 text-right hidden md:block">
+        {/* <div className="col-span-12 md:col-span-2 text-right hidden md:block">
           <div className="text-sm font-medium">
             {volume ? volume.toLocaleString() : "—"}
           </div>
           <div className="text-xs text-gray-500 dark:text-gray-400">Volume</div>
+        </div> */}
+
+        {/* Volume */}
+        <div className="col-span-12 md:col-span-2 text-right hidden md:block">
+          <div className="text-sm font-semibold">
+            {volume ? formatCompact(volume) : "—"}
+          </div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">
+            {dollarVolume ? `${formatCompact(dollarVolume)} value` : "Volume"}
+          </div>
         </div>
       </div>
     </div>
@@ -878,12 +1088,92 @@ function FooterNote() {
   return (
     <div className="max-w-7xl mx-auto px-4 pb-10">
       <div className="text-xs text-gray-500 dark:text-gray-400 mt-6">
-        Prices shown are for learning/demo use. Add “Quote” endpoint later for realtime quote page + history.
+        Prices shown are for learning/demo use. Add “Quote” endpoint later for
+        realtime quote page + history.
       </div>
     </div>
   );
 }
 
+function MarketStatsGrid({ stats, loading }) {
+  if (loading) {
+    return (
+      <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        {[1, 2, 3, 4].map((i) => (
+          <SummarySkeleton key={i} />
+        ))}
+      </section>
+    );
+  }
+
+  const cards = [
+    {
+      label: "Market Breadth",
+      value: formatPercent(stats?.breadthPercent),
+      sub: `${stats?.advancers ?? 0} up / ${stats?.decliners ?? 0} down`,
+      tone: stats?.breadthPercent >= 50 ? "green" : "red",
+    },
+    {
+      label: "Average Move",
+      value: formatPercent(stats?.averageChange, { alwaysSign: true }),
+      sub: `Median: ${formatPercent(stats?.medianChange, {
+        alwaysSign: true,
+      })}`,
+      tone: stats?.averageChange >= 0 ? "green" : "red",
+    },
+    {
+      label: "Total Volume",
+      value: formatCompact(stats?.totalVolume),
+      sub: `${formatCompact(stats?.totalDollarVolume)} traded value`,
+      tone: "blue",
+    },
+    {
+      label: "Volume Breadth",
+      value: formatPercent(stats?.volumeBreadthPercent),
+      sub: `${formatCompact(stats?.positiveVolume)} positive vol`,
+      tone: stats?.volumeBreadthPercent >= 50 ? "green" : "red",
+    },
+  ];
+
+  return (
+    <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+      {cards.map((card) => (
+        <MiniStatCard key={card.label} {...card} />
+      ))}
+    </section>
+  );
+}
+
+function MiniStatCard({ label, value, sub, tone }) {
+  const toneClass =
+    tone === "green"
+      ? "border-emerald-500/20 bg-emerald-500/5"
+      : tone === "red"
+        ? "border-red-500/20 bg-red-500/5"
+        : "border-blue-500/20 bg-blue-500/5";
+
+  const valueClass =
+    tone === "green"
+      ? "text-emerald-600 dark:text-emerald-400"
+      : tone === "red"
+        ? "text-red-600 dark:text-red-400"
+        : "text-blue-600 dark:text-blue-400";
+
+  return (
+    <div
+      className={`rounded-2xl border p-4 ${toneClass}
+      hover:shadow-md transition-all duration-300`}
+    >
+      <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+        {label}
+      </p>
+
+      <p className={`mt-3 text-2xl font-black ${valueClass}`}>{value}</p>
+
+      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{sub}</p>
+    </div>
+  );
+}
 /* ============================ Sparkline Generator ============================ */
 
 // function makeSparklineData(price, changePercent) {
@@ -932,7 +1222,6 @@ function makeSparklineData(price, changePercent, seedKey) {
 
   return data;
 }
-
 
 function hashToFloat(str) {
   let h = 2166136261;
