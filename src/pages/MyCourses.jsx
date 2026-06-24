@@ -83,6 +83,8 @@ export default function MyCourses() {
     () =>
       new Set(
         [
+          "sammmyayo@gmail.com",
+          "Sammmyayo@gmail.com",
           "kewizle.k@gmail.com",
           "kewizlek@gmail.com",
           "davidayeni63@gmail.com",
