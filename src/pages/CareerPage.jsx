@@ -274,7 +274,7 @@ export default function CareerPage() {
               </h1>
 
               <p className="mt-6 max-w-3xl text-base font-medium leading-8 text-white/60 md:text-lg">
-                Help your students discover relevant roles after training.
+                Help discover relevant roles after training.
                 Browse curated Splunk, SIEM, security, cloud and IT roles across
                 remote and USA opportunities.
               </p>
