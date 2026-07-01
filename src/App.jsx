@@ -9,6 +9,9 @@ const LazyCareer = React.lazy(() => import("./pages/CareerPage"));
 const LazyNextxCareer = React.lazy(() => import("./pages/NextxCareerPage"));
 const LazyCOURSE = React.lazy(() => import("./pages/COURSE"));
 const LazyBlogPage = React.lazy(() => import("./pages/BlogPage"));
+const LazySplunkOrientation = React.lazy(() =>
+  import("./pages/SplunkOrientation")
+);
 import ContactPage from "./pages/ContactPage";
 import ConnectWithContractor from "./pages/ConnectWithContractor";
 import MyCourses from "./pages/MyCourses";
@@ -126,6 +129,8 @@ const router = createBrowserRouter([
             <LazyCourses />
           </React.Suspense>
         ),
+
+        
         children: [
           {
             index: true,
@@ -141,6 +146,15 @@ const router = createBrowserRouter([
           },
         ],
       },
+
+      {
+  path: "/splunk-orientation",
+  element: (
+    <React.Suspense fallback={<Loader />}>
+      <LazySplunkOrientation />
+    </React.Suspense>
+  ),
+},
       {
         path: "/about",
         element: (
