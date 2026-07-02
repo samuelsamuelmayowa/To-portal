@@ -414,10 +414,15 @@ export default function SplunkOrientation() {
             <h3 className="text-xl font-bold text-slate-950">
               Is there a certification path?
             </h3>
-            <p className="mt-3 text-slate-600">
+            {/* <p className="mt-3 text-slate-600">
               Yes. The program focuses on the Splunk Core Power User
               Certification Exam and the Splunk Enterprise Certified Admin Exam.
-            </p>
+            </p> */}
+            <p className="mt-3 text-slate-600">
+  Yes. The program focuses on the Splunk Core Power User
+  Certification Exam and the Splunk Enterprise Certified Admin
+  Exam.
+</p>
           </div>
 
           <div className="rounded-3xl border border-slate-200 p-6">
