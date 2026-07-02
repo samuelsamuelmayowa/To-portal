@@ -75,7 +75,7 @@ export default function SplunkOrientation() {
               </div>
 
               <h1 className="text-4xl font-extrabold tracking-tight text-slate-950 md:text-6xl">
-                T.O Orientation
+                {/* T.O Orientation */}
                 <span className="mt-3 block bg-gradient-to-r from-purple-800 to-fuchsia-600 bg-clip-text text-3xl text-transparent md:text-5xl">
                   Introduction to Splunk
                 </span>
