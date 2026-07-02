@@ -44,11 +44,11 @@ const schedule = [
       "The second training phase focuses on Splunk administration, data inputs, indexing, user management, security, performance, deployment, and optimization.",
   },
   {
-  date: "March 13th",
-  title: "Splunk Enterprise Certified Admin Exam",
-  description:
-    "Final exam focus for students taking the Splunk Enterprise Certified Admin Exam.",
-},
+    date: "March 13th",
+    title: "Splunk Enterprise Certified Admin Exam",
+    description:
+      "Final exam focus for students taking the Splunk Enterprise Certified Admin Exam.",
+  },
   // {
   //   date: "March 13th",
   //   title: "Admin Exam",
@@ -217,9 +217,7 @@ export default function SplunkOrientation() {
               <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-purple-700 text-2xl font-black text-white">
                 {index + 1}
               </div>
-              <h3 className="text-2xl font-extrabold text-slate-950">
-                {item}
-              </h3>
+              <h3 className="text-2xl font-extrabold text-slate-950">{item}</h3>
               <p className="mt-3 text-slate-600">
                 Students will be guided through the core knowledge areas,
                 hands-on practice, exam preparation, and project-based learning
@@ -418,8 +416,7 @@ export default function SplunkOrientation() {
             </h3>
             <p className="mt-3 text-slate-600">
               Yes. The program focuses on the Splunk Core Power User
-              Certification Exam and the Splunk Enterprise Certified Admin
-              Exam.
+              Certification Exam and the Splunk Enterprise Certified Admin Exam.
             </p>
           </div>
 
@@ -429,8 +426,10 @@ export default function SplunkOrientation() {
             </h3>
             {/* <p className="mt-3 text-slate-600"> */}
            <p className="mt-3 text-slate-600">
-  Yes. Students will receive weekly assignments and complete a final
-  project involving data ingestion, dashboards, and alerts.
+  Yes . Students will receive weekly assignments and complete a final
+  project that includes building and configuring a distributed Splunk
+  deployment, setting up forwarding and data onboarding, and creating
+  dashboards and alerts.
 </p>
             {/* </p> */}
           </div>
