@@ -44,19 +44,33 @@ const schedule = [
       "The second training phase focuses on Splunk administration, data inputs, indexing, user management, security, performance, deployment, and optimization.",
   },
   {
-    date: "March 13th",
-    title: "Admin Exam",
-    description:
-      "Final preparation and exam focus for students taking the Splunk Enterprise Certified Admin Exam.",
-  },
+  date: "March 13th",
+  title: "Splunk Enterprise Certified Admin Exam",
+  description:
+    "Final exam focus for students taking the Splunk Enterprise Certified Admin Exam.",
+},
+  // {
+  //   date: "March 13th",
+  //   title: "Admin Exam",
+  //   description:
+  //     "Final preparation and exam focus for students taking the Splunk Enterprise Certified Admin Exam.",
+  // },
 ];
 
+// const deliverables = [
+//   "Weekly assignments",
+//   "Hands-on Splunk search tasks",
+//   "Dashboard and report practice",
+//   "Alert configuration practice",
+//   "Final project: Complete Splunk solution from data ingestion to dashboards and alerts",
+// ];
 const deliverables = [
   "Weekly assignments",
   "Hands-on Splunk search tasks",
-  "Dashboard and report practice",
-  "Alert configuration practice",
-  "Final project: Complete Splunk solution from data ingestion to dashboards and alerts",
+  "Dashboard and alert practice",
+  "Final project: Building and configuring a distributed Splunk deployment",
+  "Final project: Setting up forwarding and data onboarding",
+  "Final project: Dashboards and alerts",
 ];
 
 export default function SplunkOrientation() {
@@ -413,10 +427,12 @@ export default function SplunkOrientation() {
             <h3 className="text-xl font-bold text-slate-950">
               Will students do practical work?
             </h3>
-            <p className="mt-3 text-slate-600">
-              Yes. Students will receive weekly assignments and complete a final
-              project involving data ingestion, dashboards, and alerts.
-            </p>
+            {/* <p className="mt-3 text-slate-600"> */}
+           <p className="mt-3 text-slate-600">
+  Yes. Students will receive weekly assignments and complete a final
+  project involving data ingestion, dashboards, and alerts.
+</p>
+            {/* </p> */}
           </div>
 
           <div className="rounded-3xl border border-slate-200 p-6">
