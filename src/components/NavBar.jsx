@@ -136,6 +136,11 @@ const NavBar = () => {
         </NavLink> */}
 
 
+<NavLink to="/splunk-orientation" className="hover:text-BLUE">
+          Orientation
+        </NavLink>
+
+
         <NavLink to="/mylab" className="hover:text-BLUE">
           Splunk Lab
         </NavLink>
