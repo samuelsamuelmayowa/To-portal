@@ -20,41 +20,50 @@ const certificationFocus = [
 
 const schedule = [
   {
+    id: 1,
     date: "October 31st",
-    title: "Orientation Date",
-    description:
-      "Live orientation session to introduce the Splunk training program, learning path, expectations, certification goals, and enrollment process.",
+    title: "Orientation",
+    items: [],
   },
   {
+    id: 2,
     date: "November 14th to December 19th",
-    title: "Splunk Core Power User Certification Preparation",
-    description:
-      "Students begin the first training phase focused on Splunk fundamentals, searching, SPL, dashboards, reports, fields, alerts, and real-world use cases.",
+    title: "Splunk Foundations (Beginner)",
+    items: [
+      "Introduction to Splunk",
+      "Searching & Reporting",
+      "Basic SPL",
+      "Fields & Knowledge",
+    ],
   },
   {
-    date: "Two Weeks Break",
-    title: "Power User Certification Exam & Holidays",
-    description:
-      "Students use this break to revise, complete practice tasks, prepare for the Splunk Core Power User Certification Exam, and observe the holiday period.",
+    id: 3,
+    date: "Two Weeks Certification Break",
+    title: "Power User Certification Exam",
+    items: [],
   },
   {
+    id: 4,
     date: "January 9th to February 27th",
-    title: "Splunk Enterprise Certified Admin Training",
-    description:
-      "The second training phase focuses on Splunk administration, data inputs, indexing, user management, security, performance, deployment, and optimization.",
+    title: "Splunk Backend Administration",
+    items: [
+      "Distributed Splunk Architecture",
+      "Data Onboarding & Platform Management",
+      "Performance Tuning & Troubleshooting",
+    ],
   },
   {
-    date: "March 13th",
+    id: 5,
+    date: "Two Weeks Certification Break",
     title: "Splunk Enterprise Certified Admin Exam",
-    description:
-      "Final exam focus for students taking the Splunk Enterprise Certified Admin Exam.",
+    items: [],
   },
-  // {
-  //   date: "March 13th",
-  //   title: "Admin Exam",
-  //   description:
-  //     "Final preparation and exam focus for students taking the Splunk Enterprise Certified Admin Exam.",
-  // },
+  {
+    id: 6,
+    date: "March 13th",
+    title: "Interview Prep",
+    items: [],
+  },
 ];
 
 // const deliverables = [
