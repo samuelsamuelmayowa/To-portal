@@ -143,31 +143,80 @@ export default function SplunkOrientation() {
             </div>
 
             {/* SUMMARY CARD */}
-            <div className="mt-6 space-y-4">
-              <div className="rounded-2xl bg-white/10 p-4">
-                <p className="font-bold">October 31st</p>
-                <p className="text-sm text-purple-100">Orientation</p>
-              </div>
+         {/* SUMMARY CARD */}
+<div className="rounded-[2rem] border border-purple-100 bg-white p-6 shadow-2xl shadow-purple-900/10">
+  <div className="rounded-[1.5rem] bg-gradient-to-br from-purple-950 via-purple-800 to-fuchsia-700 p-6 text-white">
+    <p className="text-sm font-semibold uppercase tracking-[0.25em] text-purple-100">
+      Program Schedule
+    </p>
 
-              <div className="rounded-2xl bg-white/10 p-4">
-                <p className="font-bold">November 14th to December 19th</p>
-                <p className="text-sm text-purple-100">
-                  Splunk Foundations (Beginner)
-                </p>
-              </div>
+    <h2 className="mt-3 text-3xl font-extrabold">
+      Orientation starts October 31st
+    </h2>
 
-              <div className="rounded-2xl bg-white/10 p-4">
-                <p className="font-bold">January 9th to February 27th</p>
-                <p className="text-sm text-purple-100">
-                  Splunk Backend Administration
-                </p>
-              </div>
+    <p className="mt-4 text-purple-100">
+      A structured Splunk learning path covering Splunk Foundations,
+      Backend Administration, certification breaks, and interview preparation.
+    </p>
 
-              <div className="rounded-2xl bg-white/10 p-4">
-                <p className="font-bold">March 13th</p>
-                <p className="text-sm text-purple-100">Interview Prep</p>
-              </div>
-            </div>
+    <div className="mt-6 space-y-4">
+      <div className="rounded-2xl bg-white/10 p-4">
+        <p className="font-bold">October 31st</p>
+        <p className="text-sm text-purple-100">Orientation</p>
+      </div>
+
+      <div className="rounded-2xl bg-white/10 p-4">
+        <p className="font-bold">November 14th to December 19th</p>
+        <p className="text-sm text-purple-100">
+          Splunk Foundations (Beginner)
+        </p>
+      </div>
+
+      <div className="rounded-2xl bg-white/10 p-4">
+        <p className="font-bold">Two Weeks Certification Break</p>
+        <p className="text-sm text-purple-100">
+          Power User Certification Exam
+        </p>
+      </div>
+
+      <div className="rounded-2xl bg-white/10 p-4">
+        <p className="font-bold">January 9th to February 27th</p>
+        <p className="text-sm text-purple-100">
+          Splunk Backend Administration
+        </p>
+      </div>
+
+      <div className="rounded-2xl bg-white/10 p-4">
+        <p className="font-bold">Two Weeks Certification Break</p>
+        <p className="text-sm text-purple-100">
+          Splunk Enterprise Certified Admin Exam
+        </p>
+      </div>
+
+      <div className="rounded-2xl bg-white/10 p-4">
+        <p className="font-bold">March 13th</p>
+        <p className="text-sm text-purple-100">Interview Prep</p>
+      </div>
+    </div>
+  </div>
+
+  <div className="mt-6 grid gap-4 sm:grid-cols-2">
+    <div className="rounded-2xl border border-purple-100 p-4">
+      <p className="text-sm text-slate-500">Tuition Fee</p>
+      <p className="mt-1 text-3xl font-extrabold text-slate-950">
+        $3,500
+      </p>
+    </div>
+
+    <div className="rounded-2xl border border-purple-100 p-4">
+      <p className="text-sm text-slate-500">Payment Option</p>
+      <p className="mt-1 font-bold text-slate-950">Zelle</p>
+      <p className="mt-1 break-all text-sm text-slate-600">
+        t.oanalyticsllc@gmail.com
+      </p>
+    </div>
+  </div>
+</div>
           </div>
         </div>
       </section>
