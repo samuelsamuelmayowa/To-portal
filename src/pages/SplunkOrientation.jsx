@@ -271,51 +271,64 @@ export default function SplunkOrientation() {
       </section>
 
       {/* SCHEDULE */}
-      <section className="mx-auto max-w-7xl px-5 py-16 md:px-10">
-        <div className="mb-12">
-          <p className="font-bold uppercase tracking-[0.25em] text-purple-700">
-            Training Schedule
-          </p>
-          <h2 className="mt-3 text-3xl font-extrabold text-slate-950 md:text-5xl">
-            Important program dates
-          </h2>
-        </div>
+   {/* SCHEDULE */}
+<section className="mx-auto max-w-7xl px-5 py-16 md:px-10">
+  <div className="mb-12">
+    <p className="font-bold uppercase tracking-[0.25em] text-purple-700">
+      Training Schedule
+    </p>
+    <h2 className="mt-3 text-3xl font-extrabold text-slate-950 md:text-5xl">
+      Important program dates
+    </h2>
+  </div>
 
-        <div className="relative">
-          <div className="absolute left-5 top-0 hidden h-full w-px bg-purple-200 md:block" />
+  <div className="relative">
+    <div className="absolute left-5 top-0 hidden h-full w-px bg-purple-200 md:block" />
 
-          <div className="space-y-6">
-            {schedule.map((item, index) => (
-              <div
-                key={item.date}
-                className="relative rounded-3xl border border-purple-100 bg-white p-6 shadow-lg shadow-purple-900/5 md:ml-12"
-              >
-                <div className="absolute -left-[3.25rem] top-6 hidden h-10 w-10 items-center justify-center rounded-full bg-purple-700 text-sm font-bold text-white md:flex">
-                  {index + 1}
-                </div>
+    <div className="space-y-6">
+      {schedule.map((item) => (
+        <div
+          key={item.id}
+          className="relative rounded-3xl border border-purple-100 bg-white p-6 shadow-lg shadow-purple-900/5 md:ml-12"
+        >
+          <div className="absolute -left-[3.25rem] top-6 hidden h-10 w-10 items-center justify-center rounded-full bg-purple-700 text-sm font-bold text-white md:flex">
+            {item.id}
+          </div>
 
-                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                  <div>
-                    <p className="text-xl font-extrabold text-purple-800">
-                      {item.date}
-                    </p>
-                    <h3 className="mt-1 text-2xl font-bold text-slate-950">
-                      {item.title}
-                    </h3>
-                    <p className="mt-3 max-w-4xl leading-7 text-slate-600">
-                      {item.description}
-                    </p>
-                  </div>
+          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+            <div>
+              <p className="text-xl font-extrabold text-purple-800">
+                {item.date}
+              </p>
 
-                  <span className="w-fit rounded-full bg-purple-100 px-4 py-2 text-sm font-bold text-purple-800">
-                    Phase {index + 1}
-                  </span>
-                </div>
-              </div>
-            ))}
+              <h3 className="mt-1 text-2xl font-bold text-slate-950">
+                {item.title}
+              </h3>
+
+              {item.items.length > 0 && (
+                <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {item.items.map((point) => (
+                    <li
+                      key={point}
+                      className="flex gap-3 rounded-2xl bg-purple-50 px-4 py-3 text-slate-700"
+                    >
+                      <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-purple-700" />
+                      <span className="font-medium">{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <span className="w-fit rounded-full bg-purple-100 px-4 py-2 text-sm font-bold text-purple-800">
+              Schedule
+            </span>
           </div>
         </div>
-      </section>
+      ))}
+    </div>
+  </div>
+</section>
 
       {/* DELIVERABLES + PAYMENT */}
       <section className="bg-gradient-to-br from-purple-50 via-white to-fuchsia-50 py-16">
