@@ -136,9 +136,7 @@ export default function SplunkOrientation() {
                 <span className="rounded-full bg-fuchsia-100 px-4 py-2 text-fuchsia-800">
                   Zelle Payment
                 </span>
-                <span className="rounded-full bg-slate-100 px-4 py-2">
-                  Poppins-style Clean Layout
-                </span>
+             
               </div>
             </div>
 
