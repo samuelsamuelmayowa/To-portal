@@ -141,9 +141,9 @@ const NavBar = () => {
         </NavLink>
 
 
-        <NavLink to="/mylab" className="hover:text-BLUE">
+        {/* <NavLink to="/mylab" className="hover:text-BLUE">
           Splunk Lab
-        </NavLink>
+        </NavLink> */}
 
         <NavLink to="/mentorship" className="hover:text-BLUE">
           Mentorship
