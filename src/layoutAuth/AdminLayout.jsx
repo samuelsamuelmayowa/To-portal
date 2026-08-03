@@ -43,11 +43,11 @@ const navigationItems = [
     path: "/ADMIN-DASHBOARD/viewcourses",
     icon: MdOutlineViewList,
   },
-  {
-    name: "All Students",
-    path: "/ADMIN-DASHBOARD/allStudents",
-    icon: FaUsers,
-  },
+//   {
+//     name: "All Students",
+//     path: "/ADMIN-DASHBOARD/allStudents",
+//     icon: FaUsers,
+//   },
   {
     name: "Students Result",
     path: "/ADMIN-DASHBOARD/studentresults",
