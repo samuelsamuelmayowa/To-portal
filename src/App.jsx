@@ -348,46 +348,64 @@ const router = createBrowserRouter([
   },
 
   // ADMIN DASHBOARD
-  {
-    path: "/ADMIN-DASHBOARD",
-    element: <AdminLayout />,
-    children: [
-      { index: true, element: <AdminDashboard /> },
+ {
+  path: "/ADMIN-DASHBOARD",
+  element: <AdminLayout />,
+  children: [
+    {
+      index: true,
+      element: <AdminDashboard />,
+    },
 
-      {
-        path: "viewcourses",
-        element: <AdminViewCourses />,
-        children: [
-          {
-            index: true,
-            element: (
-              <h1 className="text-center font-bold md:text-4xl">ALL COURSES</h1>
-            ),
-          },
-          {
-            path: "published",
-            element: (
-              <h1 className="text-center font-bold md:text-4xl">PUBLISHED</h1>
-            ),
-          },
-          {
-            path: "draft",
-            element: (
-              <h1 className="text-center font-bold md:text-4xl">DRAFT</h1>
-            ),
-          },
-        ],
-      },
+    {
+      path: "viewcourses",
+      element: <AdminViewCourses />,
+      children: [
+        {
+          index: true,
+          element: <CourseTabContent status="all" />,
+        },
+        {
+          path: "published",
+          element: <CourseTabContent status="published" />,
+        },
+        {
+          path: "draft",
+          element: <CourseTabContent status="draft" />,
+        },
+      ],
+    },
 
-      { path: "allStudents", element: <AllStudents /> },
-      { path: "contacts", element: <Contacts /> },
-      { path: "studentresults", element: <SeeQuiz /> },
-      { path: "contractors", element: <Contractors /> },
-      { path: "send-links", element: <SendLinks /> },
-      { path: "send-pdf", element: <SendPdf /> },
-      { path: "send-messages", element: <SendMessages /> },
-    ],
-  },
+    {
+      path: "allStudents",
+      element: <AllStudents />,
+    },
+    {
+      path: "contacts",
+      element: <Contacts />,
+    },
+    {
+      path: "studentresults",
+      element: <SeeQuiz />,
+    },
+    {
+      path: "contractors",
+      element: <Contractors />,
+    },
+    {
+      path: "send-links",
+      element: <SendLinks />,
+    },
+    {
+      path: "send-pdf",
+      element: <SendPdf />,
+    },
+    {
+      path: "send-messages",
+      element: <SendMessages />,
+    },
+  ],
+},
 ]);
 
 // 🟪 FINAL APP WITH GLOBAL DARK WRAPPER
