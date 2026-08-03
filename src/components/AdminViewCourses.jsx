@@ -44,13 +44,13 @@ const AdminViewCourses = () => {
 
         {/* Keep /gg if it is your current upload page.
             Change this route when you create a proper upload-course route. */}
-        <NavLink
+        {/* <NavLink
           to="/gg"
           className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-200 transition hover:-translate-y-0.5 hover:bg-indigo-700"
         >
           <FaPlus size={13} />
           Upload course
-        </NavLink>
+        </NavLink> */}
       </section>
 
       <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
