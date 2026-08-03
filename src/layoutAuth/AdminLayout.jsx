@@ -192,12 +192,12 @@ const AdminLayout = () => {
         <div className="rounded-2xl bg-white/5 p-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-400 to-purple-600 font-black text-white">
-              VB
+              B
             </div>
 
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-bold text-white">
-                Vera Bassey
+                Boss
               </p>
               <p className="text-xs text-slate-400">Administrator</p>
             </div>
@@ -311,7 +311,7 @@ const AdminLayout = () => {
 
               <div>
                 <p className="text-sm font-bold leading-tight text-slate-900">
-                  Vera Bassey
+                Big Boss
                 </p>
 
                 <p className="text-xs font-medium text-slate-400">Admin</p>

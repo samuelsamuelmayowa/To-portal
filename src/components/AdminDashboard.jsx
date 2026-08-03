@@ -112,7 +112,7 @@ const AdminDashboard = () => {
             </span>
 
             <h1 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">
-              Welcome back, Vera.
+              Welcome back, Boss.
             </h1>
 
             <p className="mt-3 max-w-xl text-sm leading-6 text-slate-300 sm:text-base">
