@@ -53,31 +53,31 @@ const navigationItems = [
     path: "/ADMIN-DASHBOARD/studentresults",
     icon: FaGraduationCap,
   },
-  {
-    name: "Contacts",
-    path: "/ADMIN-DASHBOARD/contacts",
-    icon: FaUserGroup,
-  },
-  {
-    name: "Contractors",
-    path: "/ADMIN-DASHBOARD/contractors",
-    icon: MdOutlineAnalytics,
-  },
-  {
-    name: "Send Online Links",
-    path: "/ADMIN-DASHBOARD/send-links",
-    icon: FaLink,
-  },
-  {
-    name: "Send Assignment",
-    path: "/ADMIN-DASHBOARD/send-pdf",
-    icon: FaRegFilePdf,
-  },
-  {
-    name: "Messages",
-    path: "/ADMIN-DASHBOARD/send-messages",
-    icon: FaMessage,
-  },
+//   {
+//     name: "Contacts",
+//     path: "/ADMIN-DASHBOARD/contacts",
+//     icon: FaUserGroup,
+//   },
+//   {
+//     name: "Contractors",
+//     path: "/ADMIN-DASHBOARD/contractors",
+//     icon: MdOutlineAnalytics,
+//   },
+//   {
+//     name: "Send Online Links",
+//     path: "/ADMIN-DASHBOARD/send-links",
+//     icon: FaLink,
+//   },
+//   {
+//     name: "Send Assignment",
+//     path: "/ADMIN-DASHBOARD/send-pdf",
+//     icon: FaRegFilePdf,
+//   },
+//   {
+//     name: "Messages",
+//     path: "/ADMIN-DASHBOARD/send-messages",
+//     icon: FaMessage,
+//   },
 ];
 
 const getPageTitle = (pathname) => {
