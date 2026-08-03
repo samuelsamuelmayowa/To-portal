@@ -306,7 +306,7 @@ const AdminLayout = () => {
 
             <div className="hidden items-center gap-3 rounded-xl border border-slate-200 bg-white p-1.5 pr-4 shadow-sm md:flex">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-xs font-black text-white">
-                VB
+                {/* VB */}
               </div>
 
               <div>
