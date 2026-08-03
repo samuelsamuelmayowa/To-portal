@@ -9,8 +9,8 @@ const LazyCareer = React.lazy(() => import("./pages/CareerPage"));
 const LazyNextxCareer = React.lazy(() => import("./pages/NextxCareerPage"));
 const LazyCOURSE = React.lazy(() => import("./pages/COURSE"));
 const LazyBlogPage = React.lazy(() => import("./pages/BlogPage"));
-const LazySplunkOrientation = React.lazy(() =>
-  import("./pages/SplunkOrientation")
+const LazySplunkOrientation = React.lazy(
+  () => import("./pages/SplunkOrientation"),
 );
 import ContactPage from "./pages/ContactPage";
 import ConnectWithContractor from "./pages/ConnectWithContractor";
@@ -63,7 +63,7 @@ import StockPortal from "./components/StockPortal";
 import Commands from "./components/Commands";
 import SplunkDictionary from "./components/Dictionary";
 import StockCard from "./StockPublic";
-import MassiveStockDashboard from "./StockPublic"
+import MassiveStockDashboard from "./StockPublic";
 import SplunkCareerRoadmap from "./components/SplunkCareerRoadmap";
 import MarketOverview from "./components/MarketOverview";
 import SplunkPracticeLab from "./pages/SplunkPracticeLab";
@@ -104,22 +104,22 @@ const router = createBrowserRouter([
         element: <Cancel />,
       },
 
-        {
+      {
         path: "/chat",
-        element: <ChatComponent/>,
+        element: <ChatComponent />,
       },
 
-       {
-        path:"stockmarkert",
-        element:<MarketOverviewAdvanced/>
+      {
+        path: "stockmarkert",
+        element: <MarketOverviewAdvanced />,
       },
       {
-        path:"ad",
-        element:<MarketOverviewAdvanced/>
+        path: "ad",
+        element: <MarketOverviewAdvanced />,
       },
       {
-        path:"/quote",
-        element:<QuotePage/>
+        path: "/quote",
+        element: <QuotePage />,
       },
 
       {
@@ -130,7 +130,6 @@ const router = createBrowserRouter([
           </React.Suspense>
         ),
 
-        
         children: [
           {
             index: true,
@@ -148,13 +147,13 @@ const router = createBrowserRouter([
       },
 
       {
-  path: "/splunk-orientation",
-  element: (
-    <React.Suspense fallback={<Loader />}>
-      <LazySplunkOrientation />
-    </React.Suspense>
-  ),
-},
+        path: "/splunk-orientation",
+        element: (
+          <React.Suspense fallback={<Loader />}>
+            <LazySplunkOrientation />
+          </React.Suspense>
+        ),
+      },
       {
         path: "/about",
         element: (
@@ -164,8 +163,7 @@ const router = createBrowserRouter([
         ),
       },
 
-
-        {
+      {
         path: "/mylab",
         element: (
           <React.Suspense fallback={<Loader />}>
@@ -174,11 +172,7 @@ const router = createBrowserRouter([
         ),
       },
 
-
       {
-
-
-
         path: "/sessions",
         element: <Session />,
       },
@@ -259,42 +253,25 @@ const router = createBrowserRouter([
     element: <MyLogin />,
   },
 
-
   {
     path: "/toskillab",
     element: <Home />,
   },
 
-   {
+  {
     path: "/labview",
     element: <LabView />,
   },
 
-{
+  {
     path: "/profile",
     element: <Profile />,
   },
 
   {
-path:"/loginskill",
-element:<TSkillLabLogin/>
+    path: "/loginskill",
+    element: <TSkillLabLogin />,
   },
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   {
     path: "/forgotPassword",
@@ -302,16 +279,14 @@ element:<TSkillLabLogin/>
   },
 
   {
-    path: "/reset-password/:token",   // there was // 
+    path: "/reset-password/:token", // there was //
     element: <ResetPassword />,
   },
   {
     path: "/OTP",
     element: <OTP_Verification />,
   },
-  { path:"/splunk-studio" ,element:<SplunkStudio/>
-
-  },
+  { path: "/splunk-studio", element: <SplunkStudio /> },
   {
     path: "/createNewPassword",
     element: <CreateNewPassword />,
@@ -350,8 +325,8 @@ element:<TSkillLabLogin/>
       { path: "stockportal", element: <StockPortal /> },
 
       {
-        path:"stockmarkert",
-        element:<MarketOverviewAdvanced/>
+        path: "stockmarkert",
+        element: <MarketOverviewAdvanced />,
       },
       {
         path: "stock",
@@ -364,9 +339,9 @@ element:<TSkillLabLogin/>
       { path: "takequiz", element: <MainQuiz /> },
       { path: "check", element: <StudentDashboard /> },
       { path: "makePayment", element: <PaymentPage /> },
-       { path: "overview", element: <MarketOverview/> },
-        { path: "splunk-studio", element: <SplunkStudio/> },
-          { path: "lab", element: <SplunkStudio/> },
+      { path: "overview", element: <MarketOverview /> },
+      { path: "splunk-studio", element: <SplunkStudio /> },
+      { path: "lab", element: <SplunkStudio /> },
 
       { path: "/dashboard/post", element: <Dashboard /> },
     ],
