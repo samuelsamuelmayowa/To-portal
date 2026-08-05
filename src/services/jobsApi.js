@@ -14,11 +14,21 @@ export async function fetchCareerJobs({
     time_frame: timeFrame,
   });
 
-  const response = await fetch(`/api/jobs?${params.toString()}`, { signal });
+  const response = await fetch(`/api/career-jobs?${params.toString()}`, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+    },
+    signal,
+  });
+
   const payload = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new Error(payload?.error || "Unable to load career jobs.");
+    throw new Error(
+      payload?.error ||
+        `Unable to load jobs. Request failed with status ${response.status}.`,
+    );
   }
 
   return Array.isArray(payload?.jobs) ? payload.jobs : [];

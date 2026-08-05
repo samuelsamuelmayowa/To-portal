@@ -34,15 +34,80 @@ const CATEGORY_RULES = [
     match: ["linux", "unix", "sysadmin", "system administrator"],
   },
   {
-    name: "Finance",
+    name: "Cybersecurity",
     match: [
-      "financial analyst",
-      "finance analyst",
-      "investment analyst",
-      "risk analyst",
-      "fintech",
-      "credit analyst",
-      "treasury analyst",
+      "cybersecurity",
+      "cyber security",
+      "security analyst",
+      "security engineer",
+      "soc analyst",
+      "incident response",
+      "penetration tester",
+    ],
+  },
+  {
+    name: "Cloud & DevOps",
+    match: [
+      "cloud engineer",
+      "cloud architect",
+      "devops",
+      "site reliability",
+      "platform engineer",
+      "kubernetes",
+      "docker",
+      "aws",
+      "azure",
+      "google cloud",
+    ],
+  },
+  {
+    name: "Data & AI",
+    match: [
+      "data engineer",
+      "data analyst",
+      "data scientist",
+      "machine learning",
+      "artificial intelligence",
+      "ai engineer",
+      "business intelligence",
+    ],
+  },
+  {
+    name: "Mobile",
+    match: [
+      "mobile developer",
+      "react native",
+      "android developer",
+      "ios developer",
+      "flutter developer",
+    ],
+  },
+  {
+    name: "Software",
+    match: [
+      "software engineer",
+      "software developer",
+      "frontend",
+      "front end",
+      "backend",
+      "back end",
+      "full stack",
+      "web developer",
+      "react developer",
+      "node.js",
+      "python developer",
+      "java developer",
+    ],
+  },
+  {
+    name: "IT Support",
+    match: [
+      "technical support",
+      "it support",
+      "help desk",
+      "desktop support",
+      "network engineer",
+      "systems support",
     ],
   },
 ];
@@ -83,7 +148,7 @@ function getCategory(jobText = "") {
     }
   }
 
-  return "IT";
+  return "Technology";
 }
 
 function safeText(value, fallback = "") {
@@ -140,7 +205,10 @@ function getPostedLabel(job, index) {
 }
 
 function normalizeJob(job, index) {
-  const company = safeText(job.organization || job.company, "Company not listed");
+  const company = safeText(
+    job.organization || job.company,
+    "Company not listed",
+  );
   const location = safeText(
     job.locations_derived?.join(", ") ||
       job.location ||
@@ -172,16 +240,20 @@ function normalizeJob(job, index) {
     workArrangement: safeText(job.ai_work_arrangement, ""),
   };
 }
-
 function categoryStyle(category) {
   const map = {
     Splunk: "border-purple-400/20 bg-purple-500/15 text-purple-200",
     Linux: "border-yellow-400/20 bg-yellow-500/15 text-yellow-100",
-    Finance: "border-emerald-400/20 bg-emerald-500/15 text-emerald-200",
-    IT: "border-slate-400/20 bg-slate-500/15 text-slate-200",
+    Cybersecurity: "border-red-400/20 bg-red-500/15 text-red-200",
+    "Cloud & DevOps": "border-blue-400/20 bg-blue-500/15 text-blue-200",
+    "Data & AI": "border-cyan-400/20 bg-cyan-500/15 text-cyan-200",
+    Mobile: "border-pink-400/20 bg-pink-500/15 text-pink-200",
+    Software: "border-emerald-400/20 bg-emerald-500/15 text-emerald-200",
+    "IT Support": "border-orange-400/20 bg-orange-500/15 text-orange-200",
+    Technology: "border-slate-400/20 bg-slate-500/15 text-slate-200",
   };
 
-  return map[category] || map.IT;
+  return map[category] || map.Technology;
 }
 
 export default function CareerPage() {
@@ -232,7 +304,18 @@ export default function CareerPage() {
     return apiJobs.map((job, index) => normalizeJob(job, index));
   }, [apiJobs]);
 
-  const categories = ["All", "New", "Splunk", "Linux", "Finance"];
+  const categories = [
+    "All",
+    "New",
+    "Splunk",
+    "Linux",
+    "Software",
+    "Cybersecurity",
+    "Cloud & DevOps",
+    "Data & AI",
+    "Mobile",
+    "IT Support",
+  ];
 
   const newJobs = useMemo(() => {
     return jobs.filter((job) => job.isNew);
@@ -245,7 +328,8 @@ export default function CareerPage() {
           job.isNew ||
           job.category === "Splunk" ||
           job.category === "Linux" ||
-          job.category === "Finance",
+          job.category === "Cybersecurity" ||
+          job.category === "Software",
       )
       .slice(0, 3);
   }, [jobs]);
@@ -289,9 +373,17 @@ export default function CareerPage() {
   const paginatedJobs = filteredJobs.slice(startIdx, startIdx + jobsPerPage);
 
   const splunkCount = jobs.filter((job) => job.category === "Splunk").length;
-  const financeCount = jobs.filter((job) => job.category === "Finance").length;
-  const remoteCount = jobs.filter((job) =>
-    job.location.toLowerCase().includes("remote"),
+
+  const linuxCount = jobs.filter((job) => job.category === "Linux").length;
+
+  const cybersecurityCount = jobs.filter(
+    (job) => job.category === "Cybersecurity",
+  ).length;
+
+  const remoteCount = jobs.filter(
+    (job) =>
+      job.location.toLowerCase().includes("remote") ||
+      job.workArrangement.toLowerCase().includes("remote"),
   ).length;
 
   useEffect(() => {
@@ -364,14 +456,30 @@ export default function CareerPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <StatCard
-                icon={<Briefcase />}
-                value={`${jobs.length}+`}
-                label="Total Jobs"
-              />
-              <StatCard icon={<Sparkles />} value={newJobs.length} label="New Jobs" />
-              <StatCard icon={<ShieldCheck />} value={splunkCount} label="Splunk Roles" />
-              <StatCard icon={<Globe2 />} value={financeCount} label="Finance Roles" />
+            
+           <StatCard
+  icon={<Briefcase />}
+  value={`${jobs.length}+`}
+  label="Technology Jobs"
+/>
+
+<StatCard
+  icon={<Sparkles />}
+  value={newJobs.length}
+  label="New Jobs"
+/>
+
+<StatCard
+  icon={<ShieldCheck />}
+  value={splunkCount}
+  label="Splunk Roles"
+/>
+
+<StatCard
+  icon={<Globe2 />}
+  value={remoteCount}
+  label="Remote Roles"
+/>
             </div>
           </div>
         </motion.section>
@@ -464,11 +572,30 @@ export default function CareerPage() {
           </div>
 
           <div className="mt-5 grid gap-4 md:grid-cols-4">
-            <MiniStat icon={<Filter />} label="Showing" value={filteredJobs.length} />
-            <MiniStat icon={<Layers3 />} label="Categories" value={3} />
-            <MiniStat icon={<TrendingUp />} label="Splunk Roles" value={splunkCount} />
-            <MiniStat icon={<Users />} label="Page" value={`${currentPage}/${totalPages || 1}`} />
-          </div>
+  <MiniStat
+    icon={<Filter />}
+    label="Showing"
+    value={filteredJobs.length}
+  />
+
+  <MiniStat
+    icon={<Layers3 />}
+    label="Categories"
+    value={categories.length - 2}
+  />
+
+  <MiniStat
+    icon={<TrendingUp />}
+    label="Cybersecurity"
+    value={cybersecurityCount}
+  />
+
+  <MiniStat
+    icon={<Users />}
+    label="Page"
+    value={`${currentPage}/${totalPages || 1}`}
+  />
+</div>
         </motion.section>
 
         {/* ================= JOB GRID ================= */}
@@ -483,7 +610,8 @@ export default function CareerPage() {
                     : `${selectedCategory} Jobs`}
               </h2>
               <p className="mt-2 text-sm font-medium text-white/45">
-                Showing {paginatedJobs.length} of {filteredJobs.length} matching jobs.
+                Showing {paginatedJobs.length} of {filteredJobs.length} matching
+                jobs.
               </p>
             </div>
           </div>
@@ -764,7 +892,6 @@ function EmptyState({ clearFilters }) {
   );
 }
 
-
 function LoadingState() {
   return (
     <div className="rounded-[2.3rem] border border-white/10 bg-white/10 p-12 text-center shadow-2xl shadow-black/20 backdrop-blur-2xl">
@@ -780,7 +907,9 @@ function LoadingState() {
 function ErrorState({ message, onRetry }) {
   return (
     <div className="rounded-[2.3rem] border border-red-400/20 bg-red-500/10 p-10 text-center shadow-2xl shadow-black/20 backdrop-blur-2xl">
-      <h3 className="text-2xl font-black text-white">Jobs could not be loaded</h3>
+      <h3 className="text-2xl font-black text-white">
+        Jobs could not be loaded
+      </h3>
       <p className="mx-auto mt-3 max-w-xl text-sm font-medium leading-7 text-white/60">
         {message}
       </p>
@@ -793,7 +922,6 @@ function ErrorState({ message, onRetry }) {
     </div>
   );
 }
-
 
 // import React, { useEffect, useMemo, useState } from "react";
 // import { motion } from "framer-motion";
