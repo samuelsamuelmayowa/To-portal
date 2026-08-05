@@ -14,7 +14,7 @@ export async function fetchCareerJobs({
     time_frame: timeFrame,
   });
 
-  const response = await fetch(`/api/career-jobs?${params.toString()}`, {
+  const response = await fetch(`/api/jobs?${params.toString()}`, {
     method: "GET",
     headers: {
       Accept: "application/json",
