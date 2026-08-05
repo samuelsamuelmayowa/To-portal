@@ -330,8 +330,7 @@ export default async function handler(request, response) {
     request.query.time_frame,
     "7d",
   ).trim();
-
-  const limit = clampInteger(request.query.limit, 100, 1, 100);
+const limit = clampInteger(request.query.limit, 20, 1, 20);
   const offset = clampInteger(request.query.offset, 0, 0, 10000);
 
   const params = new URLSearchParams({
