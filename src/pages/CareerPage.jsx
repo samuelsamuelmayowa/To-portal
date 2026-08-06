@@ -277,7 +277,7 @@ export default function CareerPage() {
 
       try {
         const result = await fetchCareerJobs({
-          category: "all",dx
+          category: "all",
           location: "United States",
           limit: 1,
           timeFrame: "7d",
