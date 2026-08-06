@@ -508,18 +508,18 @@ function AccessDenied({ userEmail }) {
         </div>
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <NavLink
+          {/* <NavLink
             to="/login"
             className="flex w-full items-center justify-center rounded-2xl bg-white px-6 py-4 font-black text-BLUE transition hover:-translate-y-1"
           >
             Login
-          </NavLink>
+          </NavLink> */}
 
           <NavLink
             to="/dashboard"
             className="flex w-full items-center justify-center rounded-2xl border border-white/15 px-6 py-4 font-black text-white transition hover:-translate-y-1 hover:bg-white hover:text-BLUE"
           >
-            Back to Dashboard
+            Back to Dashboard or s
           </NavLink>
         </div>
       </div>
