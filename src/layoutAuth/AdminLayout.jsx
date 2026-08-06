@@ -1,10 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  NavLink,
-  Navigate,
-  Outlet,
-  useLocation,
-} from "react-router-dom";
+import { NavLink, Navigate, Outlet, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 
 import {
@@ -43,41 +38,50 @@ const navigationItems = [
     path: "/ADMIN-DASHBOARD/viewcourses",
     icon: MdOutlineViewList,
   },
-//   {
-//     name: "All Students",
-//     path: "/ADMIN-DASHBOARD/allStudents",
-//     icon: FaUsers,
-//   },
+  //   {
+  //     name: "All Students",
+  //     path: "/ADMIN-DASHBOARD/allStudents",
+  //     icon: FaUsers,
+  //   },
+
+
+
+
+  {
+  name: "Student Access",
+  path: "/ADMIN-DASHBOARD/student-access",
+  icon: FaUsers,
+},
   {
     name: "Students Result",
     path: "/ADMIN-DASHBOARD/studentresults",
     icon: FaGraduationCap,
   },
-//   {
-//     name: "Contacts",
-//     path: "/ADMIN-DASHBOARD/contacts",
-//     icon: FaUserGroup,
-//   },
-//   {
-//     name: "Contractors",
-//     path: "/ADMIN-DASHBOARD/contractors",
-//     icon: MdOutlineAnalytics,
-//   },
-//   {
-//     name: "Send Online Links",
-//     path: "/ADMIN-DASHBOARD/send-links",
-//     icon: FaLink,
-//   },
-//   {
-//     name: "Send Assignment",
-//     path: "/ADMIN-DASHBOARD/send-pdf",
-//     icon: FaRegFilePdf,
-//   },
-//   {
-//     name: "Messages",
-//     path: "/ADMIN-DASHBOARD/send-messages",
-//     icon: FaMessage,
-//   },
+  //   {
+  //     name: "Contacts",
+  //     path: "/ADMIN-DASHBOARD/contacts",
+  //     icon: FaUserGroup,
+  //   },
+  //   {
+  //     name: "Contractors",
+  //     path: "/ADMIN-DASHBOARD/contractors",
+  //     icon: MdOutlineAnalytics,
+  //   },
+  //   {
+  //     name: "Send Online Links",
+  //     path: "/ADMIN-DASHBOARD/send-links",
+  //     icon: FaLink,
+  //   },
+  //   {
+  //     name: "Send Assignment",
+  //     path: "/ADMIN-DASHBOARD/send-pdf",
+  //     icon: FaRegFilePdf,
+  //   },
+  //   {
+  //     name: "Messages",
+  //     path: "/ADMIN-DASHBOARD/send-messages",
+  //     icon: FaMessage,
+  //   },
 ];
 
 const getPageTitle = (pathname) => {
@@ -196,9 +200,7 @@ const AdminLayout = () => {
             </div>
 
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-bold text-white">
-                Boss
-              </p>
+              <p className="truncate text-sm font-bold text-white">Boss</p>
               <p className="text-xs text-slate-400">Administrator</p>
             </div>
           </div>
@@ -248,9 +250,7 @@ const AdminLayout = () => {
                 <FaXmark size={22} />
               </button>
 
-              <SidebarContent
-                closeSidebar={() => setMobileMenuOpen(false)}
-              />
+              <SidebarContent closeSidebar={() => setMobileMenuOpen(false)} />
             </motion.aside>
           </>
         )}
@@ -311,7 +311,7 @@ const AdminLayout = () => {
 
               <div>
                 <p className="text-sm font-bold leading-tight text-slate-900">
-                Big Boss
+                  Big Boss
                 </p>
 
                 <p className="text-xs font-medium text-slate-400">Admin</p>
@@ -378,7 +378,7 @@ export default AdminLayout;
 //     }
 //     if (!token) {
 //         return <Navigate to="/" />
-//     }   
+//     }
 //     return (
 //         <>
 //             <div className="grid grid-cols-1 lg:grid-cols-5 lg:min-h-screen">

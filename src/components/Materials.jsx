@@ -33,42 +33,48 @@ const API_BASE = import.meta.env.VITE_HOME_OO || "http://localhost:8000";
   const allowedEmails = [...]
   const sampleCourses = [...]
 */
-const allowedEmails = [
-  "sammmyayo@gmail.com",
-          "Sammmyayo@gmail.com",
-  "kewizle.k@gmail.com",
-  "kewizlek@gmail.com",
-  "pamelaabina24@gmail.com",
-   "Pamelaabina24@gmail.com",
-  "basseyvera018@gmail.com",
-  "Kewizle.k@gmail.com",
-  "Davidayeni63@gmail.com",
-  "Adesh25416@gmail.com",
-  "davidayeni63@gmail.com",
-  "adesh25416@gmail.com",
-  "codeverseprogramming23@gmail.com",
-  "ooolajuyigbe@gmail.com",
-  "fadeleolutola@gmail.com",
-  "jahdek76@gmail.com",
-  "samuelsamuelmayowa@gmail.com",
-  "adenusitimi@gmail.com",
-  "oluwaferanmiolulana@gmail.com",
-  "oluwaferanmi.olulana@gmail.com",
-  "tomideolulana@gmail.com",
-  "randommayowa@gmail.com",
-  "yinkalola51@gmail.com",
-  "toanalyticsllc@gmail.com",
-  "kevwe_oberiko@yahoo.com",
-  "denisgsam@gmail.com",
-  "fpasamuelmayowa51@gmail.com",
-  "oluwatiroyeamoye@gmail.com",
-  "trbanjo@gmail.com",
-  "emanfrimpong@gmail.com",
-  "dipeoluolatunji@gmail.com",
-  "lybertyudochuu@gmail.com",
-];
+// const allowedEmails = [
+//   "sammmyayo@gmail.com",
+//   "Sammmyayo@gmail.com",
+//   "kewizle.k@gmail.com",
+//   "kewizlek@gmail.com",
+//   "pamelaabina24@gmail.com",
+//   "Pamelaabina24@gmail.com",
+//   "basseyvera018@gmail.com",
+//   "Kewizle.k@gmail.com",
+//   "Davidayeni63@gmail.com",
+//   "Adesh25416@gmail.com",
+//   "davidayeni63@gmail.com",
+//   "adesh25416@gmail.com",
+//   "codeverseprogramming23@gmail.com",
+//   "ooolajuyigbe@gmail.com",
+//   "fadeleolutola@gmail.com",
+//   "jahdek76@gmail.com",
+//   "samuelsamuelmayowa@gmail.com",
+//   "adenusitimi@gmail.com",
+//   "oluwaferanmiolulana@gmail.com",
+//   "oluwaferanmi.olulana@gmail.com",
+//   "tomideolulana@gmail.com",
+//   "randommayowa@gmail.com",
+//   "yinkalola51@gmail.com",
+//   "toanalyticsllc@gmail.com",
+//   "kevwe_oberiko@yahoo.com",
+//   "denisgsam@gmail.com",
+//   "fpasamuelmayowa51@gmail.com",
+//   "oluwatiroyeamoye@gmail.com",
+//   "trbanjo@gmail.com",
+//   "emanfrimpong@gmail.com",
+//   "dipeoluolatunji@gmail.com",
+//   "lybertyudochuu@gmail.com",
+// ];
 
- const sampleCourses = [
+
+setIsAllowed(
+  allowedEmails
+    .map((email) => email.toLowerCase().trim())
+    .includes(normalized),
+);
+const sampleCourses = [
   {
     id: "splunk",
     title: "Splunk Training",
@@ -373,10 +379,9 @@ const allowedEmails = [
             url: "",
           },
         ],
-      },     
-      
+      },
 
-       {
+      {
         id: "class13",
         // title: "Class 7  —  Splunk Dashboard",
         title: "Class 13 Data Onboarding Lab.",
@@ -385,7 +390,7 @@ const allowedEmails = [
           {
             id: "v2",
             title: "Class 13 Data Onboarding Lab",
-            url: "https://player.vimeo.com/video/1161024327"
+            url: "https://player.vimeo.com/video/1161024327",
 
             // url: "",
           },
@@ -397,14 +402,11 @@ const allowedEmails = [
             url: "https://docs.google.com/presentation/d/16tCZ7QDzXSVXw7RnQFvKxO7mZEH1E87d/preview",
           },
         ],
-      }
-    ]
+      },
+    ],
+  },
+];
 
-    }
-    ]
-
-      
-  
 const fullSplunkSyllabus = sampleCourses
   .find((c) => c.id === "splunk")
   .classes.map((cls, index) => ({
@@ -641,7 +643,9 @@ export default function CoursePortal() {
 
   const [courses] = useState(sampleCourses);
   const [selectedCourse, setSelectedCourse] = useState(sampleCourses[0]);
-  const [selectedClass, setSelectedClass] = useState(sampleCourses[0].classes[0]);
+  const [selectedClass, setSelectedClass] = useState(
+    sampleCourses[0].classes[0],
+  );
   const [selectedVideo, setSelectedVideo] = useState(null);
 
   const [showSyllabus, setShowSyllabus] = useState(false);
@@ -676,13 +680,15 @@ export default function CoursePortal() {
   }, [selectedCourse, classSearch]);
 
   const completedCount = useMemo(() => {
-    return selectedCourse.classes.filter((item) => progressState[item.id]?.completed)
-      .length;
+    return selectedCourse.classes.filter(
+      (item) => progressState[item.id]?.completed,
+    ).length;
   }, [selectedCourse, progressState]);
 
   const totalClasses = selectedCourse.classes.length;
   const totalVideos = selectedCourse.classes.reduce(
-    (sum, item) => sum + (item.videos || []).filter((video) => video?.url).length,
+    (sum, item) =>
+      sum + (item.videos || []).filter((video) => video?.url).length,
     0,
   );
 
@@ -726,7 +732,10 @@ export default function CoursePortal() {
         });
 
         setProgressState(mapped);
-        localStorage.setItem(storageProgressKey(normalized), JSON.stringify(mapped));
+        localStorage.setItem(
+          storageProgressKey(normalized),
+          JSON.stringify(mapped),
+        );
       } catch (err) {
         try {
           const saved = JSON.parse(
@@ -822,7 +831,9 @@ export default function CoursePortal() {
       const cls = saved[selectedClass.id] || {};
 
       if (cls.videoId === selectedVideo.id && cls.time > 0) {
-        player.ready().then(() => player.setCurrentTime(cls.time).catch(() => {}));
+        player
+          .ready()
+          .then(() => player.setCurrentTime(cls.time).catch(() => {}));
       }
     } catch {}
 
@@ -1113,7 +1124,9 @@ export default function CoursePortal() {
                                         ? "bg-emerald-500"
                                         : "bg-BLUE"
                                     }`}
-                                    style={{ width: `${Math.max(percent, 5)}%` }}
+                                    style={{
+                                      width: `${Math.max(percent, 5)}%`,
+                                    }}
                                   />
                                 </div>
 
@@ -1203,7 +1216,9 @@ export default function CoursePortal() {
                             />
                           ) : (
                             <div className="flex h-full w-full items-center justify-center text-sm font-bold text-white/35">
-                              {loadingThumbs ? "Loading thumbnail..." : "No thumbnail"}
+                              {loadingThumbs
+                                ? "Loading thumbnail..."
+                                : "No thumbnail"}
                             </div>
                           )}
 
@@ -1254,7 +1269,8 @@ export default function CoursePortal() {
 
                     {isMutedHint && (
                       <p className="mt-1 text-xs font-semibold text-yellow-200">
-                        Browser blocked volume control. Press play manually if needed.
+                        Browser blocked volume control. Press play manually if
+                        needed.
                       </p>
                     )}
                   </div>
@@ -1348,7 +1364,10 @@ export default function CoursePortal() {
 
               <div className="mt-5 grid grid-cols-2 gap-3">
                 <MiniSummary label="Completed" value={completedCount} />
-                <MiniSummary label="Remaining" value={totalClasses - completedCount} />
+                <MiniSummary
+                  label="Remaining"
+                  value={totalClasses - completedCount}
+                />
               </div>
             </div>
           </aside>
@@ -1921,8 +1940,7 @@ function MiniSummary({ label, value }) {
 //             url: "",
 //           },
 //         ],
-//       },     
-      
+//       },
 
 //        {
 //         id: "class13",
@@ -1945,9 +1963,7 @@ function MiniSummary({ label, value }) {
 //             url: "https://docs.google.com/presentation/d/16tCZ7QDzXSVXw7RnQFvKxO7mZEH1E87d/preview",
 //           },
 //         ],
-//       },     
-
-
+//       },
 
 //        {
 //         id: "class14",
@@ -1970,12 +1986,7 @@ function MiniSummary({ label, value }) {
 //             url: "",
 //           },
 //         ],
-//       },  
-
-
-
-
-
+//       },
 
 //        {
 //         id: "class15",
@@ -1998,7 +2009,7 @@ function MiniSummary({ label, value }) {
 //             url: "https://docs.google.com/presentation/d/14BX41OFW10PpnxnppGEZ9G6foQFdFVqb/preview",
 //           },
 //         ],
-//       },  
+//       },
 //       // {
 //       //   id: "class6",
 //       //   title: "Class 5  — Splunk Knowledge Objects",
@@ -2367,7 +2378,7 @@ function MiniSummary({ label, value }) {
 
 //   return (
 //     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4">
-//       {/*       
+//       {/*
 //          <AssignmentToast
 //       show={showNewAssignmentAlert}
 //       onClose={() => setShowNewAssignmentAlert(false)}
@@ -2406,8 +2417,8 @@ function MiniSummary({ label, value }) {
 //             {/* Dark Mode Toggle */}
 //             <button
 //               onClick={() => setDarkMode(!darkMode)}
-//               className="px-3 py-1 rounded text-sm 
-//         bg-gray-200 text-gray-800 
+//               className="px-3 py-1 rounded text-sm
+//         bg-gray-200 text-gray-800
 //         dark:bg-gray-800 dark:text-white
 //         hover:opacity-90 transition"
 //             >
@@ -2679,18 +2690,6 @@ function MiniSummary({ label, value }) {
 //     </div>
 //   );
 // }
-
-
-
-
-
-
-
-
-
-
-
-
 
 // // BELOW IS THE REAL FILE
 // // import React, { useEffect, useRef, useState } from "react";

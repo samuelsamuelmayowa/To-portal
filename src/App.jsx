@@ -381,6 +381,11 @@ const router = createBrowserRouter([
       path: "allStudents",
       element: <AllStudents />,
     },
+
+      {
+    path: "student-access",
+    element: <StudentAccess />,
+  },
     {
       path: "contacts",
       element: <Contacts />,
