@@ -71,7 +71,7 @@ const FetchAllStudents = () => {
 
       try {
         const response = await fetch(
-          `https://to-backendapi-v1.onrender.com/api/admin/students?limit=500`,
+          `https://to-backendapi-v1-kctb.onrender.com/api/admin/students?limit=500`,
           {
             method: "GET",
             headers: {
