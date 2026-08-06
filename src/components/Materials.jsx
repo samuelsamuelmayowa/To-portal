@@ -69,11 +69,7 @@ const API_BASE = import.meta.env.VITE_HOME_OO || "http://localhost:8000";
 // ];
 
 
-setIsAllowed(
-  allowedEmails
-    .map((email) => email.toLowerCase().trim())
-    .includes(normalized),
-);
+
 const sampleCourses = [
   {
     id: "splunk",
@@ -653,9 +649,15 @@ export default function CoursePortal() {
   const [thumbnails, setThumbnails] = useState({});
   const [loadingThumbs, setLoadingThumbs] = useState(false);
 
+  // const [userEmail, setUserEmail] = useState("");
+  // const [isAllowed, setIsAllowed] = useState(false);
+  // const [progressState, setProgressState] = useState({});
+
+
   const [userEmail, setUserEmail] = useState("");
-  const [isAllowed, setIsAllowed] = useState(false);
-  const [progressState, setProgressState] = useState({});
+const [isAllowed, setIsAllowed] = useState(false);
+const [checkingAccess, setCheckingAccess] = useState(true);
+const [progressState, setProgressState] = useState({});
   const [isMutedHint, setIsMutedHint] = useState(false);
 
   const playerRef = useRef(null);
@@ -696,60 +698,193 @@ export default function CoursePortal() {
     ? Math.round((completedCount / totalClasses) * 100)
     : 0;
 
+  // useEffect(() => {
+  //   const rawUser = localStorage.getItem("user") || "";
+  //   const normalized = normalizeEmail(rawUser);
+
+  //   setUserEmail(normalized);
+
+  //   setIsAllowed(
+  //     allowedEmails
+  //       .map((email) => email.toLowerCase().trim())
+  //       .includes(normalized),
+  //   );
+
+  //   async function fetchProgress() {
+  //     if (!normalized) return;
+
+  //     try {
+  //       const res = await fetch(
+  //         `${import.meta.env.VITE_API_BASE}/api/progress/${normalized}`,
+  //       );
+
+  //       if (!res.ok) throw new Error("Failed to fetch backend progress");
+
+  //       const data = await res.json();
+
+  //       const mapped = {};
+  //       data.forEach((p) => {
+  //         mapped[p.classId] = {
+  //           note: p.note || "",
+  //           time: p.time || 0,
+  //           duration: p.duration || 0,
+  //           completed: p.completed || false,
+  //           videoId: p.videoId || "",
+  //         };
+  //       });
+
+  //       setProgressState(mapped);
+  //       localStorage.setItem(
+  //         storageProgressKey(normalized),
+  //         JSON.stringify(mapped),
+  //       );
+  //     } catch (err) {
+  //       try {
+  //         const saved = JSON.parse(
+  //           localStorage.getItem(storageProgressKey(normalized)) || "{}",
+  //         );
+  //         setProgressState(saved || {});
+  //       } catch {
+  //         setProgressState({});
+  //       }
+  //     }
+  //   }
+
+  //   fetchProgress();
+  // }, []);
+
+
   useEffect(() => {
-    const rawUser = localStorage.getItem("user") || "";
-    const normalized = normalizeEmail(rawUser);
+  let componentIsActive = true;
 
-    setUserEmail(normalized);
+  const rawUser = localStorage.getItem("user") || "";
+  const normalized = normalizeEmail(rawUser);
 
-    setIsAllowed(
-      allowedEmails
-        .map((email) => email.toLowerCase().trim())
-        .includes(normalized),
-    );
+  setUserEmail(normalized);
 
-    async function fetchProgress() {
-      if (!normalized) return;
+  async function checkStudentAccess() {
+    if (!normalized) {
+      if (componentIsActive) {
+        setIsAllowed(false);
+        setCheckingAccess(false);
+      }
+
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/check-student-access", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: normalized,
+          courseId: "splunk",
+        }),
+      });
+
+      let result = null;
 
       try {
-        const res = await fetch(
-          `${import.meta.env.VITE_API_BASE}/api/progress/${normalized}`,
+        result = await response.json();
+      } catch {
+        result = null;
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          result?.error || "Unable to check student access.",
         );
+      }
 
-        if (!res.ok) throw new Error("Failed to fetch backend progress");
+      if (componentIsActive) {
+        setIsAllowed(result?.allowed === true);
+      }
+    } catch (error) {
+      console.error("Student access check failed:", error);
 
-        const data = await res.json();
+      if (componentIsActive) {
+        setIsAllowed(false);
+      }
+    } finally {
+      if (componentIsActive) {
+        setCheckingAccess(false);
+      }
+    }
+  }
 
-        const mapped = {};
-        data.forEach((p) => {
-          mapped[p.classId] = {
-            note: p.note || "",
-            time: p.time || 0,
-            duration: p.duration || 0,
-            completed: p.completed || false,
-            videoId: p.videoId || "",
+  async function fetchProgress() {
+    if (!normalized) return;
+
+    try {
+      const apiBase = import.meta.env.VITE_API_BASE;
+
+      if (!apiBase) {
+        throw new Error("Progress API is not configured.");
+      }
+
+      const response = await fetch(
+        `${apiBase}/api/progress/${encodeURIComponent(normalized)}`,
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch backend progress.");
+      }
+
+      const data = await response.json();
+
+      const mapped = {};
+
+      if (Array.isArray(data)) {
+        data.forEach((progress) => {
+          mapped[progress.classId] = {
+            note: progress.note || "",
+            time: progress.time || 0,
+            duration: progress.duration || 0,
+            completed: progress.completed || false,
+            videoId: progress.videoId || "",
           };
         });
+      }
 
+      if (componentIsActive) {
         setProgressState(mapped);
-        localStorage.setItem(
-          storageProgressKey(normalized),
-          JSON.stringify(mapped),
+      }
+
+      localStorage.setItem(
+        storageProgressKey(normalized),
+        JSON.stringify(mapped),
+      );
+    } catch (error) {
+      console.warn(
+        "Backend progress unavailable. Using local progress:",
+        error,
+      );
+
+      try {
+        const saved = JSON.parse(
+          localStorage.getItem(storageProgressKey(normalized)) || "{}",
         );
-      } catch (err) {
-        try {
-          const saved = JSON.parse(
-            localStorage.getItem(storageProgressKey(normalized)) || "{}",
-          );
+
+        if (componentIsActive) {
           setProgressState(saved || {});
-        } catch {
+        }
+      } catch {
+        if (componentIsActive) {
           setProgressState({});
         }
       }
     }
+  }
 
-    fetchProgress();
-  }, []);
+  checkStudentAccess();
+  fetchProgress();
+
+  return () => {
+    componentIsActive = false;
+  };
+}, []);
 
   useEffect(() => {
     async function fetchThumbs() {
@@ -942,10 +1077,39 @@ export default function CoursePortal() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  if (!isAllowed) {
-    return <AccessDenied userEmail={userEmail} />;
-  }
 
+  if (checkingAccess) {
+  return (
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#050816] px-6 text-white">
+      <div className="absolute left-[-180px] top-[-180px] h-[450px] w-[450px] rounded-full bg-BLUE/30 blur-[140px]" />
+
+      <div className="absolute bottom-[-200px] right-[-180px] h-[480px] w-[480px] rounded-full bg-purple-500/20 blur-[150px]" />
+
+      <div className="relative z-10 w-full max-w-md rounded-[2rem] border border-white/10 bg-white/10 p-8 text-center shadow-2xl backdrop-blur-2xl">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-white/20 border-t-cyan-300" />
+        </div>
+
+        <p className="mt-6 text-xs font-black uppercase tracking-[0.25em] text-cyan-200">
+          Student verification
+        </p>
+
+        <h1 className="mt-3 text-2xl font-black">
+          Checking your portal access
+        </h1>
+
+        <p className="mt-3 text-sm leading-6 text-white/55">
+          Please wait while your student account is being verified.
+        </p>
+      </div>
+    </main>
+  );
+}
+
+if (!isAllowed) {
+  return <AccessDenied userEmail={userEmail} />;
+}
+ 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#050816] p-4 text-white md:p-6">
       <div className="absolute left-[-180px] top-[-180px] h-[460px] w-[460px] rounded-full bg-BLUE/35 blur-[140px]" />
