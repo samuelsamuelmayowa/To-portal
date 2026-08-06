@@ -77,6 +77,7 @@ import Profile from "./pages/skillab/Profile";
 import TSkillLabLogin from "./pages/skillab/TSkillLabLogin";
 import ChatComponent from "./components/ChatComponent";
 import CourseTabContent from "./components/CourseTabContent";
+import StudentAccess from "./components/StudentAccess";
 // 🟣 GLOBAL THEME HELPER
 function applySavedTheme() {
   const saved = localStorage.getItem("theme") || "light";

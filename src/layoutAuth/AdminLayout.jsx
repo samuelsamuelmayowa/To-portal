@@ -84,7 +84,9 @@ const navigationItems = [
   //   },
 ];
 
+
 const getPageTitle = (pathname) => {
+  if (pathname.includes("/student-access")) return "Student Access";
   if (pathname.includes("/viewcourses")) return "Courses";
   if (pathname.includes("/allStudents")) return "All Students";
   if (pathname.includes("/studentresults")) return "Students Result";

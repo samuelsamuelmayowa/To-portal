@@ -12,13 +12,7 @@ import {
 import StudentTable from "./StudentTable";
 import FetchAllStudents from "../hooks/FetchAllStudents";
 
-const StatCard = ({
-  title,
-  value,
-  description,
-  icon: Icon,
-  iconClassName,
-}) => {
+const StatCard = ({ title, value, description, icon: Icon, iconClassName }) => {
   return (
     <div className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/70">
       <div className="flex items-start justify-between gap-4">
@@ -70,7 +64,7 @@ const AdminDashboard = () => {
   }).length;
 
   const totalProviders = new Set(
-    students.map((student) => student?.provider).filter(Boolean)
+    students.map((student) => student?.provider).filter(Boolean),
   ).size;
 
   const studentCount = isLoading ? "—" : students.length;
@@ -95,6 +89,13 @@ const AdminDashboard = () => {
       description: "Share online classes and useful resources.",
       path: "/ADMIN-DASHBOARD/send-links",
       icon: FaLink,
+    },
+
+    {
+      title: "Manage student access",
+      description: "Approve, suspend or revoke student portal access.",
+      path: "/ADMIN-DASHBOARD/student-access",
+      icon: FaUsers,
     },
   ];
 
@@ -197,9 +198,7 @@ const AdminDashboard = () => {
         {/* Quick actions */}
         <aside className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           <div>
-            <h2 className="text-lg font-black text-slate-950">
-              Quick actions
-            </h2>
+            <h2 className="text-lg font-black text-slate-950">Quick actions</h2>
 
             <p className="mt-1 text-sm text-slate-500">
               Common administrative tasks.
@@ -245,49 +244,3 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
-// import { FaUserCheck } from "react-icons/fa6";
-// import { BsTruck } from "react-icons/bs";
-// import StudentTable from "./StudentTable";
-// import FetchAllStudents from "../hooks/FetchAllStudents";
-
-// const AdminDashboard = () => {
-//     const {data} = FetchAllStudents()
-//     console.log(data)
-//     return (
-//         <>
-//             <div className="">
-//                 <div className="md:p-5 p-2">
-//                     <div className="flex flex-wrap md:justify-start items-center gap-2">
-//                         <div className="flex items-center gap-2 md:gap-5 md:p-3 p-1 bg-grayBG rounded-md">
-//                             <div className="">
-//                                 <FaUserCheck size={30} />
-//                             </div>
-//                             <div className="text-center">
-//                                 <p className="text-xs md:text-base">Total User</p>
-//                                 <p className="font-bold">{data?.data?.response.length || "00"}</p>
-//                             </div>
-//                         </div>
-//                         <div className="flex items-center gap-2 md:gap-5 md:p-3 p-1 bg-grayBG rounded-md">
-//                             <div className="">
-//                                 <BsTruck size={30} />
-//                             </div>
-//                             <div className="text-center">
-//                                 <p className="text-xs md:text-base">Total Course</p>
-//                                 <p className="font-bold">8</p>
-//                             </div>
-//                         </div>
-//                     </div>
-//                 </div>
-//             </div>
-//             <div className="my-5 md:my-0 px-2 md:px-5 md:flex items-start md:gap-6">
-//                 <div className="flex-1 md:p-5 md:min-h-[275px] bg-grayBG rounded-md mb-5 md:mb-0">
-//                     <h1 className="font-bold text-base md:text-xl md:mb-5 p-2">Registered Students</h1>
-//                     <StudentTable />
-//                 </div>
-//             </div>
-//         </>
-
-//     )
-// }
-
-// export default AdminDashboard
