@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-
 import {
   FaBookOpen,
   FaCalendarAlt,
@@ -18,8 +17,9 @@ import {
   FaUserGraduate,
   FaUserSlash,
   FaUsers,
-  FaXmark,
 } from "react-icons/fa";
+
+import { FaXmark } from "react-icons/fa6";
 
 const INITIAL_FORM = {
   full_name: "",
