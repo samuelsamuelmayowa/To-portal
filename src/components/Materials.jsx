@@ -516,10 +516,10 @@ function AccessDenied({ userEmail }) {
           </NavLink> */}
 
           <NavLink
-            to="/dashboard"
+            to="/"
             className="flex w-full items-center justify-center rounded-2xl border border-white/15 px-6 py-4 font-black text-white transition hover:-translate-y-1 hover:bg-white hover:text-BLUE"
           >
-            Back to Dashboard or s
+            please contact the admin for support ,t.oanalyticsllc@gmail.com
           </NavLink>
         </div>
       </div>
