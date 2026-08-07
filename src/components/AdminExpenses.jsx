@@ -20,6 +20,10 @@ import {
 
 const STORAGE_KEY = "to-admin-operating-expenses";
 
+const FX_RATE_STORAGE_KEY = "to-admin-usd-ngn-rate";
+
+const DEFAULT_USD_TO_NGN_RATE = 1365.07;
+
 const initialExpenses = [
   {
     id: "massive-stock-api",
@@ -185,6 +189,25 @@ function loadExpenses() {
   }
 }
 
+function loadExchangeRate() {
+  try {
+    const savedRate = Number(
+      localStorage.getItem(FX_RATE_STORAGE_KEY),
+    );
+
+    if (
+      Number.isFinite(savedRate) &&
+      savedRate > 0
+    ) {
+      return savedRate;
+    }
+
+    return DEFAULT_USD_TO_NGN_RATE;
+  } catch {
+    return DEFAULT_USD_TO_NGN_RATE;
+  }
+}
+
 function formatMoney(amount, currency = "USD") {
   const numericAmount = Number(amount);
 
@@ -298,6 +321,24 @@ function BillingBadge({ cycle }) {
 const AdminExpenses = () => {
   const [expenses, setExpenses] = useState(loadExpenses);
 
+  const [usdToNgnRate, setUsdToNgnRate] =
+  useState(loadExchangeRate);
+  const handleExchangeRateChange = (value) => {
+  const numericValue = Number(value);
+
+  setUsdToNgnRate(value);
+
+  if (
+    Number.isFinite(numericValue) &&
+    numericValue > 0
+  ) {
+    localStorage.setItem(
+      FX_RATE_STORAGE_KEY,
+      String(numericValue),
+    );
+  }
+};
+
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
 
@@ -330,6 +371,18 @@ const AdminExpenses = () => {
       active: 0,
     };
 
+    const activeUsdToNgnRate =
+  Number(usdToNgnRate) > 0
+    ? Number(usdToNgnRate)
+    : DEFAULT_USD_TO_NGN_RATE;
+
+const totalMonthlyNGN =
+  summary.monthlyNGN +
+  summary.monthlyUSD * activeUsdToNgnRate;
+
+const totalYearlyNGN =
+  summary.yearlyNGN +
+  summary.yearlyUSD * activeUsdToNgnRate;
     expenses.forEach((expense) => {
       if (
         expense.billingCycle === "unknown" ||
