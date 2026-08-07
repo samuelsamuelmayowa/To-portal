@@ -78,6 +78,7 @@ import TSkillLabLogin from "./pages/skillab/TSkillLabLogin";
 import ChatComponent from "./components/ChatComponent";
 import CourseTabContent from "./components/CourseTabContent";
 import StudentAccess from "./components/StudentAccess";
+import AdminExpenses from "./components/AdminExpenses";
 // 🟣 GLOBAL THEME HELPER
 function applySavedTheme() {
   const saved = localStorage.getItem("theme") || "light";
@@ -350,69 +351,74 @@ const router = createBrowserRouter([
   },
 
   // ADMIN DASHBOARD
- {
-  path: "/ADMIN-DASHBOARD",
-  element: <AdminLayout />,
-  children: [
-    {
-      index: true,
-      element: <AdminDashboard />,
-    },
-
-    {
-      path: "viewcourses",
-      element: <AdminViewCourses />,
-      children: [
-        {
-          index: true,
-          element: <CourseTabContent status="all" />,
-        },
-        {
-          path: "published",
-          element: <CourseTabContent status="published" />,
-        },
-        {
-          path: "draft",
-          element: <CourseTabContent status="draft" />,
-        },
-      ],
-    },
-
-    {
-      path: "allStudents",
-      element: <AllStudents />,
-    },
+  {
+    path: "/ADMIN-DASHBOARD",
+    element: <AdminLayout />,
+    children: [
+      {
+        index: true,
+        element: <AdminDashboard />,
+      },
 
       {
-    path: "student-access",
-    element: <StudentAccess />,
+        path: "viewcourses",
+        element: <AdminViewCourses />,
+        children: [
+          {
+            index: true,
+            element: <CourseTabContent status="all" />,
+          },
+          {
+            path: "published",
+            element: <CourseTabContent status="published" />,
+          },
+          {
+            path: "draft",
+            element: <CourseTabContent status="draft" />,
+          },
+        ],
+      },
+
+      {
+        path: "allStudents",
+        element: <AllStudents />,
+      },
+
+      {
+        path: "expenses",
+        element: <AdminExpenses />,
+      },
+
+      {
+        path: "student-access",
+        element: <StudentAccess />,
+      },
+      {
+        path: "contacts",
+        element: <Contacts />,
+      },
+      {
+        path: "studentresults",
+        element: <SeeQuiz />,
+      },
+      {
+        path: "contractors",
+        element: <Contractors />,
+      },
+      {
+        path: "send-links",
+        element: <SendLinks />,
+      },
+      {
+        path: "send-pdf",
+        element: <SendPdf />,
+      },
+      {
+        path: "send-messages",
+        element: <SendMessages />,
+      },
+    ],
   },
-    {
-      path: "contacts",
-      element: <Contacts />,
-    },
-    {
-      path: "studentresults",
-      element: <SeeQuiz />,
-    },
-    {
-      path: "contractors",
-      element: <Contractors />,
-    },
-    {
-      path: "send-links",
-      element: <SendLinks />,
-    },
-    {
-      path: "send-pdf",
-      element: <SendPdf />,
-    },
-    {
-      path: "send-messages",
-      element: <SendMessages />,
-    },
-  ],
-},
 ]);
 
 // 🟪 FINAL APP WITH GLOBAL DARK WRAPPER

@@ -8,9 +8,12 @@ import {
   MdOutlineViewList,
 } from "react-icons/md";
 
+
+
 import {
   FaBell,
   FaGraduationCap,
+  FaMoneyBillWave,
   FaRegFilePdf,
   FaSearch,
   FaUsers,
@@ -33,6 +36,13 @@ const navigationItems = [
     icon: MdDashboard,
     end: true,
   },
+
+  {
+  name: "Expenses",
+  path: "/ADMIN-DASHBOARD/expenses",
+  icon: FaMoneyBillWave,
+},
+
   {
     name: "Courses",
     path: "/ADMIN-DASHBOARD/viewcourses",
