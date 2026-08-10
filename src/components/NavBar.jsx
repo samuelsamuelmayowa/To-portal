@@ -149,8 +149,8 @@ const NavBar = () => {
           to="/toskillab/lab"
           className={({ isActive }) =>
             isActive
-              ? "font-semibold text-PURPLE"
-              : "transition hover:text-PURPLE"
+              ? "font-semibold"
+              : "transition"
           }
         >
          Lab
