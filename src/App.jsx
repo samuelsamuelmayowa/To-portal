@@ -79,6 +79,7 @@ import ChatComponent from "./components/ChatComponent";
 import CourseTabContent from "./components/CourseTabContent";
 import StudentAccess from "./components/StudentAccess";
 import AdminExpenses from "./components/AdminExpenses";
+import SplunkLab from "./pages/SplunkLab";
 // 🟣 GLOBAL THEME HELPER
 function applySavedTheme() {
   const saved = localStorage.getItem("theme") || "light";
@@ -170,6 +171,11 @@ const router = createBrowserRouter([
         path: "/toskillab",
         element: <Home />,
       },
+
+      {
+  path: "/toskillab/lab",
+  element: <SplunkLab />,
+},
 
       {
         path: "/mylab",

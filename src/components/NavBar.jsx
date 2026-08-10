@@ -121,11 +121,11 @@ const NavBar = () => {
       </Link>
 
       {/* SEARCH — only on desktop */}
-      {token && (
+      {/* {token && (
         <div className="hidden md:block w-[250px] lg:w-[300px]">
           <SearchCourseInput />
         </div>
-      )}
+      )} */}
 
       {/* DESKTOP NAV */}
       <nav className="hidden md:flex items-center gap-8 text-[15px]">
@@ -142,6 +142,18 @@ const NavBar = () => {
           }
         >
           TO Skill Lab
+        </NavLink>
+
+
+         <NavLink
+          to="/toskillab/lab"
+          className={({ isActive }) =>
+            isActive
+              ? "font-semibold text-PURPLE"
+              : "transition hover:text-PURPLE"
+          }
+        >
+         Lab
         </NavLink>
 
         {/* <NavLink to="/toskillab" className="hover:text-BLUE">
@@ -226,16 +238,16 @@ const NavBar = () => {
           </NavLink>
 
           <NavLink
-  to="/toskillab"
-  onClick={() => setShowMenu(false)}
-  className={({ isActive }) =>
-    isActive
-      ? "font-semibold text-PURPLE"
-      : "transition hover:text-PURPLE"
-  }
->
-  TO Skill Lab
-</NavLink>
+            to="/toskillab"
+            onClick={() => setShowMenu(false)}
+            className={({ isActive }) =>
+              isActive
+                ? "font-semibold text-PURPLE"
+                : "transition hover:text-PURPLE"
+            }
+          >
+            TO Skill Lab
+          </NavLink>
 
           {/* <NavLink to="/mentorship" className="hover:text-BLUE">
             Mentorship
