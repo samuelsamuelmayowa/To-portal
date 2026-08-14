@@ -120,12 +120,12 @@ const initialExpenses = [
     name: "Zoom",
     provider: "Zoom",
     category: "Communication",
-    amount: "",
+    amount: 17,
     currency: "USD",
-    billingCycle: "unknown",
-    status: "unknown",
+    billingCycle: "monthly",
+    status: "active",
     renewalDate: "",
-    notes: "Zoom plan and price still need to be confirmed.",
+    notes: "Confirmed Zoom subscription cost: $17 per month.",
   },
 ];
 
@@ -191,7 +191,51 @@ function loadExpenses() {
       return initialExpenses;
     }
 
-    return parsed;
+    /*
+      Keep existing browser data, but migrate the
+      previously unknown Zoom cost to the newly
+      confirmed $17 monthly subscription.
+    */
+    const zoomExpenseIndex = parsed.findIndex(
+      (expense) => expense.id === "zoom",
+    );
+
+    if (zoomExpenseIndex === -1) {
+      const zoomExpense = initialExpenses.find(
+        (expense) => expense.id === "zoom",
+      );
+
+      return zoomExpense
+        ? [...parsed, zoomExpense]
+        : parsed;
+    }
+
+    return parsed.map((expense) => {
+      if (expense.id !== "zoom") {
+        return expense;
+      }
+
+      const zoomPriceWasNotConfirmed =
+        expense.amount === "" ||
+        expense.amount === null ||
+        expense.amount === undefined ||
+        expense.billingCycle === "unknown" ||
+        expense.status === "unknown";
+
+      if (!zoomPriceWasNotConfirmed) {
+        return expense;
+      }
+
+      return {
+        ...expense,
+        amount: 17,
+        currency: "USD",
+        billingCycle: "monthly",
+        status: "active",
+        notes:
+          "Confirmed Zoom subscription cost: $17 per month.",
+      };
+    });
   } catch (error) {
     console.error("Unable to load saved expenses:", error);
     return initialExpenses;
@@ -550,6 +594,10 @@ const AdminExpenses = () => {
     summary.yearlyNGN +
     convertedYearlyUsdToNgn;
 
+  const domainExpense = expenses.find(
+    (expense) => expense.id === "domain",
+  );
+
   /*
     SEARCH + FILTER
   */
@@ -856,6 +904,66 @@ const AdminExpenses = () => {
         </div>
       </section>
 
+      {/* URGENT DOMAIN ALERT */}
+      {domainExpense && (
+        <motion.section
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative overflow-hidden rounded-3xl border-2 border-red-600 bg-red-600 p-1 shadow-2xl shadow-red-200"
+        >
+          <div className="absolute -right-12 -top-16 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
+
+          <div className="relative rounded-[20px] border border-white/20 bg-gradient-to-r from-red-700 via-red-600 to-rose-600 px-5 py-6 text-white sm:px-7 lg:flex lg:items-center lg:justify-between lg:gap-8">
+            <div className="flex items-start gap-4">
+              <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white text-red-600 shadow-lg">
+                <span className="absolute inset-0 animate-ping rounded-2xl bg-white/30" />
+
+                <FaExclamationTriangle
+                  size={24}
+                  className="relative"
+                />
+              </div>
+
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-red-100">
+                  Urgent payment alert
+                </p>
+
+                <h2 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">
+                  TO domain expires this month
+                </h2>
+
+                <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-red-50 sm:text-base">
+                  Renew the domain before it expires to prevent the TO website,
+                  admin portal and connected services from becoming unavailable.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 rounded-2xl border border-white/25 bg-white/15 px-5 py-4 backdrop-blur-sm lg:mt-0 lg:min-w-[230px] lg:text-right">
+              <p className="text-xs font-black uppercase tracking-wider text-red-100">
+                Renewal amount
+              </p>
+
+              <p className="mt-1 text-3xl font-black">
+                {formatMoney(
+                  domainExpense.amount,
+                  domainExpense.currency,
+                )}
+              </p>
+
+              <p className="mt-1 text-sm font-bold text-red-100">
+                {domainExpense.renewalDate
+                  ? `Due ${new Date(
+                      `${domainExpense.renewalDate}T00:00:00`,
+                    ).toLocaleDateString()}`
+                  : "Exact renewal date needed"}
+              </p>
+            </div>
+          </div>
+        </motion.section>
+      )}
+
       {/* MAIN SUMMARY */}
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {/* MONTHLY TOTAL */}
@@ -1012,7 +1120,7 @@ const AdminExpenses = () => {
               </p>
 
               <h2 className="mt-1 text-lg font-black text-slate-950">
-                USD → NGN Planning Rate
+                USD â†’ NGN Planning Rate
               </h2>
 
               <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
@@ -1035,7 +1143,7 @@ const AdminExpenses = () => {
 
             <div className="mt-2 flex h-14 items-center rounded-xl border border-slate-200 bg-slate-50 px-4 transition focus-within:border-indigo-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-indigo-100">
               <span className="mr-2 text-lg font-black text-slate-500">
-                ₦
+                â‚¦
               </span>
 
               <input
@@ -1072,7 +1180,7 @@ const AdminExpenses = () => {
             </p>
 
             <p className="mt-2 text-lg font-black text-slate-900">
-              ₦
+              â‚¦
               {formatNumber(
                 activeUsdToNgnRate,
               )}{" "}
@@ -1228,6 +1336,10 @@ const AdminExpenses = () => {
                 expense.status ===
                   "free";
 
+              const isDomain =
+                expense.id === "domain" ||
+                expense.category === "Domain";
+
               const convertedNairaCost =
                 expense.currency ===
                   "USD" &&
@@ -1243,11 +1355,23 @@ const AdminExpenses = () => {
                 <motion.div
                   layout
                   key={expense.id}
-                  className="p-5 transition hover:bg-slate-50/70 sm:p-6"
+                  className={[
+                    "p-5 transition sm:p-6",
+                    isDomain
+                      ? "border-l-4 border-red-600 bg-red-50/80 hover:bg-red-50"
+                      : "hover:bg-slate-50/70",
+                  ].join(" ")}
                 >
                   <div className="flex flex-col gap-5 xl:flex-row xl:items-center">
                     <div className="flex min-w-0 flex-1 items-start gap-4">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+                      <div
+                        className={[
+                          "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl",
+                          isDomain
+                            ? "bg-red-600 text-white shadow-lg shadow-red-200"
+                            : "bg-indigo-50 text-indigo-600",
+                        ].join(" ")}
+                      >
                         <Icon size={19} />
                       </div>
 
@@ -1262,6 +1386,13 @@ const AdminExpenses = () => {
                               expense.billingCycle
                             }
                           />
+
+                          {isDomain && (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-red-600 px-3 py-1 text-xs font-black uppercase tracking-wide text-white shadow-sm">
+                              <FaExclamationTriangle size={11} />
+                              Expires this month
+                            </span>
+                          )}
                         </div>
 
                         <p className="mt-1 text-sm font-semibold text-slate-500">
@@ -1333,7 +1464,7 @@ const AdminExpenses = () => {
                         {convertedNairaCost !==
                           null && (
                           <p className="mt-2 text-xs font-bold text-indigo-500">
-                            ≈{" "}
+                            â‰ˆ{" "}
                             {formatMoney(
                               convertedNairaCost,
                               "NGN",
@@ -1633,11 +1764,11 @@ const AdminExpenses = () => {
                       className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm outline-none transition disabled:cursor-not-allowed disabled:bg-slate-100 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
                     >
                       <option value="USD">
-                        USD — US Dollar
+                        USD â€” US Dollar
                       </option>
 
                       <option value="NGN">
-                        NGN — Nigerian
+                        NGN â€” Nigerian
                         Naira
                       </option>
                     </select>
@@ -1753,6 +1884,23 @@ const AdminExpenses = () => {
 
 export default AdminExpenses;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // import { useMemo, useState } from "react";
 // import { AnimatePresence, motion } from "framer-motion";
 
@@ -1761,6 +1909,7 @@ export default AdminExpenses;
 //   FaCheckCircle,
 //   FaCloud,
 //   FaEdit,
+//   FaExchangeAlt,
 //   FaExclamationTriangle,
 //   FaGlobe,
 //   FaMoneyBillWave,
@@ -1774,9 +1923,12 @@ export default AdminExpenses;
 // } from "react-icons/fa";
 
 // const STORAGE_KEY = "to-admin-operating-expenses";
-
 // const FX_RATE_STORAGE_KEY = "to-admin-usd-ngn-rate";
 
+// /*
+//   This is a PLANNING rate.
+//   You can change it directly from the Expenses page.
+// */
 // const DEFAULT_USD_TO_NGN_RATE = 1365.07;
 
 // const initialExpenses = [
@@ -1924,7 +2076,7 @@ export default AdminExpenses;
 //   },
 //   {
 //     value: "unknown",
-//     label: "Unknown",
+//     label: "Cost not set",
 //   },
 // ];
 
@@ -1938,38 +2090,76 @@ export default AdminExpenses;
 
 //     const parsed = JSON.parse(saved);
 
-//     return Array.isArray(parsed) ? parsed : initialExpenses;
-//   } catch {
+//     if (!Array.isArray(parsed)) {
+//       return initialExpenses;
+//     }
+
+//     return parsed;
+//   } catch (error) {
+//     console.error("Unable to load saved expenses:", error);
 //     return initialExpenses;
 //   }
 // }
 
 // function loadExchangeRate() {
 //   try {
-//     const savedRate = Number(localStorage.getItem(FX_RATE_STORAGE_KEY));
+//     const saved = localStorage.getItem(FX_RATE_STORAGE_KEY);
 
-//     if (Number.isFinite(savedRate) && savedRate > 0) {
+//     if (!saved) {
+//       return DEFAULT_USD_TO_NGN_RATE;
+//     }
+
+//     const savedRate = Number(saved);
+
+//     if (
+//       Number.isFinite(savedRate) &&
+//       savedRate > 0
+//     ) {
 //       return savedRate;
 //     }
 
 //     return DEFAULT_USD_TO_NGN_RATE;
-//   } catch {
+//   } catch (error) {
+//     console.error(
+//       "Unable to load exchange rate:",
+//       error,
+//     );
+
 //     return DEFAULT_USD_TO_NGN_RATE;
 //   }
 // }
 
-// function formatMoney(amount, currency = "USD") {
+// function formatMoney(
+//   amount,
+//   currency = "USD",
+// ) {
 //   const numericAmount = Number(amount);
 
 //   if (!Number.isFinite(numericAmount)) {
 //     return "Not set";
 //   }
 
-//   return new Intl.NumberFormat(currency === "NGN" ? "en-NG" : "en-US", {
-//     style: "currency",
-//     currency,
-//     maximumFractionDigits: currency === "NGN" ? 0 : 2,
-//   }).format(numericAmount);
+//   return new Intl.NumberFormat(
+//     currency === "NGN" ? "en-NG" : "en-US",
+//     {
+//       style: "currency",
+//       currency,
+//       maximumFractionDigits:
+//         currency === "NGN" ? 0 : 2,
+//     },
+//   ).format(numericAmount);
+// }
+
+// function formatNumber(value) {
+//   const numericValue = Number(value);
+
+//   if (!Number.isFinite(numericValue)) {
+//     return "0";
+//   }
+
+//   return new Intl.NumberFormat("en-NG", {
+//     maximumFractionDigits: 2,
+//   }).format(numericValue);
 // }
 
 // function getMonthlyEquivalent(expense) {
@@ -1979,11 +2169,15 @@ export default AdminExpenses;
 //     return 0;
 //   }
 
-//   if (expense.billingCycle === "monthly") {
+//   if (
+//     expense.billingCycle === "monthly"
+//   ) {
 //     return amount;
 //   }
 
-//   if (expense.billingCycle === "yearly") {
+//   if (
+//     expense.billingCycle === "yearly"
+//   ) {
 //     return amount / 12;
 //   }
 
@@ -1997,19 +2191,47 @@ export default AdminExpenses;
 //     return 0;
 //   }
 
-//   if (expense.billingCycle === "monthly") {
+//   if (
+//     expense.billingCycle === "monthly"
+//   ) {
 //     return amount * 12;
 //   }
 
-//   if (expense.billingCycle === "yearly") {
+//   if (
+//     expense.billingCycle === "yearly"
+//   ) {
 //     return amount;
 //   }
 
-//   if (expense.billingCycle === "one-time") {
+//   if (
+//     expense.billingCycle === "one-time"
+//   ) {
 //     return amount;
 //   }
 
 //   return 0;
+// }
+
+// function getBillingText(cycle) {
+//   switch (cycle) {
+//     case "monthly":
+//       return "per month";
+
+//     case "yearly":
+//       return "per year";
+
+//     case "one-time":
+//       return "one-time payment";
+
+//     case "free":
+//       return "free";
+
+//     case "unknown":
+//       return "cost not set";
+
+//     default:
+//       return cycle;
+//   }
 // }
 
 // function getExpenseIcon(category) {
@@ -2039,11 +2261,16 @@ export default AdminExpenses;
 
 // function BillingBadge({ cycle }) {
 //   const styles = {
-//     monthly: "bg-blue-50 text-blue-700 border-blue-100",
-//     yearly: "bg-purple-50 text-purple-700 border-purple-100",
-//     "one-time": "bg-amber-50 text-amber-700 border-amber-100",
-//     free: "bg-emerald-50 text-emerald-700 border-emerald-100",
-//     unknown: "bg-slate-100 text-slate-600 border-slate-200",
+//     monthly:
+//       "bg-blue-50 text-blue-700 border-blue-100",
+//     yearly:
+//       "bg-purple-50 text-purple-700 border-purple-100",
+//     "one-time":
+//       "bg-amber-50 text-amber-700 border-amber-100",
+//     free:
+//       "bg-emerald-50 text-emerald-700 border-emerald-100",
+//     unknown:
+//       "bg-slate-100 text-slate-600 border-slate-200",
 //   };
 
 //   const labels = {
@@ -2056,9 +2283,10 @@ export default AdminExpenses;
 
 //   return (
 //     <span
-//       className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-bold ${
-//         styles[cycle] || styles.unknown
-//       }`}
+//       className={[
+//         "inline-flex rounded-full border px-2.5 py-1 text-xs font-bold",
+//         styles[cycle] || styles.unknown,
+//       ].join(" ")}
 //     >
 //       {labels[cycle] || cycle}
 //     </span>
@@ -2066,76 +2294,132 @@ export default AdminExpenses;
 // }
 
 // const AdminExpenses = () => {
-//   const [expenses, setExpenses] = useState(loadExpenses);
+//   const [expenses, setExpenses] =
+//     useState(loadExpenses);
 
-//   const [usdToNgnRate, setUsdToNgnRate] = useState(loadExchangeRate);
-//   const handleExchangeRateChange = (value) => {
-//     const numericValue = Number(value);
+//   const [
+//     usdToNgnRate,
+//     setUsdToNgnRate,
+//   ] = useState(loadExchangeRate);
 
-//     setUsdToNgnRate(value);
+//   const [search, setSearch] =
+//     useState("");
 
-//     if (Number.isFinite(numericValue) && numericValue > 0) {
-//       localStorage.setItem(FX_RATE_STORAGE_KEY, String(numericValue));
-//     }
-//   };
+//   const [filter, setFilter] =
+//     useState("all");
 
-//   const [search, setSearch] = useState("");
-//   const [filter, setFilter] = useState("all");
+//   const [modalOpen, setModalOpen] =
+//     useState(false);
 
-//   const [modalOpen, setModalOpen] = useState(false);
-//   const [editingId, setEditingId] = useState(null);
+//   const [editingId, setEditingId] =
+//     useState(null);
 
-//   const [form, setForm] = useState(emptyForm);
+//   const [form, setForm] =
+//     useState(emptyForm);
 
-//   const saveExpenses = (nextExpenses) => {
+//   /*
+//     SAVE EXPENSES
+//   */
+//   const saveExpenses = (
+//     nextExpenses,
+//   ) => {
 //     setExpenses(nextExpenses);
 
 //     try {
-//       localStorage.setItem(STORAGE_KEY, JSON.stringify(nextExpenses));
+//       localStorage.setItem(
+//         STORAGE_KEY,
+//         JSON.stringify(nextExpenses),
+//       );
 //     } catch (error) {
-//       console.error("Unable to save expenses:", error);
+//       console.error(
+//         "Unable to save expenses:",
+//         error,
+//       );
 //     }
 //   };
 
+//   /*
+//     EXCHANGE RATE
+//   */
+//   const handleExchangeRateChange = (
+//     value,
+//   ) => {
+//     setUsdToNgnRate(value);
+
+//     const numericValue = Number(value);
+
+//     if (
+//       Number.isFinite(numericValue) &&
+//       numericValue > 0
+//     ) {
+//       try {
+//         localStorage.setItem(
+//           FX_RATE_STORAGE_KEY,
+//           String(numericValue),
+//         );
+//       } catch (error) {
+//         console.error(
+//           "Unable to save exchange rate:",
+//           error,
+//         );
+//       }
+//     }
+//   };
+
+//   /*
+//     IMPORTANT:
+//     SUMMARY ONLY CALCULATES THE RAW
+//     USD AND NGN EXPENSES.
+
+//     It does NOT reference "summary"
+//     while summary is being created.
+//   */
 //   const summary = useMemo(() => {
 //     const result = {
 //       monthlyUSD: 0,
 //       monthlyNGN: 0,
+
 //       yearlyUSD: 0,
 //       yearlyNGN: 0,
+
 //       unknown: 0,
 //       free: 0,
 //       active: 0,
 //     };
 
-//     const activeUsdToNgnRate =
-//       Number(usdToNgnRate) > 0 ? Number(usdToNgnRate) : DEFAULT_USD_TO_NGN_RATE;
-
-//     const totalMonthlyNGN =
-//       summary.monthlyNGN + summary.monthlyUSD * activeUsdToNgnRate;
-
-//     const totalYearlyNGN =
-//       summary.yearlyNGN + summary.yearlyUSD * activeUsdToNgnRate;
 //     expenses.forEach((expense) => {
-//       if (expense.billingCycle === "unknown" || expense.status === "unknown") {
+//       if (
+//         expense.billingCycle ===
+//           "unknown" ||
+//         expense.status === "unknown"
+//       ) {
 //         result.unknown += 1;
 //         return;
 //       }
 
-//       if (expense.billingCycle === "free" || expense.status === "free") {
+//       if (
+//         expense.billingCycle ===
+//           "free" ||
+//         expense.status === "free"
+//       ) {
 //         result.free += 1;
 //         return;
 //       }
 
 //       result.active += 1;
 
-//       const monthly = getMonthlyEquivalent(expense);
-//       const yearly = getAnnualEquivalent(expense);
+//       const monthly =
+//         getMonthlyEquivalent(expense);
+
+//       const yearly =
+//         getAnnualEquivalent(expense);
 
 //       if (expense.currency === "NGN") {
 //         result.monthlyNGN += monthly;
 //         result.yearlyNGN += yearly;
-//       } else {
+//       } else if (
+//         expense.currency === "USD"
+//       ) {
 //         result.monthlyUSD += monthly;
 //         result.yearlyUSD += yearly;
 //       }
@@ -2144,80 +2428,166 @@ export default AdminExpenses;
 //     return result;
 //   }, [expenses]);
 
-//   const visibleExpenses = useMemo(() => {
-//     const query = search.trim().toLowerCase();
+//   /*
+//     SAFE TO USE summary HERE because
+//     useMemo has already finished above.
+//   */
+//   const activeUsdToNgnRate =
+//     Number(usdToNgnRate) > 0
+//       ? Number(usdToNgnRate)
+//       : DEFAULT_USD_TO_NGN_RATE;
 
-//     return expenses.filter((expense) => {
-//       const matchesSearch =
-//         !query ||
-//         expense.name.toLowerCase().includes(query) ||
-//         expense.provider.toLowerCase().includes(query) ||
-//         expense.category.toLowerCase().includes(query) ||
-//         expense.notes.toLowerCase().includes(query);
+//   const convertedMonthlyUsdToNgn =
+//     summary.monthlyUSD *
+//     activeUsdToNgnRate;
 
-//       const matchesFilter =
-//         filter === "all" ||
-//         expense.billingCycle === filter ||
-//         expense.status === filter;
+//   const convertedYearlyUsdToNgn =
+//     summary.yearlyUSD *
+//     activeUsdToNgnRate;
 
-//       return matchesSearch && matchesFilter;
-//     });
-//   }, [expenses, filter, search]);
+//   const totalMonthlyNGN =
+//     summary.monthlyNGN +
+//     convertedMonthlyUsdToNgn;
 
+//   const totalYearlyNGN =
+//     summary.yearlyNGN +
+//     convertedYearlyUsdToNgn;
+
+//   /*
+//     SEARCH + FILTER
+//   */
+//   const visibleExpenses =
+//     useMemo(() => {
+//       const query = search
+//         .trim()
+//         .toLowerCase();
+
+//       return expenses.filter(
+//         (expense) => {
+//           const expenseName =
+//             String(
+//               expense.name || "",
+//             ).toLowerCase();
+
+//           const provider =
+//             String(
+//               expense.provider || "",
+//             ).toLowerCase();
+
+//           const category =
+//             String(
+//               expense.category || "",
+//             ).toLowerCase();
+
+//           const notes =
+//             String(
+//               expense.notes || "",
+//             ).toLowerCase();
+
+//           const matchesSearch =
+//             !query ||
+//             expenseName.includes(query) ||
+//             provider.includes(query) ||
+//             category.includes(query) ||
+//             notes.includes(query);
+
+//           const matchesFilter =
+//             filter === "all" ||
+//             expense.billingCycle ===
+//               filter ||
+//             expense.status === filter;
+
+//           return (
+//             matchesSearch &&
+//             matchesFilter
+//           );
+//         },
+//       );
+//     }, [expenses, filter, search]);
+
+//   /*
+//     OPEN ADD MODAL
+//   */
 //   const openAddModal = () => {
 //     setEditingId(null);
 //     setForm(emptyForm);
 //     setModalOpen(true);
 //   };
 
-//   const openEditModal = (expense) => {
+//   /*
+//     OPEN EDIT MODAL
+//   */
+//   const openEditModal = (
+//     expense,
+//   ) => {
 //     setEditingId(expense.id);
 
 //     setForm({
-//       name: expense.name,
-//       provider: expense.provider,
-//       category: expense.category,
-//       amount: expense.amount,
-//       currency: expense.currency,
-//       billingCycle: expense.billingCycle,
-//       status: expense.status,
-//       renewalDate: expense.renewalDate || "",
+//       name: expense.name || "",
+//       provider:
+//         expense.provider || "",
+//       category:
+//         expense.category || "Other",
+//       amount: expense.amount ?? "",
+//       currency:
+//         expense.currency || "USD",
+//       billingCycle:
+//         expense.billingCycle ||
+//         "monthly",
+//       status:
+//         expense.status || "active",
+//       renewalDate:
+//         expense.renewalDate || "",
 //       notes: expense.notes || "",
 //     });
 
 //     setModalOpen(true);
 //   };
 
+//   /*
+//     CLOSE MODAL
+//   */
 //   const closeModal = () => {
 //     setModalOpen(false);
 //     setEditingId(null);
 //     setForm(emptyForm);
 //   };
 
-//   const updateForm = (field, value) => {
+//   /*
+//     UPDATE FORM
+//   */
+//   const updateForm = (
+//     field,
+//     value,
+//   ) => {
 //     setForm((previous) => {
 //       const next = {
 //         ...previous,
 //         [field]: value,
 //       };
 
-//       if (field === "billingCycle") {
+//       if (
+//         field === "billingCycle"
+//       ) {
 //         if (value === "free") {
 //           next.amount = 0;
 //           next.status = "free";
-//         }
-
-//         if (value === "unknown") {
+//         } else if (
+//           value === "unknown"
+//         ) {
 //           next.amount = "";
 //           next.status = "unknown";
-//         }
-
-//         if (
-//           value !== "free" &&
-//           value !== "unknown" &&
-//           (previous.status === "free" || previous.status === "unknown")
-//         ) {
+//         } else {
 //           next.status = "active";
+
+//           if (
+//             previous.billingCycle ===
+//               "free" ||
+//             previous.billingCycle ===
+//               "unknown"
+//           ) {
+//             next.amount = "";
+//           }
 //         }
 //       }
 
@@ -2225,23 +2595,59 @@ export default AdminExpenses;
 //     });
 //   };
 
-//   const submitExpense = (event) => {
+//   /*
+//     CREATE / UPDATE
+//   */
+//   const submitExpense = (
+//     event,
+//   ) => {
 //     event.preventDefault();
 
 //     if (!form.name.trim()) {
 //       return;
 //     }
 
+//     let normalizedAmount =
+//       form.amount;
+
+//     if (
+//       form.billingCycle === "unknown"
+//     ) {
+//       normalizedAmount = "";
+//     } else if (
+//       form.billingCycle === "free"
+//     ) {
+//       normalizedAmount = 0;
+//     } else {
+//       normalizedAmount = Number(
+//         form.amount || 0,
+//       );
+//     }
+
 //     const normalizedExpense = {
 //       ...form,
+
 //       name: form.name.trim(),
-//       provider: form.provider.trim() || "Not specified",
+
+//       provider:
+//         form.provider.trim() ||
+//         "Not specified",
+
 //       notes: form.notes.trim(),
-//       amount: form.billingCycle === "unknown" ? "" : Number(form.amount || 0),
+
+//       amount: normalizedAmount,
+
+//       status:
+//         form.billingCycle === "free"
+//           ? "free"
+//           : form.billingCycle ===
+//               "unknown"
+//             ? "unknown"
+//             : "active",
 //     };
 
 //     if (editingId) {
-//       saveExpenses(
+//       const nextExpenses =
 //         expenses.map((expense) =>
 //           expense.id === editingId
 //             ? {
@@ -2249,14 +2655,20 @@ export default AdminExpenses;
 //                 ...normalizedExpense,
 //               }
 //             : expense,
-//         ),
-//       );
+//         );
+
+//       saveExpenses(nextExpenses);
 //     } else {
+//       const newExpense = {
+//         ...normalizedExpense,
+
+//         id: `${Date.now()}-${Math.random()
+//           .toString(36)
+//           .slice(2, 8)}`,
+//       };
+
 //       saveExpenses([
-//         {
-//           ...normalizedExpense,
-//           id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-//         },
+//         newExpense,
 //         ...expenses,
 //       ]);
 //     }
@@ -2264,22 +2676,37 @@ export default AdminExpenses;
 //     closeModal();
 //   };
 
-//   const deleteExpense = (expense) => {
-//     const approved = window.confirm(
-//       `Delete "${expense.name}" from the expense tracker?`,
-//     );
+//   /*
+//     DELETE
+//   */
+//   const deleteExpense = (
+//     expense,
+//   ) => {
+//     const approved =
+//       window.confirm(
+//         `Delete "${expense.name}" from the expense tracker?`,
+//       );
 
 //     if (!approved) {
 //       return;
 //     }
 
-//     saveExpenses(expenses.filter((item) => item.id !== expense.id));
+//     saveExpenses(
+//       expenses.filter(
+//         (item) =>
+//           item.id !== expense.id,
+//       ),
+//     );
 //   };
 
+//   /*
+//     RESET STARTER DATA
+//   */
 //   const resetExpenses = () => {
-//     const approved = window.confirm(
-//       "Reset the expense tracker back to the original TO expense list?",
-//     );
+//     const approved =
+//       window.confirm(
+//         "Reset the expense tracker back to the original TO expense list?",
+//       );
 
 //     if (!approved) {
 //       return;
@@ -2301,6 +2728,7 @@ export default AdminExpenses;
 //             <div className="max-w-3xl">
 //               <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-indigo-200">
 //                 <FaMoneyBillWave />
+
 //                 Operations & Finance
 //               </div>
 
@@ -2309,8 +2737,11 @@ export default AdminExpenses;
 //               </h1>
 
 //               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
-//                 Track subscriptions, hosting, infrastructure, instructors,
-//                 software and other operating costs required to run the TO
+//                 Track subscriptions,
+//                 hosting, infrastructure,
+//                 instructors, software and
+//                 other operating costs
+//                 required to run the TO
 //                 platform.
 //               </p>
 //             </div>
@@ -2321,98 +2752,106 @@ export default AdminExpenses;
 //               className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-indigo-500 px-5 text-sm font-black text-white shadow-lg shadow-indigo-950/40 transition hover:bg-indigo-400"
 //             >
 //               <FaPlus size={14} />
+
 //               Add Expense
 //             </button>
 //           </div>
 //         </div>
 //       </section>
 
-//       {/* SUMMARY */}
+//       {/* MAIN SUMMARY */}
 //       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+//         {/* MONTHLY TOTAL */}
 //         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
 //           <div className="flex items-start justify-between gap-4">
-//             <div>
+//             <div className="min-w-0">
 //               <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
 //                 Monthly running cost
 //               </p>
 
-//             <p className="mt-3 text-2xl font-black text-slate-950">
-//   {formatMoney(
-//     totalMonthlyNGN,
-//     "NGN",
-//   )}
-// </p>
+//               <p className="mt-3 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
+//                 {formatMoney(
+//                   totalMonthlyNGN,
+//                   "NGN",
+//                 )}
+//               </p>
 
-// <p className="mt-1 text-sm font-bold text-slate-500">
-//   {formatMoney(
-//     summary.monthlyUSD,
-//     "USD",
-//   )}{" "}
-//   USD expenses
-// </p>
+//               <p className="mt-2 text-sm font-bold text-slate-600">
+//                 {formatMoney(
+//                   summary.monthlyUSD,
+//                   "USD",
+//                 )}{" "}
+//                 USD expenses
+//               </p>
 
-// <p className="mt-1 text-xs font-semibold text-slate-400">
-//   +{" "}
-//   {formatMoney(
-//     summary.monthlyNGN,
-//     "NGN",
-//   )}{" "}
-//   direct NGN expenses
-// </p>
+//               <p className="mt-1 text-xs font-semibold text-slate-400">
+//                 +{" "}
+//                 {formatMoney(
+//                   summary.monthlyNGN,
+//                   "NGN",
+//                 )}{" "}
+//                 direct NGN costs
+//               </p>
 //             </div>
 
-//             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+//             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
 //               <FaMoneyBillWave />
 //             </div>
 //           </div>
 
 //           <p className="mt-4 text-xs leading-5 text-slate-400">
-//             Monthly subscriptions plus the monthly equivalent of annual costs.
+//             Includes monthly services
+//             and the monthly equivalent
+//             of annual subscriptions.
 //           </p>
 //         </div>
 
+//         {/* ANNUAL TOTAL */}
 //         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
 //           <div className="flex items-start justify-between gap-4">
-//             <div>
+//             <div className="min-w-0">
 //               <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
 //                 Annual estimate
 //               </p>
 
-//            <p className="mt-3 text-2xl font-black text-slate-950">
-//   {formatMoney(
-//     totalYearlyNGN,
-//     "NGN",
-//   )}
-// </p>
+//               <p className="mt-3 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
+//                 {formatMoney(
+//                   totalYearlyNGN,
+//                   "NGN",
+//                 )}
+//               </p>
 
-// <p className="mt-1 text-sm font-bold text-slate-500">
-//   {formatMoney(
-//     summary.yearlyUSD,
-//     "USD",
-//   )}{" "}
-//   USD expenses
-// </p>
+//               <p className="mt-2 text-sm font-bold text-slate-600">
+//                 {formatMoney(
+//                   summary.yearlyUSD,
+//                   "USD",
+//                 )}{" "}
+//                 USD expenses
+//               </p>
 
-// <p className="mt-1 text-xs font-semibold text-slate-400">
-//   +{" "}
-//   {formatMoney(
-//     summary.yearlyNGN,
-//     "NGN",
-//   )}{" "}
-//   direct NGN expenses
-// </p>
+//               <p className="mt-1 text-xs font-semibold text-slate-400">
+//                 +{" "}
+//                 {formatMoney(
+//                   summary.yearlyNGN,
+//                   "NGN",
+//                 )}{" "}
+//                 direct NGN costs
+//               </p>
 //             </div>
 
-//             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
+//             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
 //               <FaCalendarAlt />
 //             </div>
 //           </div>
 
 //           <p className="mt-4 text-xs leading-5 text-slate-400">
-//             Known costs only. Unknown expenses are excluded.
+//             Known expenses only.
+//             Unknown costs are not
+//             included.
 //           </p>
 //         </div>
 
+//         {/* ACTIVE */}
 //         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
 //           <div className="flex items-start justify-between gap-4">
 //             <div>
@@ -2425,17 +2864,20 @@ export default AdminExpenses;
 //               </p>
 
 //               <p className="mt-1 text-sm font-semibold text-emerald-600">
-//                 {summary.free} free service
-//                 {summary.free === 1 ? "" : "s"}
+//                 {summary.free} free{" "}
+//                 {summary.free === 1
+//                   ? "service"
+//                   : "services"}
 //               </p>
 //             </div>
 
-//             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+//             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
 //               <FaCheckCircle />
 //             </div>
 //           </div>
 //         </div>
 
+//         {/* UNKNOWN */}
 //         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm">
 //           <div className="flex items-start justify-between gap-4">
 //             <div>
@@ -2452,42 +2894,177 @@ export default AdminExpenses;
 //               </p>
 //             </div>
 
-//             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-amber-600 shadow-sm">
+//             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-amber-600 shadow-sm">
 //               <FaExclamationTriangle />
 //             </div>
 //           </div>
 //         </div>
 //       </section>
 
-//       {/* CONTROLS */}
+//       {/* EXCHANGE RATE */}
+//       <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+//         <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-[1fr_auto] lg:items-center">
+//           <div className="flex items-start gap-4">
+//             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+//               <FaExchangeAlt size={18} />
+//             </div>
+
+//             <div>
+//               <p className="text-xs font-bold uppercase tracking-[0.15em] text-indigo-500">
+//                 Currency conversion
+//               </p>
+
+//               <h2 className="mt-1 text-lg font-black text-slate-950">
+//                 USD → NGN Planning Rate
+//               </h2>
+
+//               <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
+//                 All expenses entered in US
+//                 dollars are converted into
+//                 naira using this rate before
+//                 the main monthly and yearly
+//                 totals are calculated.
+//               </p>
+//             </div>
+//           </div>
+
+//           <div className="w-full lg:w-[290px]">
+//             <label
+//               htmlFor="usd-ngn-rate"
+//               className="text-xs font-bold uppercase tracking-wider text-slate-400"
+//             >
+//               Naira per $1
+//             </label>
+
+//             <div className="mt-2 flex h-14 items-center rounded-xl border border-slate-200 bg-slate-50 px-4 transition focus-within:border-indigo-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-indigo-100">
+//               <span className="mr-2 text-lg font-black text-slate-500">
+//                 ₦
+//               </span>
+
+//               <input
+//                 id="usd-ngn-rate"
+//                 type="number"
+//                 min="1"
+//                 step="0.01"
+//                 value={usdToNgnRate}
+//                 onChange={(event) =>
+//                   handleExchangeRateChange(
+//                     event.target.value,
+//                   )
+//                 }
+//                 className="h-full min-w-0 flex-1 bg-transparent text-xl font-black text-slate-950 outline-none"
+//               />
+
+//               <span className="ml-2 text-sm font-bold text-slate-400">
+//                 / $1
+//               </span>
+//             </div>
+
+//             <p className="mt-2 text-xs font-medium text-slate-400">
+//               Saved automatically in this
+//               browser.
+//             </p>
+//           </div>
+//         </div>
+
+//         {/* FX BREAKDOWN */}
+//         <div className="grid gap-px border-t border-slate-200 bg-slate-200 sm:grid-cols-3">
+//           <div className="bg-slate-50 p-4 sm:p-5">
+//             <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+//               Current planning rate
+//             </p>
+
+//             <p className="mt-2 text-lg font-black text-slate-900">
+//               ₦
+//               {formatNumber(
+//                 activeUsdToNgnRate,
+//               )}{" "}
+//               / $1
+//             </p>
+//           </div>
+
+//           <div className="bg-slate-50 p-4 sm:p-5">
+//             <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+//               USD monthly converted
+//             </p>
+
+//             <p className="mt-2 text-lg font-black text-slate-900">
+//               {formatMoney(
+//                 convertedMonthlyUsdToNgn,
+//                 "NGN",
+//               )}
+//             </p>
+//           </div>
+
+//           <div className="bg-slate-50 p-4 sm:p-5">
+//             <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+//               USD annual converted
+//             </p>
+
+//             <p className="mt-2 text-lg font-black text-slate-900">
+//               {formatMoney(
+//                 convertedYearlyUsdToNgn,
+//                 "NGN",
+//               )}
+//             </p>
+//           </div>
+//         </div>
+//       </section>
+
+//       {/* SEARCH / FILTER */}
 //       <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
 //         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
 //           <div className="relative flex-1">
 //             <FaSearch
 //               size={14}
-//               className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+//               className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
 //             />
 
 //             <input
 //               type="search"
 //               value={search}
-//               onChange={(event) => setSearch(event.target.value)}
+//               onChange={(event) =>
+//                 setSearch(
+//                   event.target.value,
+//                 )
+//               }
 //               placeholder="Search expense, provider or category"
-//               className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm font-medium outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-4 focus:ring-indigo-100"
+//               className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm font-medium outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:bg-white focus:ring-4 focus:ring-indigo-100"
 //             />
 //           </div>
 
 //           <select
 //             value={filter}
-//             onChange={(event) => setFilter(event.target.value)}
+//             onChange={(event) =>
+//               setFilter(
+//                 event.target.value,
+//               )
+//             }
 //             className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
 //           >
-//             <option value="all">All expenses</option>
-//             <option value="monthly">Monthly</option>
-//             <option value="yearly">Yearly</option>
-//             <option value="one-time">One-time</option>
-//             <option value="free">Free</option>
-//             <option value="unknown">Cost not set</option>
+//             <option value="all">
+//               All expenses
+//             </option>
+
+//             <option value="monthly">
+//               Monthly
+//             </option>
+
+//             <option value="yearly">
+//               Yearly
+//             </option>
+
+//             <option value="one-time">
+//               One-time
+//             </option>
+
+//             <option value="free">
+//               Free
+//             </option>
+
+//             <option value="unknown">
+//               Cost not set
+//             </option>
 //           </select>
 
 //           <button
@@ -2506,12 +3083,17 @@ export default AdminExpenses;
 //           <div className="flex items-center justify-between gap-3">
 //             <div>
 //               <h2 className="text-lg font-black text-slate-950">
-//                 Operating expenses
+//                 Operating Expenses
 //               </h2>
 
 //               <p className="mt-1 text-sm text-slate-500">
-//                 {visibleExpenses.length} expense
-//                 {visibleExpenses.length === 1 ? "" : "s"} shown
+//                 {visibleExpenses.length}{" "}
+//                 expense
+//                 {visibleExpenses.length ===
+//                 1
+//                   ? ""
+//                   : "s"}{" "}
+//                 shown
 //               </p>
 //             </div>
 
@@ -2521,124 +3103,188 @@ export default AdminExpenses;
 //               className="inline-flex h-10 items-center gap-2 rounded-xl bg-slate-950 px-4 text-sm font-bold text-white transition hover:bg-slate-800"
 //             >
 //               <FaPlus size={12} />
-//               <span className="hidden sm:inline">New expense</span>
+
+//               <span className="hidden sm:inline">
+//                 New expense
+//               </span>
 //             </button>
 //           </div>
 //         </div>
 
 //         <div className="divide-y divide-slate-100">
-//           {visibleExpenses.map((expense) => {
-//             const Icon = getExpenseIcon(expense.category);
+//           {visibleExpenses.map(
+//             (expense) => {
+//               const Icon =
+//                 getExpenseIcon(
+//                   expense.category,
+//                 );
 
-//             const isUnknown = expense.billingCycle === "unknown";
+//               const isUnknown =
+//                 expense.billingCycle ===
+//                   "unknown" ||
+//                 expense.status ===
+//                   "unknown";
 
-//             const isFree = expense.billingCycle === "free";
+//               const isFree =
+//                 expense.billingCycle ===
+//                   "free" ||
+//                 expense.status ===
+//                   "free";
 
-//             return (
-//               <motion.div
-//                 layout
-//                 key={expense.id}
-//                 className="p-5 transition hover:bg-slate-50/70 sm:p-6"
-//               >
-//                 <div className="flex flex-col gap-5 xl:flex-row xl:items-center">
-//                   <div className="flex min-w-0 flex-1 items-start gap-4">
-//                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
-//                       <Icon size={19} />
-//                     </div>
+//               const convertedNairaCost =
+//                 expense.currency ===
+//                   "USD" &&
+//                 !isUnknown &&
+//                 !isFree
+//                   ? Number(
+//                       expense.amount,
+//                     ) *
+//                     activeUsdToNgnRate
+//                   : null;
 
-//                     <div className="min-w-0">
-//                       <div className="flex flex-wrap items-center gap-2">
-//                         <h3 className="font-black text-slate-950">
-//                           {expense.name}
-//                         </h3>
-
-//                         <BillingBadge cycle={expense.billingCycle} />
+//               return (
+//                 <motion.div
+//                   layout
+//                   key={expense.id}
+//                   className="p-5 transition hover:bg-slate-50/70 sm:p-6"
+//                 >
+//                   <div className="flex flex-col gap-5 xl:flex-row xl:items-center">
+//                     <div className="flex min-w-0 flex-1 items-start gap-4">
+//                       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+//                         <Icon size={19} />
 //                       </div>
 
-//                       <p className="mt-1 text-sm font-semibold text-slate-500">
-//                         {expense.provider}
-//                       </p>
+//                       <div className="min-w-0">
+//                         <div className="flex flex-wrap items-center gap-2">
+//                           <h3 className="font-black text-slate-950">
+//                             {expense.name}
+//                           </h3>
 
-//                       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-semibold text-slate-400">
-//                         <span>{expense.category}</span>
+//                           <BillingBadge
+//                             cycle={
+//                               expense.billingCycle
+//                             }
+//                           />
+//                         </div>
 
-//                         {expense.renewalDate && (
-//                           <span className="inline-flex items-center gap-1.5">
-//                             <FaCalendarAlt />
-//                             Renewal:{" "}
-//                             {new Date(
-//                               `${expense.renewalDate}T00:00:00`,
-//                             ).toLocaleDateString()}
+//                         <p className="mt-1 text-sm font-semibold text-slate-500">
+//                           {expense.provider}
+//                         </p>
+
+//                         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-semibold text-slate-400">
+//                           <span>
+//                             {
+//                               expense.category
+//                             }
 //                           </span>
+
+//                           {expense.renewalDate && (
+//                             <span className="inline-flex items-center gap-1.5">
+//                               <FaCalendarAlt />
+
+//                               Renewal:{" "}
+//                               {new Date(
+//                                 `${expense.renewalDate}T00:00:00`,
+//                               ).toLocaleDateString()}
+//                             </span>
+//                           )}
+//                         </div>
+
+//                         {expense.notes && (
+//                           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-500">
+//                             {expense.notes}
+//                           </p>
+//                         )}
+//                       </div>
+//                     </div>
+
+//                     <div className="flex flex-wrap items-center justify-between gap-4 border-t border-slate-100 pt-4 xl:min-w-[390px] xl:justify-end xl:border-l xl:border-t-0 xl:pl-6 xl:pt-0">
+//                       <div className="min-w-[170px] xl:text-right">
+//                         <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+//                           Cost
+//                         </p>
+
+//                         <p
+//                           className={[
+//                             "mt-1 text-xl font-black",
+//                             isUnknown
+//                               ? "text-amber-600"
+//                               : isFree
+//                                 ? "text-emerald-600"
+//                                 : "text-slate-950",
+//                           ].join(" ")}
+//                         >
+//                           {isUnknown
+//                             ? "Not set"
+//                             : isFree
+//                               ? "Free"
+//                               : formatMoney(
+//                                   expense.amount,
+//                                   expense.currency,
+//                                 )}
+//                         </p>
+
+//                         {!isUnknown &&
+//                           !isFree && (
+//                             <p className="mt-1 text-xs font-semibold text-slate-400">
+//                               {getBillingText(
+//                                 expense.billingCycle,
+//                               )}
+//                             </p>
+//                           )}
+
+//                         {convertedNairaCost !==
+//                           null && (
+//                           <p className="mt-2 text-xs font-bold text-indigo-500">
+//                             ≈{" "}
+//                             {formatMoney(
+//                               convertedNairaCost,
+//                               "NGN",
+//                             )}
+//                           </p>
 //                         )}
 //                       </div>
 
-//                       {expense.notes && (
-//                         <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-500">
-//                           {expense.notes}
-//                         </p>
-//                       )}
+//                       <div className="flex items-center gap-2">
+//                         <button
+//                           type="button"
+//                           onClick={() =>
+//                             openEditModal(
+//                               expense,
+//                             )
+//                           }
+//                           aria-label={`Edit ${expense.name}`}
+//                           className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition hover:border-indigo-200 hover:text-indigo-600"
+//                         >
+//                           <FaEdit
+//                             size={14}
+//                           />
+//                         </button>
+
+//                         <button
+//                           type="button"
+//                           onClick={() =>
+//                             deleteExpense(
+//                               expense,
+//                             )
+//                           }
+//                           aria-label={`Delete ${expense.name}`}
+//                           className="flex h-10 w-10 items-center justify-center rounded-xl border border-red-100 bg-red-50 text-red-500 transition hover:bg-red-100"
+//                         >
+//                           <FaTrash
+//                             size={13}
+//                           />
+//                         </button>
+//                       </div>
 //                     </div>
 //                   </div>
+//                 </motion.div>
+//               );
+//             },
+//           )}
 
-//                   <div className="flex flex-wrap items-center justify-between gap-4 border-t border-slate-100 pt-4 xl:min-w-[360px] xl:justify-end xl:border-l xl:border-t-0 xl:pl-6 xl:pt-0">
-//                     <div className="min-w-[130px] xl:text-right">
-//                       <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
-//                         Cost
-//                       </p>
-
-//                       <p
-//                         className={`mt-1 text-xl font-black ${
-//                           isUnknown
-//                             ? "text-amber-600"
-//                             : isFree
-//                               ? "text-emerald-600"
-//                               : "text-slate-950"
-//                         }`}
-//                       >
-//                         {isUnknown
-//                           ? "Not set"
-//                           : isFree
-//                             ? "Free"
-//                             : formatMoney(expense.amount, expense.currency)}
-//                       </p>
-
-//                       {!isUnknown && !isFree && (
-//                         <p className="mt-1 text-xs font-semibold text-slate-400">
-//                           per{" "}
-//                           {expense.billingCycle === "one-time"
-//                             ? "purchase"
-//                             : expense.billingCycle}
-//                         </p>
-//                       )}
-//                     </div>
-
-//                     <div className="flex items-center gap-2">
-//                       <button
-//                         type="button"
-//                         onClick={() => openEditModal(expense)}
-//                         aria-label={`Edit ${expense.name}`}
-//                         className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition hover:border-indigo-200 hover:text-indigo-600"
-//                       >
-//                         <FaEdit size={14} />
-//                       </button>
-
-//                       <button
-//                         type="button"
-//                         onClick={() => deleteExpense(expense)}
-//                         aria-label={`Delete ${expense.name}`}
-//                         className="flex h-10 w-10 items-center justify-center rounded-xl border border-red-100 bg-red-50 text-red-500 transition hover:bg-red-100"
-//                       >
-//                         <FaTrash size={13} />
-//                       </button>
-//                     </div>
-//                   </div>
-//                 </div>
-//               </motion.div>
-//             );
-//           })}
-
-//           {visibleExpenses.length === 0 && (
+//           {visibleExpenses.length ===
+//             0 && (
 //             <div className="px-6 py-16 text-center">
 //               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
 //                 <FaSearch size={20} />
@@ -2649,23 +3295,28 @@ export default AdminExpenses;
 //               </h3>
 
 //               <p className="mt-1 text-sm text-slate-500">
-//                 Try changing the search or filter.
+//                 Try changing the search
+//                 or filter.
 //               </p>
 //             </div>
 //           )}
 //         </div>
 //       </section>
 
-//       {/* FOOTER NOTE */}
+//       {/* STORAGE NOTICE */}
 //       <section className="rounded-2xl border border-indigo-100 bg-indigo-50 p-5">
 //         <p className="text-sm font-bold text-indigo-900">
 //           Current storage mode
 //         </p>
 
 //         <p className="mt-1 text-sm leading-6 text-indigo-700">
-//           Changes are saved in this browser using localStorage. Later, this can
-//           be connected to your backend so every administrator sees the same
-//           expense records.
+//           Expenses and the USD to NGN
+//           planning rate are currently
+//           saved in this browser using
+//           localStorage. Later, this can
+//           be connected to your backend
+//           so every administrator sees
+//           the same financial records.
 //         </p>
 //       </section>
 
@@ -2676,9 +3327,15 @@ export default AdminExpenses;
 //             <motion.button
 //               type="button"
 //               aria-label="Close expense form"
-//               initial={{ opacity: 0 }}
-//               animate={{ opacity: 1 }}
-//               exit={{ opacity: 0 }}
+//               initial={{
+//                 opacity: 0,
+//               }}
+//               animate={{
+//                 opacity: 1,
+//               }}
+//               exit={{
+//                 opacity: 0,
+//               }}
 //               onClick={closeModal}
 //               className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
 //             />
@@ -2708,21 +3365,27 @@ export default AdminExpenses;
 //                   </p>
 
 //                   <h2 className="mt-1 text-xl font-black text-slate-950">
-//                     {editingId ? "Edit Expense" : "Add New Expense"}
+//                     {editingId
+//                       ? "Edit Expense"
+//                       : "Add New Expense"}
 //                   </h2>
 //                 </div>
 
 //                 <button
 //                   type="button"
 //                   onClick={closeModal}
-//                   className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200"
+//                   className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-500 transition hover:bg-slate-200"
 //                 >
 //                   <FaTimes />
 //                 </button>
 //               </div>
 
-//               <form onSubmit={submitExpense} className="space-y-5 p-5 sm:p-7">
+//               <form
+//                 onSubmit={submitExpense}
+//                 className="space-y-5 p-5 sm:p-7"
+//               >
 //                 <div className="grid gap-5 sm:grid-cols-2">
+//                   {/* NAME */}
 //                   <label className="block">
 //                     <span className="mb-2 block text-sm font-bold text-slate-700">
 //                       Expense name *
@@ -2732,14 +3395,21 @@ export default AdminExpenses;
 //                       type="text"
 //                       required
 //                       value={form.name}
-//                       onChange={(event) =>
-//                         updateForm("name", event.target.value)
+//                       onChange={(
+//                         event,
+//                       ) =>
+//                         updateForm(
+//                           "name",
+//                           event.target
+//                             .value,
+//                         )
 //                       }
 //                       placeholder="e.g. Email service"
-//                       className="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
+//                       className="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
 //                     />
 //                   </label>
 
+//                   {/* PROVIDER */}
 //                   <label className="block">
 //                     <span className="mb-2 block text-sm font-bold text-slate-700">
 //                       Provider
@@ -2747,74 +3417,136 @@ export default AdminExpenses;
 
 //                     <input
 //                       type="text"
-//                       value={form.provider}
-//                       onChange={(event) =>
-//                         updateForm("provider", event.target.value)
+//                       value={
+//                         form.provider
+//                       }
+//                       onChange={(
+//                         event,
+//                       ) =>
+//                         updateForm(
+//                           "provider",
+//                           event.target
+//                             .value,
+//                         )
 //                       }
 //                       placeholder="e.g. Render"
-//                       className="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
+//                       className="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
 //                     />
 //                   </label>
 
+//                   {/* CATEGORY */}
 //                   <label className="block">
 //                     <span className="mb-2 block text-sm font-bold text-slate-700">
 //                       Category
 //                     </span>
 
 //                     <select
-//                       value={form.category}
-//                       onChange={(event) =>
-//                         updateForm("category", event.target.value)
+//                       value={
+//                         form.category
 //                       }
-//                       className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
+//                       onChange={(
+//                         event,
+//                       ) =>
+//                         updateForm(
+//                           "category",
+//                           event.target
+//                             .value,
+//                         )
+//                       }
+//                       className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
 //                     >
-//                       {categories.map((category) => (
-//                         <option key={category} value={category}>
-//                           {category}
-//                         </option>
-//                       ))}
+//                       {categories.map(
+//                         (category) => (
+//                           <option
+//                             key={
+//                               category
+//                             }
+//                             value={
+//                               category
+//                             }
+//                           >
+//                             {category}
+//                           </option>
+//                         ),
+//                       )}
 //                     </select>
 //                   </label>
 
+//                   {/* BILLING */}
 //                   <label className="block">
 //                     <span className="mb-2 block text-sm font-bold text-slate-700">
 //                       Billing cycle
 //                     </span>
 
 //                     <select
-//                       value={form.billingCycle}
-//                       onChange={(event) =>
-//                         updateForm("billingCycle", event.target.value)
+//                       value={
+//                         form.billingCycle
 //                       }
-//                       className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
+//                       onChange={(
+//                         event,
+//                       ) =>
+//                         updateForm(
+//                           "billingCycle",
+//                           event.target
+//                             .value,
+//                         )
+//                       }
+//                       className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
 //                     >
-//                       {billingOptions.map((option) => (
-//                         <option key={option.value} value={option.value}>
-//                           {option.label}
-//                         </option>
-//                       ))}
+//                       {billingOptions.map(
+//                         (option) => (
+//                           <option
+//                             key={
+//                               option.value
+//                             }
+//                             value={
+//                               option.value
+//                             }
+//                           >
+//                             {option.label}
+//                           </option>
+//                         ),
+//                       )}
 //                     </select>
 //                   </label>
 
+//                   {/* CURRENCY */}
 //                   <label className="block">
 //                     <span className="mb-2 block text-sm font-bold text-slate-700">
 //                       Currency
 //                     </span>
 
 //                     <select
-//                       value={form.currency}
-//                       onChange={(event) =>
-//                         updateForm("currency", event.target.value)
+//                       value={
+//                         form.currency
 //                       }
-//                       disabled={form.billingCycle === "free"}
-//                       className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm outline-none disabled:bg-slate-100 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
+//                       onChange={(
+//                         event,
+//                       ) =>
+//                         updateForm(
+//                           "currency",
+//                           event.target
+//                             .value,
+//                         )
+//                       }
+//                       disabled={
+//                         form.billingCycle ===
+//                         "free"
+//                       }
+//                       className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm outline-none transition disabled:cursor-not-allowed disabled:bg-slate-100 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
 //                     >
-//                       <option value="USD">USD — US Dollar</option>
+//                       <option value="USD">
+//                         USD — US Dollar
+//                       </option>
 
-//                       <option value="NGN">NGN — Nigerian Naira</option>
+//                       <option value="NGN">
+//                         NGN — Nigerian
+//                         Naira
+//                       </option>
 //                     </select>
 //                   </label>
 
+//                   {/* AMOUNT */}
 //                   <label className="block">
 //                     <span className="mb-2 block text-sm font-bold text-slate-700">
 //                       Amount
@@ -2826,33 +3558,52 @@ export default AdminExpenses;
 //                       step="0.01"
 //                       value={form.amount}
 //                       disabled={
-//                         form.billingCycle === "unknown" ||
-//                         form.billingCycle === "free"
+//                         form.billingCycle ===
+//                           "unknown" ||
+//                         form.billingCycle ===
+//                           "free"
 //                       }
-//                       onChange={(event) =>
-//                         updateForm("amount", event.target.value)
+//                       onChange={(
+//                         event,
+//                       ) =>
+//                         updateForm(
+//                           "amount",
+//                           event.target
+//                             .value,
+//                         )
 //                       }
 //                       placeholder="0.00"
-//                       className="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm outline-none disabled:bg-slate-100 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
+//                       className="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm outline-none transition disabled:cursor-not-allowed disabled:bg-slate-100 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
 //                     />
 //                   </label>
 
+//                   {/* DATE */}
 //                   <label className="block sm:col-span-2">
 //                     <span className="mb-2 block text-sm font-bold text-slate-700">
-//                       Renewal / expiry date
+//                       Renewal / expiry
+//                       date
 //                     </span>
 
 //                     <input
 //                       type="date"
-//                       value={form.renewalDate}
-//                       onChange={(event) =>
-//                         updateForm("renewalDate", event.target.value)
+//                       value={
+//                         form.renewalDate
 //                       }
-//                       className="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
+//                       onChange={(
+//                         event,
+//                       ) =>
+//                         updateForm(
+//                           "renewalDate",
+//                           event.target
+//                             .value,
+//                         )
+//                       }
+//                       className="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
 //                     />
 //                   </label>
 //                 </div>
 
+//                 {/* NOTES */}
 //                 <label className="block">
 //                   <span className="mb-2 block text-sm font-bold text-slate-700">
 //                     Notes
@@ -2862,18 +3613,25 @@ export default AdminExpenses;
 //                     rows={4}
 //                     value={form.notes}
 //                     onChange={(event) =>
-//                       updateForm("notes", event.target.value)
+//                       updateForm(
+//                         "notes",
+//                         event.target
+//                           .value,
+//                       )
 //                     }
-//                     placeholder="Add any important information about this expense..."
-//                     className="w-full resize-none rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
+//                     placeholder="Add important information about this expense..."
+//                     className="w-full resize-none rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
 //                   />
 //                 </label>
 
+//                 {/* ACTIONS */}
 //                 <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end">
 //                   <button
 //                     type="button"
-//                     onClick={closeModal}
-//                     className="h-11 rounded-xl border border-slate-200 px-5 text-sm font-bold text-slate-600 hover:bg-slate-50"
+//                     onClick={
+//                       closeModal
+//                     }
+//                     className="h-11 rounded-xl border border-slate-200 px-5 text-sm font-bold text-slate-600 transition hover:bg-slate-50"
 //                   >
 //                     Cancel
 //                   </button>
@@ -2882,7 +3640,9 @@ export default AdminExpenses;
 //                     type="submit"
 //                     className="h-11 rounded-xl bg-indigo-500 px-6 text-sm font-black text-white shadow-lg shadow-indigo-200 transition hover:bg-indigo-600"
 //                   >
-//                     {editingId ? "Save Changes" : "Add Expense"}
+//                     {editingId
+//                       ? "Save Changes"
+//                       : "Add Expense"}
 //                   </button>
 //                 </div>
 //               </form>
