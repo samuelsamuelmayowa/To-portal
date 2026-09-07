@@ -77,12 +77,12 @@ const stockCourse = [
 const assignments = [
   {
     id: "assignment1",
-    title: "Options Strategy Lab",
+    title: "INTRODUCTION TO THE STOCK MARKET",
     week: "Week 3",
     description:
       "Analyze an options strategy and submit your findings.",
     url:
-      "https://docs.google.com/presentation/d/1JBX4RqczU1B0GZ2YV3zpyCvBuXTs4YOc/preview",
+      "https://drive.google.com/file/d/1BO7OuUkUy__ZY4lbnZqxkqVxwxogZnv3/view?usp=sharing",
     status: "Available"
   }
 ];
