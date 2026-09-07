@@ -27,7 +27,7 @@ const stockCourse = [
     docs: [
       {
         title: "Stocks and Shares Guide",
-        url: "#"
+        url: "https://docs.google.com/presentation/d/1JBX4RqczU1B0GZ2YV3zpyCvBuXTs4YOc/edit?usp=sharing&ouid=104718481266065502968&rtpof=true&sd=true"
       }
     ]
   },
