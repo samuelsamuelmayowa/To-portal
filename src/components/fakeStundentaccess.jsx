@@ -24,29 +24,10 @@ import { FaXmark } from "react-icons/fa6";
 const INITIAL_FORM = {
   full_name: "",
   email: "",
-  course_id: "stock-options",
+  course_id: "splunk",
   status: "active",
   expires_at: "",
 };
-
-const COURSE_OPTIONS = [
-  {
-    value: "stock-options",
-    label: "Stock & Options Mastery",
-  },
-  {
-    value: "splunk",
-    label: "Splunk Training",
-  },
-];
-
-function getCourseLabel(courseId) {
-  return (
-    COURSE_OPTIONS.find((course) => course.value === courseId)?.label ||
-    courseId ||
-    "Unknown course"
-  );
-}
 
 const STATUS_OPTIONS = [
   {
@@ -366,7 +347,7 @@ const StudentAccess = () => {
     setForm({
       full_name: student.full_name || "",
       email: student.email || "",
-      course_id: student.course_id || "stock-options",
+      course_id: student.course_id || "splunk",
       status: student.status || "active",
       expires_at: toDateTimeLocal(student.expires_at),
     });
@@ -802,11 +783,7 @@ const StudentAccess = () => {
                   onChange={updateFormField}
                   className="h-12 w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm font-semibold text-slate-900 outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-4 focus:ring-indigo-100"
                 >
-                  {COURSE_OPTIONS.map((course) => (
-                    <option key={course.value} value={course.value}>
-                      {course.label}
-                    </option>
-                  ))}
+                  <option value="splunk">Splunk Training</option>
                 </select>
               </div>
             </div>
@@ -1041,7 +1018,7 @@ const StudentAccess = () => {
                         <td className="px-5 py-5">
                           <span className="inline-flex items-center gap-2 rounded-xl bg-indigo-50 px-3 py-2 text-xs font-bold capitalize text-indigo-700">
                             <FaBookOpen size={11} />
-                            {getCourseLabel(student.course_id)}
+                            {student.course_id || "splunk"}
                           </span>
                         </td>
 
