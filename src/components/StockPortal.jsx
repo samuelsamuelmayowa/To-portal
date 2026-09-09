@@ -39,7 +39,7 @@ const stockCourses = [
           {
             id: "stock-v1",
             title: "Understanding How The Stock Market Works",
-            
+            url: "https://player.vimeo.com/video/1225104800",
             // url: "https://player.vimeo.com/video/1157909911",
           },
         ],
