@@ -47,7 +47,9 @@ const stockCourses = [
           {
             id: "stock-d1",
             title: "Stocks and Shares Guide",
-            url: "https://docs.google.com/presentation/d/1JBX4RqczU1B0GZ2YV3zpyCvBuXTs4YOc/preview",
+            url:"https://drive.google.com/file/d/1JBX4RqczU1B0GZ2YV3zpyCvBuXTs4YOc/preview"
+            // url:"https://docs.google.com/presentation/d/1JBX4RqczU1B0GZ2YV3zpyCvBuXTs4YOc/preview"
+            // url: "https://docs.google.com/presentation/d/1JBX4RqczU1B0GZ2YV3zpyCvBuXTs4YOc/preview",
           },
         ],
       },
