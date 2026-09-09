@@ -75,16 +75,22 @@ const stockCourses = [
         title: "Week 3 — Technical Analysis & Indicators",
         desc: "Study candlestick patterns, market structure, RSI, MACD and common trading indicators.",
         videos: [],
-        docs: [
-          {
-            id: "stock-assignment1",
-            title: "Stock Market Analysis Assignment",
-            url: "https://drive.google.com/file/d/1BO7OuUkUy__ZY4lbnZqxkqVxwxogZnv3/preview",
-            type: "assignment",
-          },
-        ],
+        docs: [],
       },
     ],
+  },
+];
+
+// Assignments are independent from weekly lessons.
+// Add every new student assignment to this collection.
+const stockAssignments = [
+  {
+    id: "stock-assignment1",
+    title: "Stock Market Analysis Assignment",
+    description:
+      "Complete the stock-market analysis exercise using the instructions in the assignment document.",
+    url: "https://drive.google.com/file/d/1BO7OuUkUy__ZY4lbnZqxkqVxwxogZnv3/preview",
+    status: "available",
   },
 ];
 
@@ -362,12 +368,13 @@ export default function StockOptionsCoursePortal() {
 
   const courseAssignments = useMemo(
     () =>
-      selectedCourse.classes.flatMap((classItem) =>
-        (classItem.docs || [])
-          .filter((doc) => doc?.type === "assignment" && doc?.title && doc?.url)
-          .map((doc) => ({ ...doc, classItem })),
+      stockAssignments.filter(
+        (assignment) =>
+          assignment?.status === "available" &&
+          assignment?.title &&
+          assignment?.url,
       ),
-    [selectedCourse],
+    [],
   );
 
   const filteredClasses = useMemo(() => {
@@ -775,8 +782,8 @@ export default function StockOptionsCoursePortal() {
   }
 
   function openAssignment(assignment) {
-    handleSelectClass(assignment.classItem);
     setShowNewAssignmentAlert(false);
+    window.open(assignment.url, "_blank", "noopener,noreferrer");
   }
 
 
@@ -1177,7 +1184,7 @@ if (!isAllowed) {
                           {assignment.title}
                         </span>
                         <span className="mt-1 block text-xs font-bold opacity-60">
-                          {assignment.classItem.title}
+                          Available now — open assignment
                         </span>
                       </span>
                       <FaArrowRight className="shrink-0" />
