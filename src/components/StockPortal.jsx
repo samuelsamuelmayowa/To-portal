@@ -23,8 +23,8 @@ import {
 
 // import DashboardDropdown from "./Dropdown";
 
-import DropdownStock from "./DropdownStock "
-
+// import DropdownStock from "./DropdownStock "
+import DashboardDropdown from "./StockDashboardDropdown";
 // Stock & Options content. This portal uses the same student experience as
 // the Splunk portal: searchable classes, embedded Vimeo lessons, class
 // materials, notes, syllabus and saved progress.
@@ -869,8 +869,8 @@ if (!isAllowed) {
                   {userEmail}
                 </p>
               </div>
-
-              <DropdownStock />
+<DashboardDropdown />
+              {/* <DropdownStock /> */}
 
               <button
                 onClick={() => setDarkMode((prev) => !prev)}
