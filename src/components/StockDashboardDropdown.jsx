@@ -4,11 +4,11 @@ import { ChevronDown } from "lucide-react";
 
 const stockLinks = [
   { label: "Stock Dashboard", to: "/dashboard/stock" },
-  { label: "Stock Classes", to: "/dashboard/stock/classes" },
-  { label: "Assignments", to: "/dashboard/stock/assignments" },
-  { label: "Trading Lab", to: "/dashboard/stock/lab" },
-  { label: "Portfolio Tracker", to: "/dashboard/stock/portfolio" },
-  { label: "My Progress", to: "/dashboard/stock/progress" },
+//   { label: "Stock Classes", to: "/dashboard/stock/classes" },
+//   { label: "Assignments", to: "/dashboard/stock/assignments" },
+//   { label: "Trading Lab", to: "/dashboard/stock/lab" },
+//   { label: "Portfolio Tracker", to: "/dashboard/stock/portfolio" },
+//   { label: "My Progress", to: "/dashboard/stock/progress" },
 ];
 
 const StockDashboardDropdown = () => {
