@@ -60,6 +60,7 @@ import Cancel from "./pages/Cancel";
 import StudentDashboard from "./components/CheckC";
 import StockDashboard from "./components/StockPage";
 import StockPortal from "./components/StockPortal";
+import  Apage from  "./components/AAAA.jsx"
 import Commands from "./components/Commands";
 import SplunkDictionary from "./components/Dictionary";
 import StockCard from "./StockPublic";
@@ -265,6 +266,10 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <MyLogin />,
+  },
+  {
+path:"/aaaa",
+element:<Apage/>
   },
 
   {
