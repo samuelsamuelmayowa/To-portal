@@ -24,6 +24,7 @@ import {
 // import DashboardDropdown from "./Dropdown";
 
 // import DropdownStock from "./DropdownStock "
+import AlpacaTest from "./AlpacaTest";
 import DashboardDropdown from "./StockDashboardDropdown";
 // Stock & Options content. This portal uses the same student experience as
 // the Splunk portal: searchable classes, embedded Vimeo lessons, class
@@ -872,6 +873,9 @@ if (!isAllowed) {
 <DashboardDropdown />
               {/* <DropdownStock /> */}
 
+
+
+
               <button
                 onClick={() => setDarkMode((prev) => !prev)}
                 className="flex h-12 items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-5 text-sm font-black text-white transition hover:-translate-y-1 hover:bg-white hover:text-BLUE"
@@ -1297,6 +1301,8 @@ function PortalStat({ icon, value, label }) {
       <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-BLUE">
         {icon}
       </div>
+
+      <AlpacaTest />
 
       <h3 className="text-3xl font-black">{value}</h3>
       <p className="mt-1 text-xs font-bold uppercase tracking-widest text-white/40">
