@@ -21,9 +21,9 @@ import {
   FaXmark,
 } from "react-icons/fa6";
 
-import DashboardDropdown from "./Dropdown";
+// import DashboardDropdown from "./Dropdown";
 
-import DropdownStock from "./Dropdownstock "
+import DropdownStock from "./DropdownStock "
 
 // Stock & Options content. This portal uses the same student experience as
 // the Splunk portal: searchable classes, embedded Vimeo lessons, class
@@ -870,7 +870,7 @@ if (!isAllowed) {
                 </p>
               </div>
 
-              <DropdownStock/>
+              <DropdownStock />
 
               <button
                 onClick={() => setDarkMode((prev) => !prev)}
