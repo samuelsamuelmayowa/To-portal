@@ -32,7 +32,24 @@ const POPULAR_STOCKS = [
   { symbol: "DIS", name: "Disney" },
 ];
 
-function getErrorMessage(error, fallback = "Something went wrong.") {
+async function getErrorMessage(error, fallback = "Something went wrong.") {
+  const response = error?.context;
+
+  if (response && typeof response.json === "function") {
+    try {
+      const body = await response.clone().json();
+      return body?.error || body?.message || error?.message || fallback;
+    } catch {
+      // The Edge Function did not return JSON, so use its text response instead.
+      try {
+        const text = await response.clone().text();
+        if (text) return text;
+      } catch {
+        // Fall through to the standard error message.
+      }
+    }
+  }
+
   return error?.context?.body?.error || error?.message || fallback;
 }
 
@@ -88,7 +105,7 @@ export default function PaperTrading() {
       ]);
     } catch (error) {
       console.error(error);
-      showMessage(getErrorMessage(error), "error");
+      showMessage(await getErrorMessage(error), "error");
     } finally {
       setInitializing(false);
     }
@@ -194,7 +211,7 @@ export default function PaperTrading() {
       return data;
     } catch (error) {
       console.error(error);
-      if (displayErrors) showMessage(getErrorMessage(error), "error");
+      if (displayErrors) showMessage(await getErrorMessage(error), "error");
       return null;
     } finally {
       setLoading(false);
@@ -243,6 +260,31 @@ export default function PaperTrading() {
       return;
     }
 
+    if (side === "sell") {
+      const ownedQuantity = positions
+        .filter(
+          (position) =>
+            String(position.symbol || "").toUpperCase() === cleanSymbol,
+        )
+        .reduce(
+          (total, position) => total + getPositionQuantity(position),
+          0,
+        );
+
+      if (ownedQuantity <= 0) {
+        showMessage(`You do not currently own any ${cleanSymbol} shares.`, "error");
+        return;
+      }
+
+      if (cleanQuantity > ownedQuantity) {
+        showMessage(
+          `You cannot sell ${cleanQuantity} ${cleanSymbol} shares because you currently own ${ownedQuantity}.`,
+          "error",
+        );
+        return;
+      }
+    }
+
     try {
       setLoading(true);
       showMessage("");
@@ -274,7 +316,10 @@ export default function PaperTrading() {
       );
     } catch (error) {
       console.error(error);
-      showMessage(getErrorMessage(error, "Trade could not be completed."), "error");
+      showMessage(
+        await getErrorMessage(error, "Trade could not be completed."),
+        "error",
+      );
     } finally {
       setLoading(false);
     }
@@ -524,7 +569,14 @@ export default function PaperTrading() {
               <tbody className="divide-y divide-white/10">
                 {orders.map((order) => {
                   const orderQuantity = Number(order.quantity ?? order.qty ?? 0);
-                  const fillPrice = Number(order.fill_price ?? order.price ?? order.executed_price ?? 0);
+                  const fillPrice = Number(
+                    order.execution_price ??
+                      order.fill_price ??
+                      order.filled_price ??
+                      order.price ??
+                      order.executed_price ??
+                      0,
+                  );
                   const orderSide = String(order.side || "").toLowerCase();
                   return (
                     <tr key={order.id} className="hover:bg-white/5">
@@ -559,7 +611,6 @@ function StatCard({ icon, label, value, color }) {
   );
 }
 
-
 // import React, { useEffect, useMemo, useState } from "react";
 // import { supabase, ensureVisitorSession } from "../supabaseClient";
 // import {
@@ -578,6 +629,21 @@ function StatCard({ icon, label, value, color }) {
 //   minimumFractionDigits: 2,
 //   maximumFractionDigits: 2,
 // });
+
+// const POPULAR_STOCKS = [
+//   { symbol: "AAPL", name: "Apple" },
+//   { symbol: "MSFT", name: "Microsoft" },
+//   { symbol: "NVDA", name: "Nvidia" },
+//   { symbol: "TSLA", name: "Tesla" },
+//   { symbol: "AMZN", name: "Amazon" },
+//   { symbol: "GOOGL", name: "Alphabet" },
+//   { symbol: "META", name: "Meta" },
+//   { symbol: "NFLX", name: "Netflix" },
+//   { symbol: "AMD", name: "AMD" },
+//   { symbol: "JPM", name: "JPMorgan" },
+//   { symbol: "KO", name: "Coca-Cola" },
+//   { symbol: "DIS", name: "Disney" },
+// ];
 
 // function getErrorMessage(error, fallback = "Something went wrong.") {
 //   return error?.context?.body?.error || error?.message || fallback;
@@ -644,6 +710,18 @@ function StatCard({ icon, label, value, color }) {
 //   function showMessage(text, type = "info") {
 //     setMessage(text);
 //     setMessageType(type);
+//   }
+
+//   function handleSymbolChange(value) {
+//     const cleanValue = value.toUpperCase().replace(/[^A-Z.-]/g, "").slice(0, 10);
+//     setSymbol(cleanValue);
+//     setMessage("");
+//   }
+
+//   async function selectStock(nextSymbol) {
+//     setSymbol(nextSymbol);
+//     setMessage("");
+//     await getQuote(nextSymbol);
 //   }
 
 //   async function loadAccount(userId) {
@@ -768,6 +846,11 @@ function StatCard({ icon, label, value, color }) {
 //       return;
 //     }
 
+//     if (String(quote?.symbol || "").toUpperCase() !== cleanSymbol) {
+//       showMessage(`Search ${cleanSymbol} and load its latest price before trading.`, "error");
+//       return;
+//     }
+
 //     if (!Number.isInteger(cleanQuantity) || cleanQuantity <= 0) {
 //       showMessage("Quantity must be a whole number greater than zero.", "error");
 //       return;
@@ -844,6 +927,8 @@ function StatCard({ icon, label, value, color }) {
 //   const totalProfitLoss = positionRows.reduce((sum, row) => sum + row.profitLoss, 0);
 //   const cashBalance = Number(account?.cash_balance ?? 100000);
 //   const totalAccountValue = cashBalance + portfolioValue;
+//   const quoteMatchesSymbol =
+//     Boolean(quote) && String(quote.symbol || "").toUpperCase() === symbol.trim().toUpperCase();
 
 //   if (initializing) {
 //     return (
@@ -875,13 +960,16 @@ function StatCard({ icon, label, value, color }) {
 
 //         <div className="grid lg:grid-cols-5 gap-6 mb-8">
 //           <section className="lg:col-span-3 bg-white/10 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
-//             <h2 className="text-xl font-bold mb-4">Market Search</h2>
+//             <div className="mb-4">
+//               <h2 className="text-xl font-bold">Choose Any U.S. Stock</h2>
+//               <p className="text-sm text-slate-400">Select a popular company or type any valid ticker symbol.</p>
+//             </div>
 //             <div className="flex gap-3">
 //               <input
 //                 value={symbol}
-//                 onChange={(event) => setSymbol(event.target.value.toUpperCase())}
+//                 onChange={(event) => handleSymbolChange(event.target.value)}
 //                 onKeyDown={(event) => event.key === "Enter" && getQuote()}
-//                 placeholder="Enter symbol, e.g. AAPL"
+//                 placeholder="Try MSFT, NVDA, TSLA..."
 //                 className="min-w-0 flex-1 bg-black/40 border border-white/20 rounded-xl px-4 py-3 outline-none focus:border-purple-400"
 //               />
 //               <button
@@ -895,7 +983,30 @@ function StatCard({ icon, label, value, color }) {
 //               </button>
 //             </div>
 
-//             {quote && (
+//             <div className="mt-5">
+//               <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Popular stocks</p>
+//               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+//                 {POPULAR_STOCKS.map((stock) => (
+//                   <button
+//                     key={stock.symbol}
+//                     type="button"
+//                     disabled={loading}
+//                     onClick={() => selectStock(stock.symbol)}
+//                     title={stock.name}
+//                     className={`rounded-xl border px-3 py-2 text-left transition disabled:opacity-50 ${
+//                       symbol === stock.symbol
+//                         ? "border-purple-400 bg-purple-500/25"
+//                         : "border-white/10 bg-black/20 hover:border-purple-400/60 hover:bg-purple-500/10"
+//                     }`}
+//                   >
+//                     <span className="block font-bold">{stock.symbol}</span>
+//                     <span className="block truncate text-[11px] text-slate-400">{stock.name}</span>
+//                   </button>
+//                 ))}
+//               </div>
+//             </div>
+
+//             {quoteMatchesSymbol && (
 //               <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
 //                 <div>
 //                   <p className="text-sm text-slate-400">Latest market price</p>
@@ -908,6 +1019,9 @@ function StatCard({ icon, label, value, color }) {
 //                   </p>
 //                 </div>
 //               </div>
+//             )}
+//             {!quoteMatchesSymbol && symbol && (
+//               <p className="mt-5 text-sm text-amber-300">Press the search button to load {symbol}'s latest price.</p>
 //             )}
 //           </section>
 
@@ -940,7 +1054,7 @@ function StatCard({ icon, label, value, color }) {
 //             />
 //             <button
 //               type="button"
-//               disabled={loading || !quote}
+//               disabled={loading || !quoteMatchesSymbol}
 //               onClick={executeTrade}
 //               className="w-full bg-purple-600 hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-50 px-8 py-3 rounded-xl font-bold transition"
 //             >
@@ -1054,360 +1168,6 @@ function StatCard({ icon, label, value, color }) {
 //       <div className={`${color} mb-3`}>{icon}</div>
 //       <p className="text-sm text-slate-300">{label}</p>
 //       <h2 className={`text-2xl font-bold ${color}`}>{value}</h2>
-//     </div>
-//   );
-// }
-
-
-// import React, { useEffect, useState } from "react";
-// import { supabase, ensureVisitorSession } from "../supabaseClient";
-
-// import { Wallet, Search, Activity, Trophy } from "lucide-react";
-
-// export default function PaperTrading() {
-//   const [loading, setLoading] = useState(false);
-
-//   const [symbol, setSymbol] = useState("AAPL");
-
-//   const [quote, setQuote] = useState(null);
-
-//   const [account, setAccount] = useState(null);
-
-//   const [positions, setPositions] = useState([]);
-
-//   const [orders, setOrders] = useState([]);
-
-//   const [quantity, setQuantity] = useState(1);
-
-//   const [side, setSide] = useState("buy");
-
-//   const [message, setMessage] = useState("");
-
-//   useEffect(() => {
-//     initialize();
-//   }, []);
-
-//   async function initialize() {
-//     try {
-//       const session = await ensureVisitorSession();
-
-//       const userId = session.user.id;
-
-//       await loadAccount(userId);
-
-//       await loadPortfolio(userId);
-
-//       await loadOrders(userId);
-
-//       await getQuote();
-//     } catch (error) {
-//       console.error(error);
-
-//       setMessage(error.message);
-//     }
-//   }
-
-//   async function loadAccount(userId) {
-//     const { data, error } = await supabase
-//       .from("paper_accounts")
-//       .select("*")
-//       .eq("user_id", userId)
-//       .maybeSingle();
-
-//     if (error) {
-//       console.error(error);
-
-//       return;
-//     }
-
-//     if (!data) {
-//       const { data: newAccount, error: createError } = await supabase
-//         .from("paper_accounts")
-//         .insert({
-//           user_id: userId,
-
-//           starting_cash: 100000,
-
-//           cash_balance: 100000,
-//         })
-//         .select()
-//         .single();
-
-//       if (createError) {
-//         console.error("Account creation failed:", createError);
-
-//         return;
-//       }
-
-//       setAccount(newAccount);
-
-//       return;
-//     }
-
-//     setAccount(data);
-//   }
-
-//   async function loadPortfolio(userId) {
-//     const { data, error } = await supabase
-//       .from("paper_positions")
-//       .select("*")
-//       .eq("user_id", userId)
-//       .order("created_at", {
-//         ascending: false,
-//       });
-
-//     if (error) {
-//       console.error(error);
-
-//       return;
-//     }
-
-//     setPositions(data || []);
-//   }
-
-//   async function loadOrders(userId) {
-//     const { data, error } = await supabase
-//       .from("paper_orders")
-//       .select("*")
-//       .eq("user_id", userId)
-//       .order("created_at", {
-//         ascending: false,
-//       })
-//       .limit(10);
-
-//     if (error) {
-//       console.error(error);
-
-//       return;
-//     }
-
-//     setOrders(data || []);
-//   }
-
-//   async function getQuote() {
-//     try {
-//       setLoading(true);
-
-//       await ensureVisitorSession();
-
-//       const { data, error } = await supabase.functions.invoke(
-//         "stock-quote",
-
-//         {
-//           body: {
-//             symbol,
-//           },
-//         },
-//       );
-
-//          console.log("FULL QUOTE RESPONSE:", data);
-//       if (error) {
-//         throw error;
-//       }
-
-//       setQuote(data);
-//     } catch (error) {
-//       console.error(error);
-
-//       setMessage(error.message);
-//     } finally {
-//       setLoading(false);
-//     }
-//   }
-
-//   async function executeTrade() {
-//     try {
-//       setLoading(true);
-
-//       setMessage("");
-
-//       await ensureVisitorSession();
-
-//       const { data, error } = await supabase.functions.invoke(
-//         "paper-trade",
-
-//         {
-//           body: {
-//             assetType: "stock",
-
-//             symbol,
-
-//             side,
-
-//             quantity: Number(quantity),
-//           },
-//         },
-//       );
-
-//       if (error) {
-//         throw error;
-//       }
-
-//       if (data?.error) {
-//         throw new Error(data.error);
-//       }
-
-//       setMessage("Trade executed successfully");
-
-//       await initialize();
-//     } catch (error) {
-//       console.error(error);
-
-//       setMessage(error.message);
-//     } finally {
-//       setLoading(false);
-//     }
-//   }
-
-//   return (
-//     <div
-//       className="
-// min-h-screen
-// bg-gradient-to-br
-// from-purple-950
-// via-slate-950
-// to-black
-// p-6
-// text-white
-// "
-//     >
-//       <div className="max-w-7xl mx-auto">
-//         <h1 className="text-4xl font-bold mb-2">TO Analytics Trading Lab</h1>
-
-//         <p className="text-purple-300 mb-8">
-//           Practice stock trading with virtual money
-//         </p>
-
-//         <div className="grid md:grid-cols-3 gap-6 mb-8">
-//           <div className="bg-white/10 rounded-2xl p-6 backdrop-blur-xl">
-//             <Wallet className="text-purple-400 mb-3" />
-
-//             <p>Cash Balance</p>
-
-//             <h2 className="text-3xl font-bold">
-//               $
-//               {account?.cash_balance
-//                 ? Number(account.cash_balance).toLocaleString()
-//                 : "100,000"}
-//             </h2>
-//           </div>
-
-//           <div className="bg-white/10 rounded-2xl p-6 backdrop-blur-xl">
-//             <Activity className="text-green-400 mb-3" />
-
-//             <p>Positions</p>
-
-//             <h2 className="text-3xl font-bold">{positions.length}</h2>
-//           </div>
-
-//           <div className="bg-white/10 rounded-2xl p-6 backdrop-blur-xl">
-//             <Trophy className="text-yellow-400 mb-3" />
-
-//             <p>Trades</p>
-
-//             <h2 className="text-3xl font-bold">{orders.length}</h2>
-//           </div>
-//         </div>
-
-//         <div className="bg-white/10 rounded-2xl p-6 mb-8">
-//           <h2 className="text-xl font-bold mb-4">Market Search</h2>
-
-//           <div className="flex gap-3">
-//             <input
-//               value={symbol}
-//               onChange={(e) => setSymbol(e.target.value.toUpperCase())}
-//               className="
-// flex-1
-// bg-black/40
-// border
-// border-white/20
-// rounded-xl
-// px-4
-// py-3
-// "
-//             />
-
-//             <button
-//               onClick={getQuote}
-//               className="
-// bg-purple-600
-// px-6
-// rounded-xl
-// "
-//             >
-//               <Search />
-//             </button>
-//           </div>
-
-//           {quote && (
-//             <div className="mt-6">
-//               <h3 className="text-3xl font-bold">{quote.symbol}</h3>
-
-//               <p className="text-green-400 text-2xl">
-//                 ${Number(quote.marketPrice).toFixed(2)}
-//               </p>
-//             </div>
-//           )}
-//         </div>
-
-//         <div className="bg-white/10 rounded-2xl p-6">
-//           <h2 className="text-xl font-bold mb-5">Execute Paper Trade</h2>
-
-//           <div className="flex flex-wrap gap-4">
-//             <input
-//               type="number"
-//               value={quantity}
-//               onChange={(e) => setQuantity(e.target.value)}
-//               className="
-// w-32
-// bg-black/40
-// border
-// border-white/20
-// rounded-xl
-// px-4
-// py-3
-// "
-//             />
-
-//             <button
-//               onClick={() => setSide("buy")}
-//               className="
-// bg-green-600
-// px-6
-// rounded-xl
-// "
-//             >
-//               BUY
-//             </button>
-
-//             <button
-//               onClick={() => setSide("sell")}
-//               className="
-// bg-red-600
-// px-6
-// rounded-xl
-// "
-//             >
-//               SELL
-//             </button>
-
-//             <button
-//               disabled={loading}
-//               onClick={executeTrade}
-//               className="
-// bg-purple-600
-// px-8
-// rounded-xl
-// font-bold
-// "
-//             >
-//               {loading ? "Processing..." : "Trade"}
-//             </button>
-//           </div>
-
-//           {message && <p className="mt-5 text-purple-300">{message}</p>}
-//         </div>
-//       </div>
 //     </div>
 //   );
 // }
