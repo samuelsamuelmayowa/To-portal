@@ -92,10 +92,11 @@ const stockCourses = [
 const stockAssignments = [
   {
     id: "stock-assignment1",
-    title: "Stock Market Analysis Assignment",
+    title: "Stock Assignment",
     description:
       "Complete the stock-market analysis exercise using the instructions in the assignment document.",
-    url: "https://drive.google.com/file/d/1BO7OuUkUy__ZY4lbnZqxkqVxwxogZnv3/preview",
+    // url: "https://drive.google.com/file/d/1BO7OuUkUy__ZY4lbnZqxkqVxwxogZnv3/preview",
+    url:"https://drive.google.com/file/d/1dPYZ8xpWx1HysKzDlurrya0O4LN7H13_/view?usp=sharing",
     status: "available",
   },
 ];
