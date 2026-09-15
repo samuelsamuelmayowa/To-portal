@@ -5,11 +5,8 @@ import {
 } from "../supabaseClient";
 
 import {
-  TrendingUp,
   Wallet,
   Search,
-  ArrowUpRight,
-  ArrowDownRight,
   Activity,
   Trophy,
 } from "lucide-react";
@@ -17,78 +14,70 @@ import {
 
 export default function PaperTrading() {
 
-  const [session, setSession] = useState(null);
 
-  const [loading, setLoading] = useState(false);
+  const [loading,setLoading] = useState(false);
 
-  const [symbol, setSymbol] = useState("AAPL");
+  const [symbol,setSymbol] = useState("AAPL");
 
-  const [quote, setQuote] = useState(null);
+  const [quote,setQuote] = useState(null);
 
-  const [account, setAccount] = useState(null);
+  const [account,setAccount] = useState(null);
 
-  const [positions, setPositions] = useState([]);
+  const [positions,setPositions] = useState([]);
 
-  const [orders, setOrders] = useState([]);
+  const [orders,setOrders] = useState([]);
 
-  const [quantity, setQuantity] = useState(1);
+  const [quantity,setQuantity] = useState(1);
 
-  const [side, setSide] = useState("buy");
+  const [side,setSide] = useState("buy");
 
-  const [message, setMessage] = useState("");
-
+  const [message,setMessage] = useState("");
 
 
-  /*
-    Start visitor session
-  */
 
-  useEffect(() => {
+  useEffect(()=>{
 
     initialize();
 
-  }, []);
+  },[]);
 
 
 
-  async function initialize() {
 
-    try {
+  async function initialize(){
 
-      const userSession =
+    try{
+
+
+      const session =
         await ensureVisitorSession();
 
 
-      setSession(userSession);
+
+      const userId =
+        session.user.id;
 
 
-      await loadAccount(
-        userSession.user.id
-      );
+
+      await loadAccount(userId);
 
 
-      await loadPortfolio(
-        userSession.user.id
-      );
+      await loadPortfolio(userId);
 
 
-      await loadOrders(
-        userSession.user.id
-      );
+      await loadOrders(userId);
 
 
       await getQuote();
 
 
-    } catch(error){
 
-      console.error(
-        error
-      );
+    }
+    catch(error){
 
-      setMessage(
-        error.message
-      );
+      console.error(error);
+
+      setMessage(error.message);
 
     }
 
@@ -97,40 +86,47 @@ export default function PaperTrading() {
 
 
 
-  /*
-    Load paper account
-  */
 
-    async function loadAccount(userId) {
+  async function loadAccount(userId){
 
-  const {
-    data,
-    error
-  } = await supabase
-    .from("paper_accounts")
-    .select("*")
-    .eq("user_id", userId)
-    .maybeSingle();
-
-
-  if(error){
-
-    console.error(
-      "Account loading error:",
-      error
-    );
-
-    return;
-
-  }
-
-
-  if(!data){
 
     const {
-      data:newAccount,
-      error:createError
-    } = await supabase
+      data,
+      error
+    } =
+    await supabase
+      .from("paper_accounts")
+      .select("*")
+      .eq(
+        "user_id",
+        userId
+      )
+      .maybeSingle();
+
+
+
+    if(error){
+
+      console.error(
+        error
+      );
+
+      return;
+
+    }
+
+
+
+
+    if(!data){
+
+
+      const {
+        data:newAccount,
+        error:createError
+      }
+      =
+      await supabase
       .from("paper_accounts")
       .insert({
 
@@ -145,94 +141,70 @@ export default function PaperTrading() {
       .single();
 
 
-    if(createError){
 
-      console.error(
-        "Account creation failed:",
-        createError
+
+      if(createError){
+
+        console.error(
+          "Account creation failed:",
+          createError
+        );
+
+        return;
+
+      }
+
+
+
+      setAccount(
+        newAccount
       );
 
       return;
 
+
     }
 
 
-    setAccount(
-      newAccount
-    );
 
+    setAccount(data);
 
-    return;
 
   }
 
 
-  setAccount(data);
-
-}
-//   async function loadAccount(userId){
-
-//     const {
-//       data,
-//       error
-//     } = await supabase
-//       .from("paper_accounts")
-//       .select("*")
-//       .eq(
-//         "user_id",
-//         userId
-//       )
-//       .single();
-
-
-//     if(error){
-
-//       console.log(
-//         "No account yet"
-//       );
-
-//       return;
-
-//     }
-
-
-//     setAccount(data);
-
-//   }
 
 
 
 
-
-  /*
-    Load positions
-  */
 
   async function loadPortfolio(userId){
+
 
     const {
       data,
       error
-    } = await supabase
-      .from("paper_positions")
-      .select("*")
-      .eq(
-        "user_id",
-        userId
-      )
-      .order(
-        "created_at",
-        {
-          ascending:false
-        }
-      );
+    }
+    =
+    await supabase
+    .from("paper_positions")
+    .select("*")
+    .eq(
+      "user_id",
+      userId
+    )
+    .order(
+      "created_at",
+      {
+        ascending:false
+      }
+    );
+
 
 
     if(error){
 
-      console.error(
-        error
-      );
+      console.error(error);
 
       return;
 
@@ -249,36 +221,36 @@ export default function PaperTrading() {
 
 
 
-  /*
-    Load trade history
-  */
+
 
   async function loadOrders(userId){
+
 
     const {
       data,
       error
-    } = await supabase
-      .from("paper_orders")
-      .select("*")
-      .eq(
-        "user_id",
-        userId
-      )
-      .order(
-        "created_at",
-        {
-          ascending:false
-        }
-      )
-      .limit(10);
+    }
+    =
+    await supabase
+    .from("paper_orders")
+    .select("*")
+    .eq(
+      "user_id",
+      userId
+    )
+    .order(
+      "created_at",
+      {
+        ascending:false
+      }
+    )
+    .limit(10);
+
 
 
     if(error){
 
-      console.error(
-        error
-      );
+      console.error(error);
 
       return;
 
@@ -289,41 +261,50 @@ export default function PaperTrading() {
       data || []
     );
 
+
   }
 
 
 
 
 
-  /*
-    Get live Alpaca quote
-  */
+
+
 
   async function getQuote(){
 
 
-    try {
+    try{
 
 
       setLoading(true);
+
 
 
       await ensureVisitorSession();
 
 
 
+
       const {
         data,
         error
-      } =
+      }
+      =
       await supabase.functions.invoke(
+
         "stock-quote",
+
         {
+
           body:{
             symbol
           }
+
         }
+
       );
+
 
 
       if(error){
@@ -334,18 +315,14 @@ export default function PaperTrading() {
 
 
 
-      setQuote(
-        data
-      );
+      setQuote(data);
+
 
 
     }
     catch(error){
 
-      console.error(
-        error
-      );
-
+      console.error(error);
 
       setMessage(
         error.message
@@ -358,15 +335,15 @@ export default function PaperTrading() {
 
     }
 
+
   }
 
 
 
 
 
-  /*
-     Execute paper trade
-  */
+
+
 
 
   async function executeTrade(){
@@ -385,36 +362,36 @@ export default function PaperTrading() {
 
 
 
+
       const {
         data,
         error
-      } =
+      }
+      =
       await supabase.functions.invoke(
+
         "paper-trade",
+
         {
 
           body:{
 
 
-            assetType:
-              "stock",
+            assetType:"stock",
 
-
-            symbol:
-              symbol,
-
+            symbol,
 
             side,
 
-
-            quantity:
-              Number(quantity)
+            quantity:Number(quantity)
 
 
           }
 
         }
+
       );
+
 
 
 
@@ -449,14 +426,12 @@ export default function PaperTrading() {
     }
     catch(error){
 
-      console.error(
-        error
-      );
-
+      console.error(error);
 
       setMessage(
         error.message
       );
+
 
     }
     finally{
@@ -465,5 +440,371 @@ export default function PaperTrading() {
 
     }
 
+
   }
+
+
+
+
+
+
+
+  return (
+
+<div className="
+min-h-screen
+bg-gradient-to-br
+from-purple-950
+via-slate-950
+to-black
+p-6
+text-white
+">
+
+
+<div className="max-w-7xl mx-auto">
+
+
+
+<h1 className="text-4xl font-bold mb-2">
+TO Analytics Trading Lab
+</h1>
+
+
+<p className="text-purple-300 mb-8">
+Practice stock trading with virtual money
+</p>
+
+
+
+
+
+<div className="grid md:grid-cols-3 gap-6 mb-8">
+
+
+
+<div className="bg-white/10 rounded-2xl p-6 backdrop-blur-xl">
+
+<Wallet className="text-purple-400 mb-3"/>
+
+<p>
+Cash Balance
+</p>
+
+
+<h2 className="text-3xl font-bold">
+
+$
+{
+account?.cash_balance
+?
+Number(account.cash_balance)
+.toLocaleString()
+:
+"100,000"
+}
+
+</h2>
+
+</div>
+
+
+
+
+
+<div className="bg-white/10 rounded-2xl p-6 backdrop-blur-xl">
+
+<Activity className="text-green-400 mb-3"/>
+
+<p>
+Positions
+</p>
+
+
+<h2 className="text-3xl font-bold">
+
+{positions.length}
+
+</h2>
+
+
+</div>
+
+
+
+
+
+<div className="bg-white/10 rounded-2xl p-6 backdrop-blur-xl">
+
+<Trophy className="text-yellow-400 mb-3"/>
+
+<p>
+Trades
+</p>
+
+
+<h2 className="text-3xl font-bold">
+
+{orders.length}
+
+</h2>
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+
+
+<div className="bg-white/10 rounded-2xl p-6 mb-8">
+
+
+<h2 className="text-xl font-bold mb-4">
+Market Search
+</h2>
+
+
+
+<div className="flex gap-3">
+
+
+<input
+
+value={symbol}
+
+onChange={
+(e)=>
+setSymbol(
+e.target.value.toUpperCase()
+)
+}
+
+className="
+flex-1
+bg-black/40
+border
+border-white/20
+rounded-xl
+px-4
+py-3
+"
+
+/>
+
+
+<button
+
+onClick={getQuote}
+
+className="
+bg-purple-600
+px-6
+rounded-xl
+"
+
+>
+
+<Search/>
+
+</button>
+
+
+</div>
+
+
+
+
+{
+quote &&
+
+<div className="mt-6">
+
+
+<h3 className="text-3xl font-bold">
+
+{quote.symbol}
+
+</h3>
+
+
+<p className="text-green-400 text-2xl">
+
+$
+{
+Number(
+quote.marketPrice
+)
+.toFixed(2)
+}
+
+</p>
+
+
+</div>
+
+}
+
+
+
+</div>
+
+
+
+
+
+
+
+<div className="bg-white/10 rounded-2xl p-6">
+
+
+<h2 className="text-xl font-bold mb-5">
+Execute Paper Trade
+</h2>
+
+
+
+
+<div className="flex flex-wrap gap-4">
+
+
+
+<input
+
+type="number"
+
+value={quantity}
+
+onChange={
+(e)=>
+setQuantity(
+e.target.value
+)
+}
+
+className="
+w-32
+bg-black/40
+border
+border-white/20
+rounded-xl
+px-4
+py-3
+"
+
+/>
+
+
+
+
+<button
+
+onClick={()=>
+setSide("buy")
+}
+
+className="
+bg-green-600
+px-6
+rounded-xl
+"
+
+>
+
+BUY
+
+</button>
+
+
+
+
+
+<button
+
+onClick={()=>
+setSide("sell")
+}
+
+className="
+bg-red-600
+px-6
+rounded-xl
+"
+
+>
+
+SELL
+
+</button>
+
+
+
+
+
+
+<button
+
+disabled={loading}
+
+onClick={executeTrade}
+
+className="
+bg-purple-600
+px-8
+rounded-xl
+font-bold
+"
+
+>
+
+{
+loading
+?
+"Processing..."
+:
+"Trade"
+}
+
+
+</button>
+
+
+
+</div>
+
+
+
+
+{
+message &&
+
+<p className="mt-5 text-purple-300">
+
+{message}
+
+</p>
+
+}
+
+
+
+</div>
+
+
+
+
+</div>
+
+
+</div>
+
+
+  );
+
+
 }
