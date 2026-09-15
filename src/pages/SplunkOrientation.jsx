@@ -113,7 +113,7 @@ export default function SplunkOrientation() {
 
               <div className="mt-8 flex flex-col gap-4 sm:flex-row">
                 <a
-                  href="https://www.to-analytics.com"
+                  href="https://www.to-analytics.com/login"
                   target="_blank"
                   rel="noreferrer"
                   className="rounded-2xl bg-gradient-to-r from-purple-800 to-fuchsia-600 px-7 py-4 text-center font-bold text-white shadow-lg shadow-purple-500/25 transition hover:scale-[1.02]"
