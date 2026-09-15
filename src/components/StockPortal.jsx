@@ -58,7 +58,8 @@ const stockCourses = [
       },
       {
         id: "stock-week2",
-        title: "Week 2 — Options Trading Fundamentals",
+        title:"week 2 - Penny Stocks trading",
+        // title: "Week 2 — Options Trading Fundamentals",
         desc: "Learn calls, puts, contracts, strike prices, expiration dates and foundational options strategies.",
         videos: [
           {
