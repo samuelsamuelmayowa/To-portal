@@ -64,7 +64,7 @@ const stockCourses = [
           {
             id: "stock-v2",
             title: "Calls vs Puts Explained",
-            url: "https://player.vimeo.com/video/1158002922",
+            url: "https://player.vimeo.com/video/1227099002",
           },
         ],
         docs: [
