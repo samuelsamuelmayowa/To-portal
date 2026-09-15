@@ -145,6 +145,21 @@ const NavBar = () => {
         </NavLink>
 
 
+
+
+
+ <NavLink
+          to="/trading-simulator"
+          className={({ isActive }) =>
+            isActive
+              ? "font-semibold"
+              : "transition"
+          }
+        >
+        Trading-Simulator
+        </NavLink>
+
+
          <NavLink
           to="/toskillab/lab"
           className={({ isActive }) =>
