@@ -70,6 +70,8 @@ export default function PaperTrading() {
 
       await getQuote();
 
+      console.log("FULL QUOTE RESPONSE:", data);
+
 
 
     }
