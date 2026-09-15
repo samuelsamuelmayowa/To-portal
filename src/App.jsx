@@ -81,6 +81,10 @@ import CourseTabContent from "./components/CourseTabContent";
 import StudentAccess from "./components/StudentAccess";
 import AdminExpenses from "./components/AdminExpenses";
 import SplunkLab from "./pages/SplunkLab";
+
+const LazyPaperTrading = React.lazy(
+  () => import("./pages/PaperTrading")
+);
 // 🟣 GLOBAL THEME HELPER
 function applySavedTheme() {
   const saved = localStorage.getItem("theme") || "light";
@@ -126,6 +130,14 @@ const router = createBrowserRouter([
         path: "/quote",
         element: <QuotePage />,
       },
+      {
+  path: "/trading-simulator",
+  element: (
+    <React.Suspense fallback={<Loader />}>
+      <LazyPaperTrading />
+    </React.Suspense>
+  ),
+},
 
       {
         path: "/courses",
