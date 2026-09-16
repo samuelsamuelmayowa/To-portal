@@ -26,7 +26,7 @@ const NAV_ITEMS = [
   { to: "/courses", label: "Courses" },
   { to: "/toskillab", label: "TO Skill Lab" },
   { to: "/trading-simulator", label: "Trading Simulator" },
-  { to: "/toskillab/lab", label: "Lab" },
+  { to: "/toskillab/lab", label: "Splunk Lab" },
   { to: "/splunk-orientation", label: "Orientation" },
   { to: "/mentorship", label: "Mentorship" },
   { to: "/about", label: "About" },
