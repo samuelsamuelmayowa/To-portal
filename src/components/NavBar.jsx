@@ -24,7 +24,7 @@ const headerVariant = {
 
 const NAV_ITEMS = [
   { to: "/courses", label: "Courses" },
-  { to: "/toskillab", label: "TO Skill Lab" },
+  { to: "/toskillab", label: "Interview Prep" },
   { to: "/trading-simulator", label: "Trading Simulator" },
   { to: "/toskillab/lab", label: "Splunk Lab" },
   { to: "/splunk-orientation", label: "Orientation" },
