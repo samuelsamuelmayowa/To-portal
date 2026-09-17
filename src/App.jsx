@@ -5,7 +5,7 @@ import AllCourses from "./components/AllCourses";
 const LazyHomePage = React.lazy(() => import("./pages/HomePage"));
 const LazyCourses = React.lazy(() => import("./pages/Courses"));
 const LazyAbout = React.lazy(() => import("./pages/AboutPage"));
-const LazyCareer = React.lazy(() => import("./pages/CareerPage"));
+const LazyCareer = React.lazy(() => import("./pages/CareerPageFAEK.jsx"));
 const LazyNextxCareer = React.lazy(() => import("./pages/NextxCareerPage"));
 const LazyCOURSE = React.lazy(() => import("./pages/COURSE"));
 const LazyBlogPage = React.lazy(() => import("./pages/BlogPage"));
