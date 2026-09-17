@@ -21,7 +21,8 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { fetchCareerJobs } from "../services/jobsApi";
+// import { fetchCareerJobs } from "../services/jobsApi";
+import { fetchCareerJobs } from "../../services/jobsApi";
 
 /* ---------- Category Mapping ---------- */
 const CATEGORY_RULES = [
