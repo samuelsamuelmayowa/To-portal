@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { splunkLabApi } from "../services/splunkLabApi";
 
+// import { splunkLabApi } from "../services/splunkLabApi";
+
 const CASES = [
   {
     id: "credential-storm",
@@ -551,6 +553,7 @@ export default function SplunkLab() {
       {selected === null ? <motion.div key="picker" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><CasePicker onSelect={setSelected} history={history} /></motion.div> : <motion.div key={CASES[selected].id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><LabWorkspace caseData={CASES[selected]} onExit={() => setSelected(null)} onComplete={complete} /></motion.div>}
     </AnimatePresence>
   );
+}
 
 
 // import { useEffect, useMemo, useState } from "react";
