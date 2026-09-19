@@ -224,6 +224,70 @@ const HomePage = () => {
         </div>
       </section>
 
+
+
+
+
+{/* ========================= SPLUNK SIMULATOR ANNOUNCEMENT ========================= */}
+<section className="bg-white px-6 pb-12 md:px-16 lg:px-24">
+  <motion.div
+    variants={fadeUp}
+    initial="hidden"
+    whileInView="visible"
+    viewport={{ once: true, amount: 0.25 }}
+    className="relative mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-gradient-to-r from-slate-950 via-blue-950 to-BLUE p-8 text-white shadow-2xl shadow-blue-200 md:p-12"
+  >
+    {/* Decorative background */}
+    <div className="absolute -left-16 -top-16 h-52 w-52 rounded-full bg-cyan-400/20 blur-[80px]" />
+    <div className="absolute -bottom-20 right-0 h-64 w-64 rounded-full bg-blue-400/20 blur-[90px]" />
+
+    <div className="relative flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-center">
+      <div className="max-w-3xl">
+        <div className="inline-flex items-center gap-3 rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 py-2">
+          <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-emerald-400" />
+
+          <span className="text-xs font-black uppercase tracking-[0.2em] text-cyan-200">
+            New · Beta 1
+          </span>
+        </div>
+
+        <h2 className="mt-5 text-3xl font-black leading-tight md:text-5xl">
+          Try the Splunk Simulator
+        </h2>
+
+        <p className="mt-4 max-w-2xl text-base font-medium leading-7 text-slate-300 md:text-lg">
+          Put your Splunk skills to the test with realistic investigation
+          scenarios, guided missions and hands-on SPL challenges.
+        </p>
+
+        <div className="mt-6 flex flex-wrap gap-3">
+          {[
+            "Realistic security events",
+            "Guided SPL missions",
+            "Instant feedback",
+          ].map((feature) => (
+            <span
+              key={feature}
+              className="rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs font-bold text-slate-200"
+            >
+              ✓ {feature}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <Link
+        to="/toskillab/lab"
+        className="inline-flex w-full shrink-0 items-center justify-center rounded-2xl bg-white px-7 py-4 font-black text-BLUE shadow-xl transition duration-300 hover:-translate-y-1 hover:bg-cyan-50 lg:w-auto"
+      >
+        Try Splunk Simulator
+        <span className="ml-3 text-xl" aria-hidden="true">
+          →
+        </span>
+      </Link>
+    </div>
+  </motion.div>
+</section>
       {/* ========================= BETA 1 TRADING FEATURE ========================= */}
       <section className="relative overflow-hidden bg-slate-950 px-6 py-20 text-white md:px-16 lg:px-24">
         <div className="absolute -left-24 top-0 h-72 w-72 rounded-full bg-BLUE/20 blur-[100px]" />
