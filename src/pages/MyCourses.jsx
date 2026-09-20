@@ -118,7 +118,7 @@ export default function MyCourses() {
   );
 
   const stockAccess = useMemo(
-    () => new Set(["tomideolulana@gmail.com", "toanalyticsllc@gmail.com"]),
+    () => new Set(["tomideolulana@gmail.com","annrit11@gmail.com", "toanalyticsllc@gmail.com",  "samuelsamuelmayowa@gmail.com", ]),
     [],
   );
 
