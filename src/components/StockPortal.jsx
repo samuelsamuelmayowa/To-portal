@@ -66,7 +66,7 @@ const stockCourses = [
             id: "stock-v2",
             title: "Calls vs Puts Explained",
             url: "https://player.vimeo.com/video/1227099002",
-          },
+          },  
         ],
         docs: [
           {
@@ -80,8 +80,21 @@ const stockCourses = [
         id: "stock-week3",
         title: "Week 3 — Technical Analysis & Indicators",
         desc: "Study candlestick patterns, market structure, RSI, MACD and common trading indicators.",
-        videos: [],
-        docs: [],
+        videos: [ 
+          {
+            id: "stock-v2",
+            title: "Calls vs Puts Explained",
+            url: "https://player.vimeo.com/video/1228532691",
+          },  
+        ],
+        docs: [
+
+           {
+            id: "stock-d2",
+            title: "WEBULL APP TUTORIAL",
+            url: "https://docs.google.com/presentation/d/1P4cxP8rw-ywUsIZSD9koBpZ7My5Vu9Uu/edit?usp=sharing&ouid=104718481266065502968&rtpof=true&sd=true",
+          },
+        ],
       },
     ],
   },
