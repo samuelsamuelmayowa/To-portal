@@ -1,7 +1,16 @@
-import { useContext, useEffect, useMemo, useState } from "react";
-import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "framer-motion";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+  AnimatePresence,
+  motion,
+  useMotionValueEvent,
+  useScroll,
+} from "framer-motion";
 import { Link, NavLink, useLocation } from "react-router-dom";
-import { FaBarsStaggered, FaXmark } from "react-icons/fa6";
+import {
+  FaBarsStaggered,
+  FaChevronDown,
+  FaXmark,
+} from "react-icons/fa6";
 import { MdOutlineAddShoppingCart } from "react-icons/md";
 import { getAuth, signOut } from "firebase/auth";
 import PropTypes from "prop-types";
@@ -22,54 +31,174 @@ const headerVariant = {
   },
 };
 
-const NAV_ITEMS = [
-  { to: "/courses", label: "Courses" },
-  { to: "/toskillab", label: "Interview Prep" },
-  { to: "/trading-simulator", label: "Trading Simulator" },
-  { to: "/toskillab/lab", label: "Splunk Lab" },
-  { to: "/splunk-orientation", label: "Orientation" },
-  // { to: "/mentorship", label: "Mentorship" },
-  { to: "/about", label: "About" },
-  { to: "/career", label: "Career" },
+// Related pages are clustered so the main navbar remains short and easy to scan.
+const NAV_CLUSTERS = [
+  {
+    label: "Learn",
+    description: "Courses and guided learning",
+    items: [
+      {
+        to: "/courses",
+        label: "Courses",
+        description: "Browse all available learning tracks",
+      },
+      {
+        to: "/splunk-orientation",
+        label: "Orientation",
+        description: "Start your Splunk learning journey",
+      },
+    ],
+  },
+  {
+    label: "Practice",
+    description: "Hands-on tools and preparation",
+    items: [
+      {
+        to: "/toskillab",
+        label: "Interview Prep",
+        description: "Prepare with practical career exercises",
+      },
+      {
+        to: "/trading-simulator",
+        label: "Trading Simulator",
+        description: "Practice market decisions in a safe environment",
+      },
+      {
+        to: "/toskillab/lab",
+        label: "Splunk Lab",
+        description: "Investigate realistic Splunk scenarios",
+      },
+    ],
+  },
+  {
+    label: "Company",
+    description: "Learn more about T.O. Analytics",
+    items: [
+      {
+        to: "/about",
+        label: "About",
+        description: "Our mission, values, and approach",
+      },
+      {
+        to: "/career",
+        label: "Career",
+        description: "Explore opportunities with our team",
+      },
+    ],
+  },
 ];
 
-const desktopLinkClass = ({ isActive }) =>
-  `relative whitespace-nowrap py-2 text-sm font-medium transition-colors duration-200 ${
-    isActive ? "text-PURPLE" : "text-slate-700 hover:text-BLUE"
-  }`;
+const allClusterPaths = NAV_CLUSTERS.flatMap((cluster) =>
+  cluster.items.map((item) => item.to),
+);
 
-const mobileLinkClass = ({ isActive }) =>
-  `flex min-h-12 items-center rounded-xl px-4 py-3 text-[15px] font-semibold transition-colors ${
-    isActive
-      ? "bg-purple-50 text-PURPLE"
-      : "text-slate-700 hover:bg-slate-50 hover:text-BLUE"
-  }`;
+const isPathActive = (pathname, target) =>
+  pathname === target || pathname.startsWith(`${target}/`);
 
 const UserAvatar = ({ initial }) => (
-  <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-BLUE text-sm font-black text-white">
-    {initial}
+  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-BLUE to-PURPLE text-sm font-black text-white shadow-sm ring-2 ring-white">
+    {initial || "U"}
   </div>
 );
 
 const CartIcon = ({ itemCount }) => (
-  <div className="relative grid h-11 w-11 place-items-center rounded-xl text-slate-700 transition-colors hover:bg-slate-100 hover:text-BLUE">
-    <MdOutlineAddShoppingCart className="h-6 w-6" aria-hidden="true" />
-    <span className="absolute right-0.5 top-0.5 grid min-h-[18px] min-w-[18px] place-items-center rounded-full border-2 border-white bg-BLUE px-1 text-[10px] font-bold leading-none text-white">
+  <div className="group relative grid h-11 w-11 place-items-center rounded-xl text-slate-700 transition-all duration-200 hover:bg-blue-50 hover:text-BLUE focus-within:bg-blue-50">
+    <MdOutlineAddShoppingCart
+      className="h-6 w-6 transition-transform group-hover:-rotate-6 group-hover:scale-105"
+      aria-hidden="true"
+    />
+    <span className="absolute right-0 top-0 grid min-h-[19px] min-w-[19px] place-items-center rounded-full border-2 border-white bg-BLUE px-1 text-[10px] font-extrabold leading-none text-white">
       {itemCount ?? 0}
     </span>
   </div>
 );
+
+const DesktopCluster = ({ cluster, pathname, openCluster, setOpenCluster }) => {
+  const isOpen = openCluster === cluster.label;
+  const hasActiveItem = cluster.items.some((item) =>
+    isPathActive(pathname, item.to),
+  );
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpenCluster(isOpen ? null : cluster.label)}
+        className={`group flex min-h-10 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold transition-colors ${
+          hasActiveItem || isOpen
+            ? "bg-purple-50 text-PURPLE"
+            : "text-slate-700 hover:bg-slate-50 hover:text-BLUE"
+        }`}
+        aria-expanded={isOpen}
+        aria-haspopup="menu"
+      >
+        {cluster.label}
+        <FaChevronDown
+          className={`h-3 w-3 transition-transform duration-200 ${
+            isOpen ? "rotate-180" : ""
+          }`}
+          aria-hidden="true"
+        />
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 6, scale: 0.98 }}
+            transition={{ duration: 0.16 }}
+            className="absolute left-1/2 top-[calc(100%+12px)] w-[330px] -translate-x-1/2 overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_20px_50px_-18px_rgba(15,23,42,0.35)]"
+            role="menu"
+          >
+            <div className="border-b border-slate-100 px-3 py-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">
+                {cluster.description}
+              </p>
+            </div>
+
+            <div className="mt-1 grid gap-1">
+              {cluster.items.map((item) => {
+                const active = isPathActive(pathname, item.to);
+
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    role="menuitem"
+                    className={`rounded-xl px-3 py-3 transition-colors ${
+                      active
+                        ? "bg-purple-50 text-PURPLE"
+                        : "text-slate-700 hover:bg-slate-50 hover:text-BLUE"
+                    }`}
+                  >
+                    <span className="block text-sm font-bold">{item.label}</span>
+                    <span className="mt-0.5 block text-xs leading-5 text-slate-500">
+                      {item.description}
+                    </span>
+                  </NavLink>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
 
 const NavBar = () => {
   const { data } = FetchAllStudents();
   const { cartItem } = useContext(CartItemContext);
   const { token, setToken, FullScreen } = useStateContext();
   const [showMenu, setShowMenu] = useState(false);
+  const [openCluster, setOpenCluster] = useState(null);
   const [hidden, setHidden] = useState(false);
   const [localUser, setLocalUser] = useState(null);
   const { pathname } = useLocation();
   const { scrollY } = useScroll();
   const auth = getAuth(app);
+  const headerRef = useRef(null);
 
   useEffect(() => {
     const savedToken = localStorage.getItem("ACCESS_TOKEN");
@@ -79,22 +208,32 @@ const NavBar = () => {
     if (savedUser) setLocalUser(savedUser);
   }, [setToken]);
 
-  // Close the drawer after every route change.
   useEffect(() => {
     setShowMenu(false);
+    setOpenCluster(null);
   }, [pathname]);
 
-  // Close with Escape and prevent the page behind the drawer from scrolling.
   useEffect(() => {
-    const closeOnEscape = (event) => {
-      if (event.key === "Escape") setShowMenu(false);
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setShowMenu(false);
+        setOpenCluster(null);
+      }
     };
 
-    window.addEventListener("keydown", closeOnEscape);
+    const handlePointerDown = (event) => {
+      if (headerRef.current && !headerRef.current.contains(event.target)) {
+        setOpenCluster(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("pointerdown", handlePointerDown);
     document.body.style.overflow = showMenu ? "hidden" : "";
 
     return () => {
-      window.removeEventListener("keydown", closeOnEscape);
+      window.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("pointerdown", handlePointerDown);
       document.body.style.overflow = "";
     };
   }, [showMenu]);
@@ -102,7 +241,7 @@ const NavBar = () => {
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = scrollY.getPrevious() ?? 0;
 
-    if (showMenu) {
+    if (showMenu || openCluster) {
       setHidden(false);
       return;
     }
@@ -116,11 +255,12 @@ const NavBar = () => {
     const user = data.data.response.find((item) => item.email === localUser);
     if (!user) return null;
 
+    const fullname = user.name?.trim() || "User";
+
     return {
-      fullname: user.name,
+      fullname,
       email: user.email,
-      initial: user.name
-        .trim()
+      initial: fullname
         .split(/\s+/)
         .map((word) => word[0]?.toUpperCase())
         .join("")
@@ -136,71 +276,103 @@ const NavBar = () => {
       setToken(null);
       setLocalUser(null);
       setShowMenu(false);
+      setOpenCluster(null);
     } catch (error) {
       console.error("Sign out error:", error.message);
     }
   };
 
+  const hasActiveClusterPath = allClusterPaths.some((path) =>
+    isPathActive(pathname, path),
+  );
+
   return (
     <motion.header
+      ref={headerRef}
       variants={headerVariant}
       animate={hidden && !FullScreen ? "hidden" : "visible"}
-      className="fixed inset-x-0 top-0 z-[9999] border-b border-slate-200/80 bg-white/95 shadow-sm backdrop-blur-md"
+      className="fixed inset-x-0 top-0 z-[9999] border-b border-slate-200/80 bg-white/90 shadow-[0_8px_30px_-22px_rgba(15,23,42,0.55)] backdrop-blur-xl"
     >
-      <div className="mx-auto flex h-16 w-full max-w-[1600px] items-center justify-between gap-2 px-3 sm:h-[72px] sm:px-5 lg:px-8 2xl:px-10">
+      <div className="mx-auto flex h-16 w-full max-w-[1500px] items-center justify-between gap-3 px-4 sm:h-[72px] sm:px-6 lg:px-8">
         <Link to="/" className="shrink-0" aria-label="T.O. Analytics home">
           <motion.img
-            initial={{ x: -40, opacity: 0 }}
+            initial={{ x: -30, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ type: "spring", stiffness: 220, damping: 22 }}
             src={LOGO}
-            className="h-auto w-[112px] object-contain sm:w-[145px] xl:w-[155px] 2xl:w-[175px]"
+            className="h-auto w-[118px] object-contain sm:w-[145px] lg:w-[155px]"
             alt="T.O. Analytics"
           />
         </Link>
 
-        {/* The full navigation only appears when there is enough horizontal room. */}
-        <nav className="hidden min-w-0 flex-1 items-center justify-center gap-3 xl:flex 2xl:gap-5" aria-label="Main navigation">
-          {NAV_ITEMS.map((item) => (
-            <NavLink key={item.to} to={item.to} className={desktopLinkClass}>
-              {item.label}
-            </NavLink>
+        <nav
+          className="hidden flex-1 items-center justify-center gap-1 lg:flex"
+          aria-label="Main navigation"
+        >
+          {NAV_CLUSTERS.map((cluster) => (
+            <DesktopCluster
+              key={cluster.label}
+              cluster={cluster}
+              pathname={pathname}
+              openCluster={openCluster}
+              setOpenCluster={setOpenCluster}
+            />
           ))}
 
           {token && currentUser && (
-            <NavLink to="/dashboard" className={desktopLinkClass}>
+            <NavLink
+              to="/dashboard"
+              className={({ isActive }) =>
+                `flex min-h-10 items-center rounded-xl px-3 text-sm font-semibold transition-colors ${
+                  isActive
+                    ? "bg-purple-50 text-PURPLE"
+                    : "text-slate-700 hover:bg-slate-50 hover:text-BLUE"
+                }`
+              }
+            >
               Dashboard
             </NavLink>
           )}
         </nav>
 
-        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-          <Link to="/checkout" aria-label={`Cart with ${cartItem?.length ?? 0} items`}>
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+          <Link
+            to="/checkout"
+            className="rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-BLUE focus-visible:ring-offset-2"
+            aria-label={`Cart with ${cartItem?.length ?? 0} items`}
+          >
             <CartIcon itemCount={cartItem?.length} />
           </Link>
 
           {token && currentUser && (
-            <div className="hidden max-w-[150px] items-center gap-2 2xl:flex">
+            <Link
+              to="/dashboard"
+              className="hidden max-w-[165px] items-center gap-2 rounded-xl p-1 pr-2 transition hover:bg-slate-50 xl:flex"
+              aria-label={`Open ${currentUser.fullname}'s dashboard`}
+            >
               <UserAvatar initial={currentUser.initial} />
-              <p className="truncate text-sm font-semibold text-slate-800">
-                {currentUser.fullname}
-              </p>
-            </div>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-bold text-slate-800">
+                  {currentUser.fullname}
+                </p>
+                <p className="text-[11px] font-medium text-slate-500">My account</p>
+              </div>
+            </Link>
           )}
 
-          <div className="hidden xl:block">
+          <div className="hidden lg:block">
             {token && currentUser ? (
               <button
                 type="button"
                 onClick={handleSignOut}
-                className="min-h-10 rounded-lg border border-BLUE bg-BLUE px-4 text-sm font-semibold text-white transition hover:bg-transparent hover:text-BLUE"
+                className="min-h-10 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 transition hover:border-BLUE hover:bg-blue-50 hover:text-BLUE focus:outline-none focus-visible:ring-2 focus-visible:ring-BLUE focus-visible:ring-offset-2"
               >
                 Logout
               </button>
             ) : (
               <Link
                 to="/login"
-                className="inline-flex min-h-10 items-center rounded-lg border-2 border-BLUE bg-BLUE px-4 text-sm font-semibold text-white transition hover:bg-transparent hover:text-BLUE"
+                className="inline-flex min-h-10 items-center rounded-xl bg-BLUE px-5 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-BLUE focus-visible:ring-offset-2"
               >
                 Login
               </Link>
@@ -210,7 +382,7 @@ const NavBar = () => {
           <button
             type="button"
             onClick={() => setShowMenu((previous) => !previous)}
-            className="grid h-11 w-11 place-items-center rounded-xl text-slate-800 transition hover:bg-slate-100 xl:hidden"
+            className="grid h-11 w-11 place-items-center rounded-xl text-slate-800 transition hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-BLUE focus-visible:ring-offset-2 lg:hidden"
             aria-label={showMenu ? "Close navigation menu" : "Open navigation menu"}
             aria-expanded={showMenu}
             aria-controls="mobile-navigation"
@@ -229,62 +401,96 @@ const NavBar = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowMenu(false)}
-              className="fixed inset-x-0 top-16 h-[calc(100dvh-4rem)] bg-slate-950/30 sm:top-[72px] sm:h-[calc(100dvh-72px)] xl:hidden"
+              className="fixed inset-x-0 top-16 h-[calc(100dvh-4rem)] cursor-default bg-slate-950/35 backdrop-blur-[2px] sm:top-[72px] sm:h-[calc(100dvh-72px)] lg:hidden"
               aria-label="Close navigation menu"
             />
 
             <motion.nav
               id="mobile-navigation"
-              initial={{ opacity: 0, y: -14 }}
+              initial={{ opacity: 0, y: -12 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -14 }}
-              transition={{ duration: 0.2 }}
-              className="absolute inset-x-0 top-full max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain border-t border-slate-200 bg-white px-4 py-4 shadow-2xl sm:max-h-[calc(100dvh-72px)] sm:px-6 xl:hidden"
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="absolute inset-x-0 top-full max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain border-t border-slate-200 bg-white px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 shadow-2xl sm:max-h-[calc(100dvh-72px)] sm:px-6 lg:hidden"
               aria-label="Mobile navigation"
             >
-              {token && currentUser && (
-                <div className="mb-4 flex items-center gap-3 rounded-2xl bg-slate-50 p-3">
-                  <UserAvatar initial={currentUser.initial} />
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-bold text-slate-900">
-                      {currentUser.fullname}
-                    </p>
-                    <p className="truncate text-xs text-slate-500">{currentUser.email}</p>
-                  </div>
-                </div>
-              )}
-
-              <div className="grid gap-1 sm:grid-cols-2 sm:gap-2 lg:grid-cols-3">
-                {NAV_ITEMS.map((item) => (
-                  <NavLink key={item.to} to={item.to} className={mobileLinkClass}>
-                    {item.label}
-                  </NavLink>
-                ))}
-
+              <div className="mx-auto max-w-2xl">
                 {token && currentUser && (
-                  <NavLink to="/dashboard" className={mobileLinkClass}>
-                    Dashboard
-                  </NavLink>
-                )}
-              </div>
-
-              <div className="mt-4 border-t border-slate-200 pt-4">
-                {token && currentUser ? (
-                  <button
-                    type="button"
-                    onClick={handleSignOut}
-                    className="min-h-12 w-full rounded-xl bg-BLUE px-4 text-sm font-bold text-white transition hover:opacity-90"
-                  >
-                    Logout
-                  </button>
-                ) : (
                   <Link
-                    to="/login"
-                    className="flex min-h-12 w-full items-center justify-center rounded-xl bg-BLUE px-4 text-sm font-bold text-white transition hover:opacity-90"
+                    to="/dashboard"
+                    className="mb-5 flex items-center gap-3 rounded-2xl border border-slate-100 bg-gradient-to-r from-slate-50 to-purple-50/60 p-3.5"
                   >
-                    Login
+                    <UserAvatar initial={currentUser.initial} />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-bold text-slate-900">
+                        {currentUser.fullname}
+                      </p>
+                      <p className="truncate text-xs text-slate-500">
+                        {currentUser.email}
+                      </p>
+                    </div>
+                    <span className="text-xs font-bold text-PURPLE">Dashboard</span>
                   </Link>
                 )}
+
+                <div className="grid gap-5 sm:grid-cols-2">
+                  {NAV_CLUSTERS.map((cluster) => (
+                    <section key={cluster.label}>
+                      <div className="mb-2 px-2">
+                        <h2 className="text-xs font-extrabold uppercase tracking-[0.14em] text-slate-400">
+                          {cluster.label}
+                        </h2>
+                        <p className="mt-1 text-xs text-slate-500">
+                          {cluster.description}
+                        </p>
+                      </div>
+
+                      <div className="grid gap-1">
+                        {cluster.items.map((item) => (
+                          <NavLink
+                            key={item.to}
+                            to={item.to}
+                            className={({ isActive }) =>
+                              `rounded-xl px-3 py-3 transition-colors ${
+                                isActive
+                                  ? "bg-purple-50 text-PURPLE"
+                                  : "text-slate-700 hover:bg-slate-50 hover:text-BLUE"
+                              }`
+                            }
+                          >
+                            <span className="block text-sm font-bold">{item.label}</span>
+                            <span className="mt-0.5 block text-xs leading-5 text-slate-500">
+                              {item.description}
+                            </span>
+                          </NavLink>
+                        ))}
+                      </div>
+                    </section>
+                  ))}
+                </div>
+
+                {!hasActiveClusterPath && pathname !== "/" && (
+                  <p className="sr-only">You are viewing {pathname}</p>
+                )}
+
+                <div className="mt-5 border-t border-slate-200 pt-4">
+                  {token && currentUser ? (
+                    <button
+                      type="button"
+                      onClick={handleSignOut}
+                      className="min-h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 transition hover:border-BLUE hover:bg-blue-50 hover:text-BLUE"
+                    >
+                      Logout
+                    </button>
+                  ) : (
+                    <Link
+                      to="/login"
+                      className="flex min-h-12 w-full items-center justify-center rounded-xl bg-BLUE px-4 text-sm font-bold text-white shadow-sm transition hover:opacity-90"
+                    >
+                      Login
+                    </Link>
+                  )}
+                </div>
               </div>
             </motion.nav>
           </>
@@ -292,6 +498,23 @@ const NavBar = () => {
       </AnimatePresence>
     </motion.header>
   );
+};
+
+DesktopCluster.propTypes = {
+  cluster: PropTypes.shape({
+    label: PropTypes.string.isRequired,
+    description: PropTypes.string.isRequired,
+    items: PropTypes.arrayOf(
+      PropTypes.shape({
+        to: PropTypes.string.isRequired,
+        label: PropTypes.string.isRequired,
+        description: PropTypes.string.isRequired,
+      }),
+    ).isRequired,
+  }).isRequired,
+  pathname: PropTypes.string.isRequired,
+  openCluster: PropTypes.string,
+  setOpenCluster: PropTypes.func.isRequired,
 };
 
 UserAvatar.propTypes = {
@@ -303,317 +526,3 @@ CartIcon.propTypes = {
 };
 
 export default NavBar;
-
-
-// import { useState, useEffect, useContext, useMemo } from "react";
-// import LOGO from "../assets/images/logo2.png";
-// import { motion, useMotionValueEvent, useScroll } from "framer-motion";
-// import CartItemContext from "../context/CartItemContext";
-// import { useStateContext } from "../context/ContextProvider";
-// import { Link, NavLink } from "react-router-dom";
-// import { FaBarsStaggered, FaXmark } from "react-icons/fa6";
-// import { getAuth, signOut } from "firebase/auth";
-// import { app } from "../../firebase.config";
-// import FetchAllStudents from "../hooks/FetchAllStudents";
-// import SearchCourseInput from "./SearchCourseInput";
-// import PropTypes from "prop-types";
-// import { MdOutlineAddShoppingCart } from "react-icons/md";
-
-// const SCROLL_THRESHOLD = 20;
-// const HIDE_THRESHOLD = 150;
-
-// const headerVariant = {
-//   visible: { y: 0 },
-//   hidden: {
-//     y: "-100%",
-//     transition: { type: "linear", duration: 0.25 },
-//   },
-// };
-
-// /* ---------------- USER AVATAR ---------------- */
-// const UserAvatar = ({ initial }) => (
-//   <div className="flex justify-center items-center w-8 aspect-square text-white font-black bg-BLUE rounded-full md:text-lg">
-//     {initial}
-//   </div>
-// );
-
-// /* ---------------- CART BADGE ---------------- */
-// const CartIcon = ({ itemCount }) => (
-//   <div className="relative cursor-pointer group">
-//     <MdOutlineAddShoppingCart size={28} />
-//     <span
-//       className="absolute -top-2 -right-2 bg-BLUE text-white
-//       border-2 border-white px-[6px] text-xs rounded-full font-bold
-//       transition-transform duration-200 group-hover:scale-125"
-//     >
-//       {itemCount || "0"}
-//     </span>
-//   </div>
-// );
-
-// const NavBar = () => {
-//   const { data } = FetchAllStudents();
-//   const [showMenu, setShowMenu] = useState(false);
-//   const [hidden, setHidden] = useState(false);
-//   const { cartItem } = useContext(CartItemContext);
-//   const { token, setToken, FullScreen } = useStateContext();
-//   const [localuser, setUser] = useState(null);
-//   const auth = getAuth(app);
-//   const { scrollY } = useScroll();
-
-//   /* ---------- LOAD TOKEN & USER ---------- */
-//   useEffect(() => {
-//     const savedToken = localStorage.getItem("ACCESS_TOKEN");
-//     const savedUser = localStorage.getItem("user");
-
-//     if (savedToken) setToken(savedToken);
-//     if (savedUser) setUser(savedUser);
-//   }, [setToken]);
-
-//   /* ---------- SIGN OUT ---------- */
-//   const handleSignOut = () => {
-//     signOut(auth)
-//       .then(() => {
-//         localStorage.removeItem("ACCESS_TOKEN");
-//         localStorage.removeItem("user");
-//         setToken(null);
-//         setUser(null);
-//       })
-//       .catch((err) => console.error("Sign out error:", err.message));
-//   };
-
-//   /* ---------- SCROLL HIDE ---------- */
-//   useMotionValueEvent(scrollY, "change", (latest) => {
-//     const previous = scrollY.getPrevious();
-//     setHidden(latest > previous && latest > HIDE_THRESHOLD);
-//   });
-
-//   /* ---------- FIND USER ---------- */
-//   const currentUser = useMemo(() => {
-//     if (!data?.data?.response || !localuser) return null;
-
-//     const user = data.data.response.find((u) => u.email === localuser);
-//     if (!user) return null;
-
-//     return {
-//       fullname: user.name,
-//       email: user.email,
-//       initial: user.name
-//         .split(" ")
-//         .map((w) => w[0].toUpperCase())
-//         .join(""),
-//     };
-//   }, [data, localuser]);
-
-//   const toggleMenu = () => setShowMenu((prev) => !prev);
-
-//   return (
-//     <motion.header
-//       variants={headerVariant}
-//       animate={hidden && !FullScreen ? "hidden" : "visible"}
-//       className="fixed top-0 left-0 right-0 z-[9999]
-//       bg-white shadow-md px-4 md:px-10 py-3
-//       flex items-center justify-between transition-all"
-//     >
-//       {/* LOGO */}
-//       <Link to="/">
-//         <motion.img
-//           initial={{ x: -100, opacity: 0 }}
-//           animate={{ x: 0, opacity: 1 }}
-//           transition={{ type: "spring", stiffness: 260, duration: 1.2 }}
-//           src={LOGO}
-//           className="w-[130px] md:w-[190px]"
-//           alt="Logo"
-//         />
-//       </Link>
-
-//       {/* SEARCH — only on desktop */}
-//       {/* {token && (
-//         <div className="hidden md:block w-[250px] lg:w-[300px]">
-//           <SearchCourseInput />
-//         </div>
-//       )} */}
-
-//       {/* DESKTOP NAV */}
-//       <nav className="hidden md:flex items-center gap-8 text-[15px]">
-//         <NavLink to="/courses" className="hover:text-BLUE">
-//           Courses
-//         </NavLink>
-
-//         <NavLink
-//           to="/toskillab"
-//           className={({ isActive }) =>
-//             isActive
-//               ? "font-semibold text-PURPLE"
-//               : "transition hover:text-PURPLE"
-//           }
-//         >
-//           TO Skill Lab
-//         </NavLink>
-
-
-
-
-
-//  <NavLink
-//           to="/trading-simulator"
-//           className={({ isActive }) =>
-//             isActive
-//               ? "font-semibold"
-//               : "transition"
-//           }
-//         >
-//         Trading-Simulator
-//         </NavLink>
-
-
-//          <NavLink
-//           to="/toskillab/lab"
-//           className={({ isActive }) =>
-//             isActive
-//               ? "font-semibold"
-//               : "transition"
-//           }
-//         >
-//          Lab
-//         </NavLink>
-
-//         {/* <NavLink to="/toskillab" className="hover:text-BLUE">
-//           ToskillLab
-//         </NavLink> */}
-
-//         <NavLink to="/splunk-orientation" className="hover:text-BLUE">
-//           Orientation
-//         </NavLink>
-
-//         <NavLink to="/mentorship" className="hover:text-BLUE">
-//           Mentorship
-//         </NavLink>
-//         <NavLink to="/about" className="hover:text-BLUE">
-//           About
-//         </NavLink>
-//         <NavLink to="/career" className="hover:text-BLUE">
-//           Career
-//         </NavLink>
-
-//         {token && currentUser ? (
-//           <>
-//             <NavLink to="/dashboard" className="hover:text-BLUE">
-//               Dashboard
-//             </NavLink>
-
-//             {/* <NavLink to="/result" className="hover:text-BLUE">
-//               My Results
-//             </NavLink> */}
-
-//             <button
-//               onClick={handleSignOut}
-//               className="border border-BLUE px-4 py-1 text-sm text-white bg-BLUE 
-//                 hover:bg-transparent hover:text-BLUE rounded-lg"
-//             >
-//               Logout
-//             </button>
-//           </>
-//         ) : (
-//           <Link
-//             to="/login"
-//             className="border-2 border-BLUE bg-BLUE text-white px-4 py-1 
-//               rounded-md font-semibold hover:bg-transparent hover:text-BLUE"
-//           >
-//             Login
-//           </Link>
-//         )}
-//       </nav>
-
-//       {/* RIGHT SIDE */}
-//       <div className="flex items-center gap-4 md:gap-6">
-//         <Link to="/checkout">
-//           <CartIcon itemCount={cartItem?.length} />
-//         </Link>
-
-//         {token && currentUser && (
-//           <div className="hidden md:flex items-center gap-2">
-//             <UserAvatar initial={currentUser.initial} />
-//             <p className="text-sm font-semibold">{currentUser.fullname}</p>
-//           </div>
-//         )}
-
-//         {/* Mobile Menu Button */}
-//         <button className="block md:hidden" onClick={toggleMenu}>
-//           {showMenu ? <FaXmark size={22} /> : <FaBarsStaggered size={22} />}
-//         </button>
-//       </div>
-
-//       {/* MOBILE MENU */}
-//       {showMenu && (
-//         <motion.div
-//           initial={{ opacity: 0, y: -15 }}
-//           animate={{ opacity: 1, y: 0 }}
-//           exit={{ opacity: 0, y: -15 }}
-//           transition={{ duration: 0.25 }}
-//           className="absolute top-full left-0 right-0
-//           bg-white shadow-lg border-t z-[99999]
-//           flex flex-col gap-5 px-6 py-6 md:hidden"
-//         >
-//           <NavLink to="/courses" className="hover:text-BLUE">
-//             Courses
-//           </NavLink>
-
-//           <NavLink
-//             to="/toskillab"
-//             onClick={() => setShowMenu(false)}
-//             className={({ isActive }) =>
-//               isActive
-//                 ? "font-semibold text-PURPLE"
-//                 : "transition hover:text-PURPLE"
-//             }
-//           >
-//             TO Skill Lab
-//           </NavLink>
-
-//           {/* <NavLink to="/mentorship" className="hover:text-BLUE">
-//             Mentorship
-//           </NavLink> */}
-
-//           <NavLink to="/about" className="hover:text-BLUE">
-//             About
-//           </NavLink>
-
-//           <NavLink to="/career" className="hover:text-BLUE">
-//             Career
-//           </NavLink>
-
-//           {token && currentUser ? (
-//             <>
-//               <NavLink to="/dashboard" className="hover:text-BLUE">
-//                 Dashboard
-//               </NavLink>
-
-//               <button
-//                 onClick={handleSignOut}
-//                 className="border border-BLUE px-4 py-2 text-sm text-white 
-//                   bg-BLUE hover:bg-transparent hover:text-BLUE rounded-lg"
-//               >
-//                 Logout
-//               </button>
-//             </>
-//           ) : (
-//             <Link
-//               to="/login"
-//               className="border-2 border-BLUE bg-BLUE text-white 
-//                 px-4 py-2 rounded-md font-semibold text-center
-//                 hover:bg-transparent hover:text-BLUE"
-//             >
-//               Login
-//             </Link>
-//           )}
-//         </motion.div>
-//       )}
-//     </motion.header>
-//   );
-// };
-
-// UserAvatar.propTypes = { initial: PropTypes.string };
-// CartIcon.propTypes = { itemCount: PropTypes.number };
-
-// export default NavBar;
