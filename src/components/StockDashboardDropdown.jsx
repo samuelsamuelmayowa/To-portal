@@ -4,7 +4,7 @@ import { ChevronDown } from "lucide-react";
 
 const stockLinks = [
   { label: "Stock Dashboard", to: "/dashboard/stock" },
-  { label: "Stock Quiz", to: "/dashboard/stock/quiz" },
+  { label: "Stock Quiz", to: "/dashboard/stock-quiz" },
 //   { label: "Assignments", to: "/dashboard/stock/assignments" },
 //   { label: "Trading Lab", to: "/dashboard/stock/lab" },
 //   { label: "Portfolio Tracker", to: "/dashboard/stock/portfolio" },
