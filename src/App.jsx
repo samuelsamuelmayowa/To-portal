@@ -81,6 +81,7 @@ import CourseTabContent from "./components/CourseTabContent";
 import StudentAccess from "./components/StudentAccess";
 import AdminExpenses from "./components/AdminExpenses";
 import SplunkLab from "./pages/SplunkLab";
+import StockQuiz from "./components/StockQuiz.jsx";
 
 const LazyPaperTrading = React.lazy(
   () => import("./pages/PaperTrading")
@@ -354,6 +355,10 @@ element:<Apage/>
       { path: "stockside", element: <StockDashboard /> },
       { path: "result", element: <QuizResults /> },
       { path: "stockportal", element: <StockPortal /> },
+      {
+  path: "stock-quiz",
+  element: <StockQuiz />,
+},
 
       {
         path: "stockmarkert",

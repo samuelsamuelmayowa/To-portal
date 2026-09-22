@@ -7,9 +7,12 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useStateContext } from "../context/ContextProvider";
 import HERO_ART from "../assets/images/skill-lab-interview-hero.png";
 
+
 gsap.registerPlugin(ScrollTrigger);
 
+
 const api = import.meta.env.VITE_BACKEND_API;
+
 const FALLBACK_ROLES = [
   { id: "analyst", title: "Splunk Analyst", description: "Search, investigate, report, and turn machine data into operational insight.", icon: "⌁" },
   { id: "soc", title: "SOC Analyst", description: "Triage alerts, investigate threats, and communicate incidents using Splunk ES.", icon: "◇" },
