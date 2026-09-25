@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { splunkLabApi } from "../services/splunkLabApi";
+import AdvancedPractice from "../components/splunk/AdvancedPractice";
 
 const CASES = [
   {
@@ -395,7 +396,7 @@ function CommandReference() {
   );
 }
 
-function CasePicker({ onSelect, history, mode, onModeChange }) {
+function CasePicker({ onSelect, history, mode, onModeChange, onAdvanced }) {
   return (
     <main className="min-h-screen bg-[#070b14] text-white">
       <div className="mx-auto max-w-7xl px-5 pb-20 pt-8 sm:px-8">
@@ -409,6 +410,7 @@ function CasePicker({ onSelect, history, mode, onModeChange }) {
             <h1 className="mt-6 text-4xl font-black leading-tight sm:text-6xl">Investigate real incidents.<br/><span className="bg-gradient-to-r from-violet-400 to-cyan-300 bg-clip-text text-transparent">Prove your SPL skills.</span></h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-400">Work through realistic security data, write searches in a simulated Splunk console, collect evidence, and submit a defensible analyst conclusion.</p>
           </div>
+          <button onClick={onAdvanced} className="mt-8 rounded-2xl border border-cyan-400/40 bg-cyan-500/10 px-6 py-5 text-left hover:bg-cyan-500/20"><span className="block text-xs font-bold uppercase tracking-widest text-cyan-300">New · Advanced practice</span><strong className="mt-2 block text-xl">Start your next analyst shift →</strong><span className="mt-2 block text-sm text-slate-300">21 tasks · event replay · real search results · investigation reports</span></button>
           <div className="mt-9 max-w-3xl"><ModeSelector mode={mode} onChange={onModeChange} /></div>
           <div className="mt-12 grid gap-5 lg:grid-cols-3">
             {CASES.map((item, index) => {
@@ -701,6 +703,7 @@ function LabWorkspace({ caseData, onExit, onComplete, mode }) {
 }
 
 export default function SplunkLab() {
+  const [advanced, setAdvanced] = useState(false);
   const [selected, setSelected] = useState(null);
   const [mode, setMode] = useState(() => localStorage.getItem("toSplunkLabMode") || "learn");
   const [history, setHistory] = useState(() => {
@@ -720,9 +723,11 @@ export default function SplunkLab() {
     });
   };
 
+  if (advanced) return <AdvancedPractice onExit={() => setAdvanced(false)} />;
+
   return (
     <AnimatePresence mode="wait">
-      {selected === null ? <motion.div key="picker" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><CasePicker onSelect={setSelected} history={history} mode={mode} onModeChange={changeMode} /></motion.div> : <motion.div key={`${CASES[selected].id}-${mode}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><LabWorkspace caseData={CASES[selected]} onExit={() => setSelected(null)} onComplete={complete} mode={mode} /></motion.div>}
+      {selected === null ? <motion.div key="picker" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><CasePicker onSelect={setSelected} history={history} mode={mode} onModeChange={changeMode} onAdvanced={() => setAdvanced(true)} /></motion.div> : <motion.div key={`${CASES[selected].id}-${mode}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><LabWorkspace caseData={CASES[selected]} onExit={() => setSelected(null)} onComplete={complete} mode={mode} /></motion.div>}
     </AnimatePresence>
   );
 }
