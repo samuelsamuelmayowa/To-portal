@@ -230,11 +230,7 @@ const HomePage = () => {
               custom={0.3}
               className="mt-9 flex flex-col gap-4 sm:flex-row"
             >
-              <Link to="/mentorship">
-                <button className="w-full rounded-2xl bg-BLUE px-8 py-4 text-base font-bold text-white shadow-xl shadow-blue-200 transition duration-300 hover:-translate-y-1 hover:opacity-90 sm:w-auto">
-                  Join Mentorship
-                </button>
-              </Link>
+             
               <Link to="/courses">
                 <button className="w-full rounded-2xl border-2 border-BLUE bg-white px-8 py-4 text-base font-bold text-BLUE transition duration-300 hover:-translate-y-1 hover:bg-BLUE hover:text-white sm:w-auto">
                   Explore Courses
