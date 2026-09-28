@@ -26,6 +26,7 @@ import { fetchCareerJobs } from "../services/jobsApi";
 
 /* ---------- Category Mapping ---------- */
 const CATEGORY_RULES = [
+  { name: "Finance", match: ["finance", "financial", "accountant", "accounting", "bookkeep", "auditor"] },
   {
     name: "Splunk",
     match: ["splunk", "siem", "security information and event management"],
@@ -149,7 +150,7 @@ function getCategory(jobText = "") {
     }
   }
 
-  return "Technology";
+  return "Other";
 }
 
 function safeText(value, fallback = "") {
@@ -168,28 +169,28 @@ function getJobDate(job) {
   );
 }
 
-function isRecentJob(job, index) {
+function isRecentJob(job) {
   const date = getJobDate(job);
 
   if (!date) {
-    // If your jobs database has no date field, this still makes the first jobs appear as new.
-    return index < 9;
+    // Undated listings must not be advertised as new.
+    return false;
   }
 
   const posted = new Date(date);
-  if (Number.isNaN(posted.getTime())) return index < 9;
+  if (Number.isNaN(posted.getTime())) return false;
 
   const now = new Date();
   const diffDays = Math.floor((now - posted) / (1000 * 60 * 60 * 24));
 
-  return diffDays <= 14;
+  return diffDays >= 0 && diffDays <= 14;
 }
 
-function getPostedLabel(job, index) {
+function getPostedLabel(job) {
   const date = getJobDate(job);
 
   if (!date) {
-    return index < 9 ? "New" : "Recently added";
+    return "Date not listed";
   }
 
   const posted = new Date(date);
@@ -235,7 +236,7 @@ function normalizeJob(job, index) {
     description,
     url: safeText(job.url, "#"),
     postedAt: getJobDate(job),
-    category: getCategory(combinedText),
+    category: getCategory(job.title) !== "Other" ? getCategory(job.title) : getCategory(combinedText),
     isNew: isRecentJob(job, index),
     postedLabel: getPostedLabel(job, index),
     workArrangement: safeText(job.ai_work_arrangement, ""),
@@ -316,24 +317,16 @@ export default function CareerPage() {
     "Data & AI",
     "Mobile",
     "IT Support",
+    "Finance",
+    "Other",
+    "Remote",
   ];
 
   const newJobs = useMemo(() => {
     return jobs.filter((job) => job.isNew);
   }, [jobs]);
 
-  const featuredJobs = useMemo(() => {
-    return jobs
-      .filter(
-        (job) =>
-          job.isNew ||
-          job.category === "Splunk" ||
-          job.category === "Linux" ||
-          job.category === "Cybersecurity" ||
-          job.category === "Software",
-      )
-      .slice(0, 3);
-  }, [jobs]);
+  const featuredJobs = useMemo(() => newJobs.slice(0, 3), [newJobs]);
 
   const filteredJobs = useMemo(() => {
     const search = searchTerm.toLowerCase();
@@ -349,13 +342,14 @@ export default function CareerPage() {
       const matchesCategory =
         selectedCategory === "All" ||
         (selectedCategory === "New" && job.isNew) ||
+        (selectedCategory === "Remote" && job.remote) ||
         job.category === selectedCategory;
 
       return matchesSearch && matchesCategory;
     });
 
     if (sortBy === "newest") {
-      list = [...list].sort((a, b) => Number(b.isNew) - Number(a.isNew));
+      list = [...list].sort((a, b) => (Date.parse(b.postedAt) || 0) - (Date.parse(a.postedAt) || 0));
     }
 
     if (sortBy === "title") {
@@ -376,7 +370,6 @@ export default function CareerPage() {
 
   const splunkCount = jobs.filter((job) => job.category === "Splunk").length;
 
-  const linuxCount = jobs.filter((job) => job.category === "Linux").length;
 
   const cybersecurityCount = jobs.filter(
     (job) => job.category === "Cybersecurity",
@@ -435,7 +428,7 @@ export default function CareerPage() {
               </div>
 
               <h1 className="mt-6 max-w-5xl text-5xl font-black leading-[1.03] tracking-tight md:text-7xl">
-                Fresh Splunk, Linux and Financial Jobs in One Place.
+                Explore Technology, Finance and Remote Jobs.
               </h1>
 
               <p className="mt-6 max-w-3xl text-base font-medium leading-8 text-white/60 md:text-lg">
@@ -467,8 +460,8 @@ export default function CareerPage() {
             
            <StatCard
   icon={<Briefcase />}
-  value={`${jobs.length}+`}
-  label="Technology Jobs"
+  value={jobs.length}
+  label="Available Jobs"
 />
 
 <StatCard
@@ -589,7 +582,7 @@ export default function CareerPage() {
   <MiniStat
     icon={<Layers3 />}
     label="Categories"
-    value={categories.length - 2}
+    value={categories.length - 3}
   />
 
   <MiniStat
@@ -691,7 +684,7 @@ export default function CareerPage() {
           className="mt-10 rounded-[2rem] border border-white/10 bg-white/5 p-6 text-center backdrop-blur-xl"
         >
           <p className="text-sm font-medium leading-7 text-white/45">
-            Jobs are loaded from the live careers API and each Apply Now button
+            Jobs provided by Remotive and Arbeitnow. Remotive listings are delayed by 24 hours; Arbeitnow focuses on European roles. Remote roles may have location restrictions. Each Apply Now button
             opens the exact source listing. Availability and application methods
             are controlled by the employer or job platform.
           </p>
@@ -750,6 +743,7 @@ function FeaturedJobCard({ job }) {
             <Clock size={17} />
             {job.postedLabel}
           </p>
+          <p className="text-xs text-cyan-200">Source: {job.source}</p>
         </div>
 
         <div className="mt-6 flex items-center justify-between border-t border-white/10 pt-5">
@@ -819,6 +813,7 @@ function JobCard({ job }) {
           <Clock size={16} />
           {job.postedLabel}
         </p>
+        <p className="mt-3 text-xs text-cyan-200">Source: {job.source}</p>
 
         <p className="mt-4 line-clamp-3 text-sm font-medium leading-7 text-white/45">
           {job.description}
@@ -906,7 +901,7 @@ function LoadingState() {
       <LoaderCircle className="mx-auto animate-spin text-cyan-200" size={34} />
       <h3 className="mt-5 text-2xl font-black text-white">Loading live jobs</h3>
       <p className="mt-2 text-sm font-medium text-white/50">
-        Finding recent Splunk, Linux and financial opportunities.
+        Finding opportunities from Remotive and Arbeitnow.
       </p>
     </div>
   );

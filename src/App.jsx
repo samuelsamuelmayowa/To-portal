@@ -1,4 +1,6 @@
 import React from "react";
+import MobileEntry from './pages/MobileEntry';
+import './lib/mobileProgressBridge';
 import { CartItemProvider } from "./context/CartItemContext";
 import ErrorPage from "./components/errorPage";
 import AllCourses from "./components/AllCourses";
@@ -96,6 +98,7 @@ applySavedTheme();
 
 // 🟣 ROUTES
 const router = createBrowserRouter([
+  { path: '/mobile-entry', element: <MobileEntry /> },
   {
     path: "/",
     element: <HomeLayout />,
