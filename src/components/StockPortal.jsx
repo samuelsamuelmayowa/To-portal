@@ -854,19 +854,19 @@ if (!isAllowed) {
 
       <div className="relative z-10 mx-auto max-w-[1600px]">
         {/* HEADER */}
-        <header className="mb-6 overflow-hidden rounded-[2.2rem] border border-white/10 bg-white/10 p-5 shadow-2xl shadow-black/30 backdrop-blur-2xl md:p-6">
+        <header className="student-dashboard-header mb-6 overflow-hidden rounded-[2.2rem] border border-white/10 bg-white/10 p-5 shadow-2xl shadow-black/30 backdrop-blur-2xl md:p-6">
           <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
-            <div>
+            <div className="min-w-0">
               <div className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/10 px-4 py-2 backdrop-blur-xl">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-BLUE">
                   <FaGraduationCap />
                 </span>
-                <span className="text-xs font-black uppercase tracking-[0.25em] text-white/70">
+                <span className="text-[0.65rem] font-black uppercase tracking-[0.16em] text-white/70 sm:text-xs sm:tracking-[0.25em]">
                   T.O Analytics Learning Portal
                 </span>
               </div>
 
-              <h1 className="mt-5 text-3xl font-black tracking-tight md:text-5xl">
+              <h1 className="mt-5 text-3xl font-black tracking-tight [overflow-wrap:anywhere] sm:text-4xl lg:text-5xl">
                 Stock & Options Mastery Dashboard
               </h1>
 
@@ -876,8 +876,8 @@ if (!isAllowed) {
               </p>
             </div>
 
-            <div className="flex flex-col gap-4 md:flex-row md:items-center">
-              <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+            <div className="flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-stretch xl:w-auto xl:items-center">
+              <div className="min-w-0 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 sm:flex-1 xl:flex-none">
                 <p className="text-xs font-black uppercase tracking-[0.2em] text-white/35">
                   Signed in as
                 </p>
@@ -885,7 +885,7 @@ if (!isAllowed) {
                   {userEmail}
                 </p>
               </div>
-<DashboardDropdown />
+              <div className="w-full sm:w-auto"><DashboardDropdown /></div>
               {/* <DropdownStock /> */}
 
 
@@ -893,7 +893,7 @@ if (!isAllowed) {
 
               <button
                 onClick={() => setDarkMode((prev) => !prev)}
-                className="flex h-12 items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-5 text-sm font-black text-white transition hover:-translate-y-1 hover:bg-white hover:text-BLUE"
+                className="flex h-12 w-full items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-5 text-sm font-black text-white transition hover:bg-white hover:text-BLUE sm:w-auto"
               >
                 {darkMode ? <FaSun /> : <FaMoon />}
                 {darkMode ? "Light Mode" : "Dark Mode"}
