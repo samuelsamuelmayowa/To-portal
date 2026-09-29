@@ -97,7 +97,7 @@ export default function MarketOverview() {
 function Header({ userEmail, darkMode, setDarkMode }) {
   return (
     <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur border-b border-gray-200 dark:border-gray-800">
-      <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-bold">
             To-Analytics Learning Portal
@@ -107,7 +107,7 @@ function Header({ userEmail, darkMode, setDarkMode }) {
           </p>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex min-w-0 flex-wrap items-center gap-3 sm:justify-end">
           <span className="text-sm text-gray-600 dark:text-gray-300">
             {userEmail}
           </span>

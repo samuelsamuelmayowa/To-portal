@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { supabase, ensureVisitorSession } from "../supabaseClient";
 import OptionsLab from "../components/OptionsLab";
+import StockDashboardDropdown from "../components/StockDashboardDropdown";
 import {
   Wallet,
   Search,
@@ -449,9 +450,9 @@ export default function PaperTrading() {
       : cleanQuantity > selectedOwnedQuantity;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-950 to-black p-4 sm:p-6 text-white">
-      <br/> <br/> <br/>
+    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-950 to-black p-4 pt-24 text-white sm:p-6 sm:pt-28">
       <div className="max-w-7xl mx-auto">
+        <div className="mb-4 flex justify-end"><StockDashboardDropdown /></div>
         <header className="relative mb-8 overflow-hidden rounded-3xl border border-purple-400/20 bg-gradient-to-r from-purple-900/70 via-slate-900/80 to-blue-950/70 p-6 sm:p-8">
           <div className="absolute -right-16 -top-20 h-64 w-64 rounded-full bg-purple-500/20 blur-3xl" />
           <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">

@@ -66,7 +66,7 @@ const QuizResults = () => {
 
     {/* HEADER */}
     <div className="max-w-7xl mx-auto mb-6 px-4">
-      <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow flex items-center justify-between">
+      <div className="dashboard-topbar bg-white dark:bg-gray-900 rounded-2xl p-6 shadow flex items-center justify-between">
 
         <div>
           <h1 className="text-2xl font-bold">

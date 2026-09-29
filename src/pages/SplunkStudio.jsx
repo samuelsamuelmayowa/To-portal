@@ -92,7 +92,7 @@ export default function SplunkStudio() {
 
     <>
        <div className="max-w-7xl mx-auto mb-6">
-            <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow flex items-center justify-between">
+            <div className="dashboard-topbar bg-white dark:bg-gray-900 rounded-2xl p-6 shadow flex items-center justify-between">
               {/* LEFT SIDE - TITLE */}
               <div>
                 <h1 className="text-2xl font-bold text-gray-800 dark:text-white">

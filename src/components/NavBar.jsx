@@ -291,7 +291,7 @@ const NavBar = () => {
       ref={headerRef}
       variants={headerVariant}
       animate={hidden && !FullScreen ? "hidden" : "visible"}
-      className="fixed inset-x-0 top-0 z-[9999] border-b border-slate-200/80 bg-white/90 shadow-[0_8px_30px_-22px_rgba(15,23,42,0.55)] backdrop-blur-xl"
+      className="site-header fixed inset-x-0 top-0 z-[9999] border-b border-slate-200/80 bg-white/90 shadow-[0_8px_30px_-22px_rgba(15,23,42,0.55)] backdrop-blur-xl"
     >
       <div className="mx-auto flex h-16 w-full max-w-[1500px] items-center justify-between gap-3 px-4 sm:h-[72px] sm:px-6 lg:px-8">
         <Link to="/" className="shrink-0" aria-label="T.O. Analytics home">

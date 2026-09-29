@@ -22,7 +22,41 @@ header.student-dashboard-header {
   z-index: auto;
 }
 
+.dashboard-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.dashboard-topbar > div:first-child {
+  min-width: 0;
+  flex: 1 1 16rem;
+}
+
+.dashboard-topbar > div:last-child {
+  display: flex;
+  min-width: 0;
+  max-width: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.dashboard-topbar > div:last-child > div:first-child {
+  overflow-wrap: anywhere;
+}
+
 @media only screen and (max-width: 768px) {
+  .dashboard-topbar {
+    align-items: stretch;
+  }
+
+  .dashboard-topbar > div:last-child {
+    align-items: stretch;
+  }
+
   header.student-dashboard-header {
     position: relative;
     inset: auto;
@@ -376,7 +410,7 @@ div.alert-msg svg:first-child {
 }
 
 @media only screen and (max-width: 768px) {
-  header {
+  header.site-header {
     position: fixed;
     width: 100%;
     top: 0;

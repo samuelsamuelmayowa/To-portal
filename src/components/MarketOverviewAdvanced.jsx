@@ -479,7 +479,7 @@ function StickyHeader({
 }) {
   return (
     <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/75 backdrop-blur dark:border-gray-800 dark:bg-gray-950/65">
-      <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
+      <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <h1 className="text-lg sm:text-xl font-bold truncate">
             To-Analytics — Stocks & Options Dashboard
@@ -502,7 +502,7 @@ function StickyHeader({
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 flex-wrap items-center gap-3 sm:justify-end">
           <div className="hidden md:block text-sm text-gray-600 dark:text-gray-300 truncate max-w-[240px]">
             {userEmail}
           </div>

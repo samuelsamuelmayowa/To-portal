@@ -51,7 +51,7 @@ export default function StudentDashboard() {
     <div className="p-6">
           {/* <DashboardDropdown/> */}
             <div className="max-w-7xl mx-auto mb-10 px-4">
-                <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow flex items-center justify-between">
+                <div className="dashboard-topbar bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow flex items-center justify-between">
           
                   <div>
                     <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
@@ -84,7 +84,6 @@ export default function StudentDashboard() {
           
                 </div>
               </div>
-          <br/>
       <h1 className="text-2xl font-bold mb-4 text-gray-800">
         {/* Class Schedule */}
       </h1>
