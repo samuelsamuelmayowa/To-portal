@@ -21,7 +21,9 @@ function readWallet(mode) {
 }
 
 export default function OptionsLab({ active = true }) {
-  const [mode, setMode] = useState('market');
+  // Start with the self-contained practice chain so the lab works even when
+  // this deployment has no Alpaca options credentials configured.
+  const [mode, setMode] = useState('demo');
   const [symbol, setSymbol] = useState('AAPL');
   const [expiration, setExpiration] = useState(expirations[0]);
   const [type, setType] = useState('call');
@@ -34,7 +36,7 @@ export default function OptionsLab({ active = true }) {
   const [feed, setFeed] = useState('');
   const [notice, setNotice] = useState('');
   const [error, setError] = useState('');
-  const [wallet, setWallet] = useState(() => readWallet('market'));
+  const [wallet, setWallet] = useState(() => readWallet('demo'));
   const [move, setMove] = useState(0);
   const [explored, setExplored] = useState(false);
   const [resetConfirm, setResetConfirm] = useState(false);
