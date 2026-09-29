@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { supabase, ensureVisitorSession } from "../supabaseClient";
+import OptionsLab from "../components/OptionsLab";
 import {
   Wallet,
   Search,
@@ -79,6 +80,7 @@ function getAveragePrice(position) {
 }
 
 export default function PaperTrading() {
+  const [workspace, setWorkspace] = useState("stocks");
   const [loading, setLoading] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [symbol, setSymbol] = useState("AAPL");
@@ -446,16 +448,6 @@ export default function PaperTrading() {
       ? estimatedTradeValue > cashBalance
       : cleanQuantity > selectedOwnedQuantity;
 
-  if (initializing) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-950 to-black grid place-items-center text-white">
-        <div className="flex items-center gap-3 text-purple-200">
-          <RefreshCw className="animate-spin" /> Loading your trading account...
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-950 to-black p-4 sm:p-6 text-white">
       <br/> <br/> <br/>
@@ -480,10 +472,22 @@ export default function PaperTrading() {
             <div className="grid grid-cols-3 gap-2 text-center">
               <MiniMetric label="Trades" value={orders.length} />
               <MiniMetric label="Holdings" value={positions.length} />
-              <MiniMetric label="Data feed" value={String(quote?.feed || "IEX").toUpperCase()} />
+              <MiniMetric label="Data feed" value={String(quote?.feed || "—").toUpperCase()} />
             </div>
           </div>
         </header>
+
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+          <div className="inline-flex gap-2 rounded-2xl border border-white/10 bg-black/20 p-1.5" aria-label="Trading workspace">
+            {[['stocks', 'Stock trading'], ['options', 'Options trading']].map(([value, label]) => (
+              <button key={value} type="button" aria-pressed={workspace === value} onClick={() => setWorkspace(value)} className={`rounded-xl px-5 py-3 text-sm font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-300 ${workspace === value ? 'bg-purple-600 text-white shadow-lg' : 'text-slate-300 hover:bg-white/10'}`}>{label}</button>
+            ))}
+          </div>
+          <p className="text-xs text-slate-400">Explore. Practise. Learn from every trade.</p>
+        </div>
+        <div hidden={workspace !== "options"}><OptionsLab active={workspace === "options"} /></div>
+        <div hidden={workspace !== "stocks"}>
+        {initializing && <p role="status" className="mb-5 flex items-center gap-2 text-sm text-purple-200"><RefreshCw size={16} className="animate-spin" /> Loading your stock account. You can explore Options trading while you wait.</p>}
 
         <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
           <StatCard icon={<Wallet />} label="Buying Power" value={money.format(cashBalance)} color="text-purple-400" helper={`${cashAllocation.toFixed(0)}% held as cash`} />
@@ -647,7 +651,7 @@ export default function PaperTrading() {
             )}
             <button
               type="button"
-              disabled={loading || !quoteMatchesSymbol || tradeBlocked}
+              disabled={initializing || loading || !quoteMatchesSymbol || tradeBlocked}
               onClick={executeTrade}
               className="w-full bg-purple-600 hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-50 px-8 py-3 rounded-xl font-bold transition"
             >
@@ -815,6 +819,7 @@ export default function PaperTrading() {
             </table>
           </div>
         </section>
+        </div>
       </div>
     </div>
   );
