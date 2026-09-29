@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from "react";
-import DashboardDropdown from "./Dropdown";
 import {
   Search,
   Sun,
@@ -369,7 +368,6 @@ const SplunkDictionary = () => {
 
   return (
     <div className={containerClasses + " p-6"}>
-      <DashboardDropdown />
 
       {/* Header */}
       <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">

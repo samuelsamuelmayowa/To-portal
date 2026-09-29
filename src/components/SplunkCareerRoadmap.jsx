@@ -12,7 +12,6 @@ import {
   RefreshCw,
   ArrowRight,
 } from "lucide-react";
-import DashboardDropdown from "./Dropdown";
 
 /**
  * ✅ Upgraded Splunk Career Roadmap
@@ -322,7 +321,6 @@ export default function SplunkCareerRoadmapMap() {
                     My Profile
                   </button> */}
       
-      <DashboardDropdown/>
                   {/* Dark Mode Toggle */}
                   <button
                     onClick={() => setDarkMode(!darkMode)}

@@ -4,7 +4,6 @@ import SearchLab from "../components/splunk/SearchLab";
 import SavedSearches from "../components/splunk/SavedSearches";
 import DashboardBuilder from "../components/splunk/DashboardBuilder";
 import AlertBuilder from "../components/splunk/AlertBuilder";
-import DashboardDropdown from "../components/Dropdown";
 // import DashboardDropdown from "./Dropdown";
 // localStorage keys
 const LS_SAVED = "to_splunk_saved_searches";
@@ -118,7 +117,6 @@ export default function SplunkStudio() {
                   My Profile
                 </button> */}
     
-    <DashboardDropdown/>
                 {/* Dark Mode Toggle */}
                 <button
                   onClick={() => setDarkMode(!darkMode)}

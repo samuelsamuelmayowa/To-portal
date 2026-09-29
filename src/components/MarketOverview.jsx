@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { TrendingUp, TrendingDown, Activity, Moon, Sun } from "lucide-react";
 import { getMarketOverview } from "../lib/marketApi";
-import Dropdownstock from "./DropdownStock";
 
 /* ================= PAGE ================= */
 
@@ -112,7 +111,6 @@ function Header({ userEmail, darkMode, setDarkMode }) {
             {userEmail}
           </span>
 
-          <Dropdownstock />
 
           <button
             onClick={() => setDarkMode(!darkMode)}

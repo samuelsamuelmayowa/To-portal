@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
-import Dropdownstock from "./components/DropdownStock";
 
 // Single all-in-one Massive dashboard for US stocks + options + news
 export default function MassiveStockDashboard({ defaultSymbol = "AAPL" }) {
@@ -222,7 +221,6 @@ export default function MassiveStockDashboard({ defaultSymbol = "AAPL" }) {
                   My Profile
                 </button> */}
     
-    <Dropdownstock/>
                 {/* Dark Mode Toggle */}
                 <button
                   onClick={() => setDarkMode(!darkMode)}

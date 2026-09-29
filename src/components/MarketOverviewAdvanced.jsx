@@ -16,7 +16,6 @@ import {
   X,
 } from "lucide-react";
 import { ResponsiveContainer, LineChart, Line } from "recharts";
-import Dropdownstock from "./DropdownStock";
 import { getMarketOverview } from "../lib/marketApi";
 // import { formatPercent } from "../lib/formatters";
 import {
@@ -507,7 +506,6 @@ function StickyHeader({
             {userEmail}
           </div>
 
-          <Dropdownstock />
 
           <button
             onClick={onManualRefresh}

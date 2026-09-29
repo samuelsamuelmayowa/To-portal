@@ -7,6 +7,7 @@ const stockLinks = [
   { label: "Market Overview", to: "/dashboard/stockmarkert" },
   { label: "Stock Dashboard", to: "/dashboard/stock" },
   { label: "Market Snapshot", to: "/dashboard/overview" },
+  { label: "Live Stock Feed", to: "/dashboard/stockside" },
   { label: "Stock Quiz", to: "/dashboard/stock-quiz" },
   { label: "Trading Simulator", to: "/trading-simulator" },
 ];

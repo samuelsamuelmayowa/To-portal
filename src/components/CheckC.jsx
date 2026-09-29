@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import ClassCalendar from "./Days";
-import DashboardDropdown from "./Dropdown";
 
 
 
@@ -68,7 +67,6 @@ export default function StudentDashboard() {
                       {userEmail}
                     </div>
           
-                    <DashboardDropdown />
           
                     <button
                       onClick={() => setDarkMode(!darkMode)}

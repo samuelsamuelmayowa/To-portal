@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { NavLink } from "react-router-dom";
-import StockDashboardDropdown from "./StockDashboardDropdown";
 import { motion } from "framer-motion";
 import {
   FiAlertCircle,
@@ -146,7 +145,6 @@ export default function StockQuiz() {
     return (
       <main className="min-h-screen bg-slate-50 px-4 py-10 dark:bg-slate-900">
         <div className="mx-auto max-w-5xl">
-          <div className="mb-6 flex justify-end"><StockDashboardDropdown /></div>
           <NavLink to="/dashboard/stockportal" className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-700">
             <FiArrowLeft /> Back to Stock Portal
           </NavLink>
@@ -193,7 +191,6 @@ export default function StockQuiz() {
     return (
       <main className="min-h-screen bg-slate-50 px-4 py-10 dark:bg-slate-900">
         <div className="mx-auto max-w-4xl">
-          <div className="mb-6 flex justify-end"><StockDashboardDropdown /></div>
           <section className={`${card} overflow-hidden`}>
             <div className={`p-8 text-white ${result.passed ? "bg-emerald-600" : "bg-amber-600"}`}>
               <FiCheckCircle className="text-4xl" />
@@ -240,7 +237,6 @@ export default function StockQuiz() {
             <h1 className="mt-1 text-xl font-black text-slate-950 dark:text-white">{quiz.title}</h1>
           </div>
           <div className="flex w-full flex-wrap items-center justify-between gap-3 sm:w-auto sm:justify-end">
-            <StockDashboardDropdown />
             <div className={`flex items-center gap-2 rounded-xl px-4 py-2 font-black ${remaining < 300 ? "bg-rose-100 text-rose-700" : "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-white"}`}>
               <FiClock /> {formatTime(remaining)}
             </div>

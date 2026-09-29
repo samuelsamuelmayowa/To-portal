@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Search, ChevronDown, ChevronUp, Copy } from "lucide-react";
 import { toast } from "sonner";
-import DashboardDropdown from "./Dropdown";
 
 /* ================================
    ✅ YOUR FULL COMMANDS (UNCHANGED)
@@ -454,7 +453,6 @@ export default function Commands() {
               {userEmail}
             </div>
 
-            <DashboardDropdown />
 
             <button
               type="button"

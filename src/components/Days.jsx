@@ -1,7 +1,6 @@
 
 import { useState } from "react";
 import dayjs from "dayjs";
-import DashboardDropdown from "./Dropdown";
 
 const ClassCalendar = () => {
   const [currentMonth, setCurrentMonth] = useState(dayjs());

@@ -23,7 +23,6 @@ import {
   FaXmark,
 } from "react-icons/fa6";
 
-import DashboardDropdown from "./Dropdown";
 import SplunkKnowledgePopup from "./SplunkKnowledgePopup";
 
 const API_BASE = import.meta.env.VITE_HOME_OO || "http://localhost:8000";
@@ -1158,7 +1157,6 @@ if (!isAllowed) {
                 </p>
               </div>
 
-              <div className="w-full sm:w-auto"><DashboardDropdown /></div>
 
               <button
                 onClick={() => setDarkMode((prev) => !prev)}

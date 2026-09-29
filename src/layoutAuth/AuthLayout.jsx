@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import Footer from "../components/Footer";
 const api = 'http://localhost:8000/api/'
 import Messages from "../components/Messages";
+import DashboardSectionNav from "../components/DashboardSectionNav";
 function AuthLayout() {
     const {  token ,  setToken , user, setUser } = useStateContext();
     if (!token) {
@@ -36,7 +37,8 @@ function AuthLayout() {
     return (
         <>
             <NavBar />
-            <div className="mt-32">
+            <div className="mt-24">
+                <DashboardSectionNav />
                 <Outlet />
             </div>
             <Messages />

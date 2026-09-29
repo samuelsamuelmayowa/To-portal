@@ -25,7 +25,6 @@ import {
 
 // import DropdownStock from "./DropdownStock "
 import AlpacaTest from "./AlpacaTest";
-import DashboardDropdown from "./StockDashboardDropdown";
 // Stock & Options content. This portal uses the same student experience as
 // the Splunk portal: searchable classes, embedded Vimeo lessons, class
 // materials, notes, syllabus and saved progress.
@@ -885,7 +884,6 @@ if (!isAllowed) {
                   {userEmail}
                 </p>
               </div>
-              <div className="w-full sm:w-auto"><DashboardDropdown /></div>
               {/* <DropdownStock /> */}
 
 

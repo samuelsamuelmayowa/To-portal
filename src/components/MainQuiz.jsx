@@ -3,7 +3,6 @@ import Quiz from "./Quiz";
 import { NavLink } from "react-router-dom";
 import { FiBookOpen, FiLock, FiLoader } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
-import DashboardDropdown from "./Dropdown";
 
 const MainQuiz = () => {
   const api = import.meta.env.VITE_HOME_OO;
@@ -165,7 +164,6 @@ const MainQuiz = () => {
               {userEmail}
             </div>
 
-            <DashboardDropdown />
 
             <button
               onClick={() => setDarkMode(!darkMode)}

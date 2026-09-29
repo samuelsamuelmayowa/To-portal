@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import DashboardDropdown from "./Dropdown";
 
 const ClassM = () => {
   const [assignment, setAssignment] = useState(null);
@@ -98,7 +97,6 @@ const ClassM = () => {
             </div>
 
             {/* Remove if not imported */}
-            {DashboardDropdown && <DashboardDropdown />}
 
             <button
               onClick={() => setDarkMode(!darkMode)}
