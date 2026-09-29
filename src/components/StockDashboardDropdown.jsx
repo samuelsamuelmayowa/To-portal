@@ -3,7 +3,7 @@ import { NavLink } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
 
 const stockLinks = [
-  { label: "S", to: "/trading-simulator" },
+  { label: "Trading Simulator", to: "/trading-simulator" },
   { label: "Stock Quiz", to: "/dashboard/stock-quiz" },
 //   { label: "Assignments", to: "/dashboard/stock/assignments" },
 //   { label: "Trading Lab", to: "/dashboard/stock/lab" },
