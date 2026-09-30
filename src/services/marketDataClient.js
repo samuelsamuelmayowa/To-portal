@@ -44,6 +44,22 @@ export function normalizeMarketBar(row) {
   return { time: milliseconds, open, high, low, close, volume };
 }
 
+export function normalizeStockSearchResults(rows) {
+  const entries = Array.isArray(rows)
+    ? rows
+    : [rows?.results, rows?.assets, rows?.data, rows?.symbols].find(Array.isArray) || [];
+  return entries.flatMap((row) => {
+    const symbol = String(row?.symbol || "").trim().toUpperCase();
+    if (!/^[A-Z0-9][A-Z0-9.-]{0,14}$/.test(symbol) || symbol.includes("..") || symbol.endsWith(".")) return [];
+    return [{
+      symbol,
+      name: typeof row?.name === "string" && row.name.trim() ? row.name.trim() : symbol,
+      ...(typeof row?.exchange === "string" && row.exchange.trim() ? { exchange: row.exchange.trim() } : {}),
+      type: "stock",
+    }];
+  });
+}
+
 export async function fetchMarketQuote(symbol, { apiBaseUrl = MARKET_DATA_API_BASE, fetcher = globalThis.fetch, signal } = {}) {
   const cleanSymbol = String(symbol || "").trim().toUpperCase();
   if (!/^[A-Z0-9][A-Z0-9.-]{0,14}$/.test(cleanSymbol) || cleanSymbol.includes("..") || cleanSymbol.endsWith(".")) throw new Error("Enter a valid stock symbol.");

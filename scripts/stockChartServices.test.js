@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { CHART_TIMEFRAMES, fetchHistoricalBars, fetchMarketQuote, getHistoricalRange, lightweightTimeKey, normalizeMarketBar, resolutionToTimeframe, toLightweightTime } from "../src/services/marketDataClient.js";
+import { CHART_TIMEFRAMES, fetchHistoricalBars, fetchMarketQuote, getHistoricalRange, lightweightTimeKey, normalizeMarketBar, normalizeStockSearchResults, resolutionToTimeframe, toLightweightTime } from "../src/services/marketDataClient.js";
 import { calculateEMA, calculateIndicators, calculateRSI, calculateSMA, calculateVWAP } from "../src/services/chartIndicators.js";
 import { aggregateMinuteBar } from "../src/services/marketDataBars.js";
 
@@ -16,6 +16,14 @@ test("chart timeframes map to backend periods and validate bar timestamps", () =
   assert.equal(toLightweightTime(dailyMs, "5"), dailyMs / 1000);
   assert.equal(normalizeMarketBar({ time: dailyMs / 1000, open: 1, high: 2, low: 1, close: 2, volume: 3 }).time, dailyMs);
   assert.equal(normalizeMarketBar({ time: "invalid", open: 1 }), null);
+});
+
+test("stock search normalization keeps META when the backend omits its type field", () => {
+  assert.deepEqual(normalizeStockSearchResults([
+    { symbol: "meta", name: "Meta Platforms, Inc. Class A Common Stock", exchange: "NASDAQ" },
+    { name: "Missing symbol" },
+  ]), [{ symbol: "META", name: "Meta Platforms, Inc. Class A Common Stock", exchange: "NASDAQ", type: "stock" }]);
+  assert.deepEqual(normalizeStockSearchResults({ results: [{ symbol: "META", type: "us_equity" }] }), [{ symbol: "META", name: "META", type: "stock" }]);
 });
 
 test("historical ranges are ISO UTC windows sized for trading hours and closed markets", () => {

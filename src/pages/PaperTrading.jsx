@@ -4,7 +4,8 @@ import { supabase, ensureVisitorSession } from "../supabaseClient";
 import StockChart from "../components/trading/StockChart";
 import marketDataStream from "../services/marketDataStream";
 import { MARKET_DATA_API_BASE } from "../services/marketDataConfig";
-import { fetchMarketQuote } from "../services/marketDataClient";
+import { fetchMarketQuote, normalizeStockSearchResults } from "../services/marketDataClient";
+import { getPaperTradeErrorMessage } from "../services/paperTradeErrors";
 import {
   Wallet,
   Search,
@@ -114,7 +115,7 @@ export default function PaperTrading() {
         const response = await fetch(url, { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(12000) });
         if (!response.ok) throw new Error("search unavailable");
         const rows = await response.json();
-        if (active) setSearchResults(Array.isArray(rows) ? rows.filter((row) => row?.symbol && row.type === "stock") : []);
+        if (active) setSearchResults(normalizeStockSearchResults(rows));
       } catch {
         if (active) {
           setSearchResults([]);
@@ -394,7 +395,7 @@ export default function PaperTrading() {
       );
     } catch (error) {
       console.error(error);
-      showMessage("The virtual order could not be completed. Review the order and try again.", "error");
+      showMessage(await getPaperTradeErrorMessage(error), "error");
     } finally {
       setLoading(false);
     }
