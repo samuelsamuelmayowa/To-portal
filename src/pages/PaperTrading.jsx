@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import PropTypes from "prop-types";
 import { supabase, ensureVisitorSession } from "../supabaseClient";
-import OptionsLab from "../components/OptionsLab";
+import StockChart from "../components/trading/StockChart";
 import marketDataStream from "../services/marketDataStream";
 import { MARKET_DATA_API_BASE } from "../services/marketDataConfig";
+import { fetchMarketQuote } from "../services/marketDataClient";
 import {
   Wallet,
   Search,
@@ -24,6 +25,8 @@ import {
   WifiOff,
   LoaderCircle,
 } from "lucide-react";
+
+const LazyOptionsLab = lazy(() => import("../components/OptionsLab"));
 
 const money = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -90,6 +93,10 @@ export default function PaperTrading() {
   }, []);
 
   useEffect(() => {
+    if (workspace !== "stocks") {
+      setSearchLoading(false);
+      return undefined;
+    }
     const query = searchTerm.trim();
     if (!query) {
       setSearchResults([]);
@@ -118,7 +125,7 @@ export default function PaperTrading() {
       }
     }, 250);
     return () => { active = false; clearTimeout(timer); };
-  }, [searchTerm]);
+  }, [searchTerm, workspace]);
 
   async function initialize() {
     try {
@@ -256,17 +263,7 @@ export default function PaperTrading() {
   async function requestQuote(requestedSymbol) {
     const cleanSymbol = String(requestedSymbol || "").trim().toUpperCase();
     if (!cleanSymbol) throw new Error("Enter a stock symbol first.");
-
-    await ensureVisitorSession();
-    const { data, error } = await supabase.functions.invoke("stock-quote", {
-      body: { symbol: cleanSymbol },
-    });
-
-    if (error) throw error;
-    if (data?.error) throw new Error(data.error);
-    if (!data?.marketPrice) throw new Error(`No market price found for ${cleanSymbol}.`);
-
-    return data;
+    return fetchMarketQuote(cleanSymbol);
   }
 
   async function getQuote(requestedSymbol = symbol, displayErrors = true) {
@@ -476,9 +473,12 @@ export default function PaperTrading() {
         : streamStatus === "connected"
           ? (realtimeBar?.symbol === symbol ? "LIVE" : "CONNECTED")
           : "OFFLINE";
+  const displayedMarketPrice = realtimeBar?.symbol === symbol && Number.isFinite(Number(realtimeBar.close))
+    ? Number(realtimeBar.close)
+    : quotePrice;
 
   useEffect(() => {
-    if (!quoteMatchesSymbol) return undefined;
+    if (workspace !== "stocks" || !quoteMatchesSymbol) return undefined;
     let active = true;
     setRealtimeBar(null);
     try {
@@ -497,7 +497,7 @@ export default function PaperTrading() {
       setStreamStatus("offline");
       return undefined;
     }
-  }, [symbol, quoteMatchesSymbol]);
+  }, [symbol, quoteMatchesSymbol, workspace]);
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#080d16] px-3 pb-10 pt-24 text-slate-100 sm:px-6 sm:pt-28">
@@ -506,10 +506,20 @@ export default function PaperTrading() {
         <header className="mb-5 flex flex-col gap-4 rounded-2xl border border-slate-800 bg-[#0d1420] p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
           <div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-400">T.O. Analytics · Practice account</p><h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">Trading simulator</h1><p className="mt-1 text-sm text-slate-400">Market data for learning. Orders remain virtual.</p></div>
           <div className="flex flex-wrap items-center gap-3">
-            <div className={`inline-flex min-h-10 items-center gap-2 rounded-lg border px-3 text-xs font-semibold ${streamLabel === "LIVE" ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300" : ["connecting", "reconnecting"].includes(streamStatus) ? "border-amber-500/30 bg-amber-500/10 text-amber-200" : "border-slate-700 bg-slate-900 text-slate-400"}`} aria-live="polite">{streamLabel === "LIVE" ? <Wifi size={15} /> : ["connecting", "reconnecting"].includes(streamStatus) ? <LoaderCircle size={15} className="animate-spin" /> : <WifiOff size={15} />}{streamLabel}</div>
+            {workspace === "stocks" && <div className={`inline-flex min-h-10 items-center gap-2 rounded-lg border px-3 text-xs font-semibold ${streamLabel === "LIVE" ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300" : ["connecting", "reconnecting"].includes(streamStatus) ? "border-amber-500/30 bg-amber-500/10 text-amber-200" : "border-slate-700 bg-slate-900 text-slate-400"}`} aria-live="polite">{streamLabel === "LIVE" ? <Wifi size={15} /> : ["connecting", "reconnecting"].includes(streamStatus) ? <LoaderCircle size={15} className="animate-spin" /> : <WifiOff size={15} />}{streamLabel}</div>}
             <div className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-slate-800 bg-slate-900 px-3 text-xs text-slate-400"><ShieldCheck size={15} className="text-cyan-400" /> Virtual funds · No real orders</div>
           </div>
         </header>
+
+        <div className="mb-5 flex flex-col gap-2 rounded-xl border border-slate-800 bg-[#0d1420] p-2 sm:flex-row sm:items-center sm:justify-between" role="tablist" aria-label="Trading workspace">
+          <div className="grid w-full grid-cols-2 gap-1 sm:w-auto">
+            {[['stocks', 'Stocks'], ['options', 'Options']].map(([value, label]) => <button key={value} type="button" role="tab" aria-selected={workspace === value} onClick={() => setWorkspace(value)} className={`min-h-11 rounded-lg px-5 text-sm font-semibold transition ${workspace === value ? "bg-slate-700 text-white" : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"}`}>{label}</button>)}
+          </div>
+          <p className="px-2 text-xs text-slate-500">Practice only · Virtual account and fills</p>
+        </div>
+
+        {workspace === "options" && <Suspense fallback={<div className="rounded-xl border border-slate-800 bg-[#0d1420] p-6 text-sm text-slate-400" role="status">Loading Options Trading…</div>}><LazyOptionsLab active /></Suspense>}
+        <div hidden={workspace !== "stocks"}>
 
         <section className="mb-5 flex flex-col gap-4 rounded-2xl border border-slate-800 bg-[#0d1420] p-4 lg:flex-row lg:items-center lg:justify-between" aria-label="Selected instrument">
           <div className="min-w-0 flex-1">
@@ -521,7 +531,7 @@ export default function PaperTrading() {
             </div>
             <div className="mt-3 flex max-w-2xl gap-2 overflow-x-auto pb-1" aria-label="Popular stocks">{POPULAR_STOCKS.slice(0, 8).map((stock) => <button key={stock.symbol} type="button" onClick={() => selectStock(stock.symbol)} disabled={loading} className={`min-h-9 shrink-0 rounded-lg border px-3 text-xs font-semibold transition ${symbol === stock.symbol ? "border-cyan-500/60 bg-cyan-500/10 text-cyan-200" : "border-slate-800 bg-slate-900 text-slate-400 hover:border-slate-600 hover:text-slate-200"}`}>{stock.symbol}</button>)}</div>
           </div>
-          <div className="flex min-w-0 items-end justify-between gap-4 border-t border-slate-800 pt-4 lg:min-w-[230px] lg:justify-end lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0"><div><p className="text-xs text-slate-500">Latest quote</p>{loading && !quoteMatchesSymbol ? <div className="mt-2 h-8 w-28 animate-pulse rounded bg-slate-800" /> : <p className="mt-1 text-2xl font-bold tabular-nums">{quoteMatchesSymbol ? money.format(quotePrice) : "—"}</p>}{realtimeBar?.symbol === symbol ? <p className="mt-1 text-xs text-emerald-300">Stream bar {money.format(realtimeBar.close)}</p> : <p className="mt-1 text-xs text-slate-500">{quote?.timestamp ? new Date(quote.timestamp).toLocaleTimeString() : "Select a stock to load data"}</p>}</div><div className="text-right text-xs text-slate-500"><span className="block">{quoteMatchesSymbol && Number.isFinite(Number(quote.change)) ? `${Number(quote.change) >= 0 ? "+" : "−"}${money.format(Math.abs(Number(quote.change)))}` : "Market data"}</span><span className="mt-1 block">{quoteMatchesSymbol && quote.changePercent != null ? `${Number(quote.changePercent) >= 0 ? "+" : ""}${Number(quote.changePercent).toFixed(2)}%` : "IEX stream status"}</span></div></div>
+          <div className="flex min-w-0 items-end justify-between gap-4 border-t border-slate-800 pt-4 lg:min-w-[230px] lg:justify-end lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0"><div><p className="text-xs text-slate-500">Latest market price</p>{loading && !quoteMatchesSymbol ? <div className="mt-2 h-8 w-28 animate-pulse rounded bg-slate-800" /> : <p className="mt-1 text-2xl font-bold tabular-nums">{quoteMatchesSymbol ? money.format(displayedMarketPrice) : "—"}</p>}{realtimeBar?.symbol === symbol ? <p className="mt-1 text-xs text-emerald-300">Realtime minute bar close</p> : <p className="mt-1 text-xs text-slate-500">{quote?.timestamp ? new Date(quote.timestamp).toLocaleTimeString() : "Select a stock to load data"}</p>}</div><div className="text-right text-xs text-slate-500"><span className="block">{quoteMatchesSymbol && Number.isFinite(Number(quote.change)) ? `${Number(quote.change) >= 0 ? "+" : "−"}${money.format(Math.abs(Number(quote.change)))}` : "Market data"}</span><span className="mt-1 block">{quoteMatchesSymbol && quote.changePercent != null ? `${Number(quote.changePercent) >= 0 ? "+" : ""}${Number(quote.changePercent).toFixed(2)}%` : "IEX stream status"}</span></div></div>
         </section>
 
         <div className="mb-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
@@ -530,13 +540,10 @@ export default function PaperTrading() {
           <SummaryTile label="Invested value" value={money.format(portfolioValue)} hint={`${positions.length} open ${positions.length === 1 ? "position" : "positions"}`} icon={<BarChart3 size={17} />} />
           <SummaryTile label="Unrealized P/L" value={`${totalProfitLoss >= 0 ? "+" : "−"}${money.format(Math.abs(totalProfitLoss))}`} hint="Open positions only" icon={totalProfitLoss >= 0 ? <ArrowUpRight size={17} /> : <ArrowDownRight size={17} />} positive={totalProfitLoss >= 0} />
         </div>
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-[#0d1420] p-2"><div className="flex gap-1" role="tablist" aria-label="Trading workspace">{[['stocks', 'Stocks'], ['options', 'Options']].map(([value, label]) => <button key={value} type="button" role="tab" aria-selected={workspace === value} onClick={() => setWorkspace(value)} className={`min-h-10 rounded-lg px-5 text-sm font-semibold ${workspace === value ? "bg-slate-700 text-white" : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"}`}>{label}</button>)}</div><p className="px-2 text-xs text-slate-500">Practice only · Virtual account and fills</p></div>
-        <div hidden={workspace !== "options"}><OptionsLab active={workspace === "options"} /></div>
-        <div hidden={workspace !== "stocks"}>
           {initializing && <p role="status" className="mb-4 flex items-center gap-2 text-sm text-slate-400"><LoaderCircle size={16} className="animate-spin text-cyan-400" /> Loading your practice account…</p>}
           {message && <div role={messageType === "error" ? "alert" : "status"} className={`mb-4 rounded-xl border px-4 py-3 text-sm ${messageType === "error" ? "border-rose-500/30 bg-rose-500/10 text-rose-200" : messageType === "success" ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-200" : "border-slate-700 bg-slate-900 text-slate-300"}`}>{message}</div>}
           <div className="mb-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
-            <section className="min-w-0 overflow-hidden rounded-2xl border border-slate-800 bg-[#0d1420]" aria-labelledby="chart-panel-title"><div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 px-4 py-4 sm:px-5"><div><h2 id="chart-panel-title" className="font-semibold">Price chart</h2><p className="mt-1 text-xs text-slate-500">{symbol} · Historical and intraday datafeed</p></div><div className="flex flex-wrap gap-1.5">{["1m", "5m", "15m", "30m", "1h", "1D", "1W"].map((period) => <span key={period} className="rounded-md border border-slate-800 px-2 py-1 text-[11px] text-slate-500">{period}</span>)}</div></div><div className="flex min-h-[310px] flex-col items-center justify-center px-5 py-10 text-center sm:min-h-[390px]"><div className="mb-4 rounded-2xl border border-slate-800 bg-slate-900 p-4 text-cyan-400"><BarChart3 size={28} /></div><h3 className="text-base font-semibold text-slate-200">Chart library access required</h3><p className="mt-2 max-w-md text-sm leading-6 text-slate-500">The T.O. market-data feed is ready for chart history and realtime bars. The official TradingView Advanced Charts files are not installed in this project, so no chart is being simulated here.</p><p className="mt-4 rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2 text-xs text-slate-400">Add the official library files from your TradingView account to mount the chart.</p></div></section>
+            <StockChart symbol={symbol} active={workspace === "stocks"} orders={orders} />
             <section className="h-fit rounded-2xl border border-slate-800 bg-[#0d1420] p-4 sm:p-5" aria-labelledby="order-ticket-title"><div className="mb-4 flex items-start justify-between gap-3"><div><p className="text-xs font-medium uppercase tracking-wider text-slate-500">Practice order</p><h2 id="order-ticket-title" className="mt-1 text-lg font-semibold">Order ticket</h2></div><Target className="text-cyan-400" size={19} /></div><div className="mb-4 grid grid-cols-2 gap-2 rounded-xl bg-[#080d16] p-1.5" role="group" aria-label="Order side"><button type="button" aria-pressed={side === "buy"} onClick={() => setSide("buy")} className={`min-h-11 rounded-lg text-sm font-bold transition ${side === "buy" ? "bg-emerald-600 text-white" : "text-slate-400 hover:bg-slate-800"}`}>BUY</button><button type="button" aria-pressed={side === "sell"} onClick={() => setSide("sell")} className={`min-h-11 rounded-lg text-sm font-bold transition ${side === "sell" ? "bg-rose-600 text-white" : "text-slate-400 hover:bg-slate-800"}`}>SELL</button></div><div className="mb-4 flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-3"><span className="text-sm text-slate-400">Instrument</span><span className="font-semibold">{symbol}</span></div><label htmlFor="order-quantity" className="mb-2 block text-sm text-slate-300">Shares</label><input id="order-quantity" type="number" inputMode="numeric" min="1" step="1" value={quantity} onChange={(event) => setQuantity(event.target.value)} className="min-h-12 w-full rounded-xl border border-slate-700 bg-[#080d16] px-4 text-base outline-none focus:border-cyan-500/70 focus:ring-2 focus:ring-cyan-500/15" /><div className="my-3 grid grid-cols-4 gap-2">{[1, 5, 10, "max"].map((amount) => <button key={amount} type="button" onClick={() => setQuickQuantity(amount)} className="min-h-10 rounded-lg border border-slate-800 bg-slate-900 text-xs font-semibold uppercase text-slate-400 hover:border-slate-600 hover:text-slate-200">{amount}</button>)}</div><div className="mb-4 space-y-3 rounded-xl border border-slate-800 bg-[#080d16] p-3 text-sm"><OrderLine label="Market price" value={quoteMatchesSymbol ? money.format(quotePrice) : "Load a quote"} /><OrderLine label="Estimated value" value={money.format(estimatedTradeValue)} strong /><OrderLine label="Shares owned" value={selectedOwnedQuantity.toLocaleString()} /><OrderLine label="Buying power" value={money.format(cashBalance)} /></div>{tradeWarning && <div className="mb-4 flex gap-2 rounded-xl border border-amber-500/25 bg-amber-500/10 p-3 text-xs leading-5 text-amber-100"><AlertTriangle size={15} className="mt-0.5 shrink-0" />{tradeWarning}</div>}<button type="button" disabled={initializing || loading || !quoteMatchesSymbol || tradeBlocked} onClick={executeTrade} className={`min-h-12 w-full rounded-xl px-4 text-sm font-bold text-white transition disabled:cursor-not-allowed disabled:opacity-40 ${side === "buy" ? "bg-emerald-600 hover:bg-emerald-500" : "bg-rose-600 hover:bg-rose-500"}`}>{loading ? "Processing order…" : `${side === "buy" ? "Buy" : "Sell"} ${symbol}`}</button><p className="mt-3 text-center text-[11px] leading-5 text-slate-600">Estimated value only. Existing simulator rules determine virtual fills.</p></section>
           </div>
           <section className="mb-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]"><div className="rounded-2xl border border-slate-800 bg-[#0d1420] p-4 sm:p-5"><div className="mb-4 flex items-center gap-3"><div className="rounded-lg bg-cyan-500/10 p-2 text-cyan-300"><Brain size={18} /></div><div><p className="text-xs font-semibold uppercase tracking-wider text-cyan-400">Learning notes</p><h2 className="font-semibold">Build steady investing habits</h2></div></div><div className="grid gap-3 sm:grid-cols-3"><LearningCard icon={<Target size={17} />} title="Position size" text="Keep each practice order within a risk level you understand." /><LearningCard icon={<PieChart size={17} />} title="Diversification" text="Compare holdings and avoid depending on one company." /><LearningCard icon={<BarChart3 size={17} />} title="Price and value" text="A price move alone does not establish a company's long-term value." /></div><div className="mt-4 flex gap-3 rounded-xl border border-slate-800 bg-slate-900/50 p-3 text-sm leading-6 text-slate-300"><Lightbulb size={18} className="mt-1 shrink-0 text-cyan-400" /><p><strong className="text-slate-100">Account insight:</strong> {positions.length === 0 ? "Start with a small practice position and observe how it affects the account." : largestConcentration > 60 ? `${largestPosition?.positionSymbol} is ${largestConcentration.toFixed(0)}% of invested value; consider concentration risk.` : `You have ${positions.length} open holding${positions.length === 1 ? "" : "s"}. Review each position alongside the full account.`}</p></div></div><div className="rounded-2xl border border-slate-800 bg-[#0d1420] p-4 sm:p-5"><div className="mb-5 flex items-center gap-2"><ShieldCheck size={18} className="text-cyan-400" /><div><p className="text-xs uppercase tracking-wider text-slate-500">Account mix</p><h2 className="font-semibold">Allocation</h2></div></div><AllocationBar label="Cash" value={cashAllocation} color="bg-cyan-500" /><AllocationBar label="Invested" value={100 - cashAllocation} color="bg-indigo-400" /><div className="mt-5 space-y-3 border-t border-slate-800 pt-4 text-sm"><HealthRow label="Buying power available" good={cashBalance > 0} /><HealthRow label="Open positions" good={positions.length > 0} /></div></div></section>

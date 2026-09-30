@@ -148,12 +148,13 @@ import axios from 'axios'
 import {
     useQuery,
 } from '@tanstack/react-query';
+import { BACKEND_ORIGIN } from '../services/marketDataConfig.js';
 
 
 const FetchAllStudents = () => {
   return useQuery({
     queryKey: ["students"],
-    queryFn: ()=> axios.get("https://to-backendapi-v1.onrender.com/api/show")
+    queryFn: ()=> axios.get(`${BACKEND_ORIGIN}/api/show`)
   })
   
 }
