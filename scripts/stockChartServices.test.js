@@ -24,6 +24,8 @@ test("stock search normalization keeps META when the backend omits its type fiel
     { name: "Missing symbol" },
   ]), [{ symbol: "META", name: "Meta Platforms, Inc. Class A Common Stock", exchange: "NASDAQ", type: "stock" }]);
   assert.deepEqual(normalizeStockSearchResults({ results: [{ symbol: "META", type: "us_equity" }] }), [{ symbol: "META", name: "META", type: "stock" }]);
+  assert.deepEqual(normalizeStockSearchResults({ data: { results: [{ ticker: "aapl", company_name: "Apple Inc. Common Stock", primary_exchange: "NASDAQ" }] } }), [{ symbol: "AAPL", name: "Apple Inc. Common Stock", exchange: "NASDAQ", type: "stock" }]);
+  assert.deepEqual(normalizeStockSearchResults(["AAPL", "META", "MSFT", "NVDA"].map((symbol) => ({ symbol, type: "stock" }))).map((row) => row.symbol), ["AAPL", "META", "MSFT", "NVDA"]);
 });
 
 test("historical ranges are ISO UTC windows sized for trading hours and closed markets", () => {

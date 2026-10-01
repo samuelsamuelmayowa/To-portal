@@ -6,7 +6,7 @@ Run `npm run dev` locally. Vite serves the jobs handler in development and previ
 
 Feeds are cached for six hours in each running server instance and by the Vercel CDN. Cache is not persistent across cold starts; high-traffic deployments with many instances should use a shared cache or scheduled ingestion to control upstream requests. One working source is enough to display jobs; if both fail, the page offers Retry.
 
-Remotive covers remote jobs, delays listings by 24 hours, and requires attribution and links to its listings. Do not gate these listings behind signup. Arbeitnow's default feed covers European opportunities (the first feed page is loaded). Neither source guarantees Splunk, Linux, finance, or US openings. Remote roles can have geographic restrictions.
+The `/career` feed only displays roles whose listed location identifies the USA, UK, Canada, or Germany. Remotive covers remote jobs, delays listings by 24 hours, and requires attribution and links to its listings. Do not gate these listings behind signup. Arbeitnow's default feed covers European opportunities (the first feed page is loaded). Neither source guarantees Splunk, Linux, finance, or roles in the selected countries. Remote roles can have geographic restrictions.
 
 Provider documentation: https://remotive.com/remote-jobs/api and https://www.arbeitnow.com/blog/job-board-api
 

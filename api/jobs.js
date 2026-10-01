@@ -3,6 +3,17 @@
   { name: 'Arbeitnow', url: 'https://www.arbeitnow.com/api/job-board-api', field: 'data' },
 ];
 const cache = new Map();
+const ALLOWED_COUNTRY_PATTERNS = [
+  /\b(?:us|u\.?s\.?|usa|u\.?s\.?a\.?|united states(?: of america)?|america)\b/i,
+  /\b(?:uk|u\.?k\.?|united kingdom|great britain|england|scotland|wales|northern ireland)\b/i,
+  /\bcanada\b/i,
+  /\bgermany\b/i,
+];
+
+function isAllowedLocation(location) {
+  return ALLOWED_COUNTRY_PATTERNS.some(pattern => pattern.test(location));
+}
+
 function normalize(job, source) {
   if (!job || typeof job.title !== 'string' || !job.title.trim()) return null;
   try { if (!['http:', 'https:'].includes(new URL(job.url).protocol)) return null; } catch { return null; }
@@ -50,7 +61,8 @@ export default async function handler(request, response) {
     if (seen.has(job.url)) return false;
     seen.add(job.url);
     return true;
-  }).sort((a, b) => (Date.parse(b.date_posted) || 0) - (Date.parse(a.date_posted) || 0));
+  }).filter(job => isAllowedLocation(job.location))
+    .sort((a, b) => (Date.parse(b.date_posted) || 0) - (Date.parse(a.date_posted) || 0));
   const partial = results.some(result => result.status === 'rejected');
   response.setHeader('Cache-Control', partial ? 'public, s-maxage=60' : 'public, s-maxage=21600, stale-while-revalidate=3600');
   return response.status(200).json({ jobs, count: jobs.length, partial });

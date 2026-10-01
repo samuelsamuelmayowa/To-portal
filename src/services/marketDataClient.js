@@ -47,14 +47,16 @@ export function normalizeMarketBar(row) {
 export function normalizeStockSearchResults(rows) {
   const entries = Array.isArray(rows)
     ? rows
-    : [rows?.results, rows?.assets, rows?.data, rows?.symbols].find(Array.isArray) || [];
+    : [rows?.results, rows?.assets, rows?.symbols, rows?.data, rows?.data?.results, rows?.data?.assets].find(Array.isArray) || [];
   return entries.flatMap((row) => {
-    const symbol = String(row?.symbol || "").trim().toUpperCase();
+    const symbol = String(row?.symbol || row?.ticker || row?.asset_symbol || "").trim().toUpperCase();
     if (!/^[A-Z0-9][A-Z0-9.-]{0,14}$/.test(symbol) || symbol.includes("..") || symbol.endsWith(".")) return [];
+    const name = row?.name || row?.company_name || row?.description;
+    const exchange = row?.exchange || row?.primary_exchange || row?.exchange_code;
     return [{
       symbol,
-      name: typeof row?.name === "string" && row.name.trim() ? row.name.trim() : symbol,
-      ...(typeof row?.exchange === "string" && row.exchange.trim() ? { exchange: row.exchange.trim() } : {}),
+      name: typeof name === "string" && name.trim() ? name.trim() : symbol,
+      ...(typeof exchange === "string" && exchange.trim() ? { exchange: exchange.trim() } : {}),
       type: "stock",
     }];
   });

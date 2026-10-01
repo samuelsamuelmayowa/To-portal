@@ -160,7 +160,11 @@ export default function PaperTrading() {
   }
 
   function handleSymbolChange(value) {
-    setSearchTerm(String(value || "").slice(0, 50));
+    const nextTerm = String(value || "").slice(0, 50);
+    setSearchTerm(nextTerm);
+    setSearchResults([]);
+    setSearchError("");
+    setSearchLoading(Boolean(nextTerm.trim()));
     setMessage("");
   }
 
