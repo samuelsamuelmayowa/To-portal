@@ -369,7 +369,8 @@ element:<Apage/>
       },
       {
         path: "stock",
-        element: <MassiveStockDashboard />,
+        // Temporarily hide the Massive Stock Dashboard page.
+        element: null,
       },
       {
         path: "map",
