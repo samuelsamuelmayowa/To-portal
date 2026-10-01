@@ -4,7 +4,7 @@ import { ChevronDown } from "lucide-react";
 
 const stockLinks = [
   { label: "Learning Portal", to: "/dashboard/stockportal" },
-  { label: "Market Overview", to: "/dashboard/stockmarkert" },
+  // { label: "Market Overview", to: "/dashboard/stockmarkert" },
   // { label: "Stock Dashboard", to: "/dashboard/stock" },
   // { label: "Market Snapshot", to: "/dashboard/overview" },
   { label: "Live Stock Feed", to: "/dashboard/stockside" },
