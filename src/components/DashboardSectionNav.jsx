@@ -51,12 +51,12 @@ export default function DashboardSectionNav() {
   const sectionName = isStock ? "Stocks & Options" : "Splunk Bootcamp";
 
   return (
-    <div className="dashboard-section-nav-wrap mx-auto mb-5 w-full max-w-[1600px] px-4 sm:px-6 lg:px-8">
+    <div className="dashboard-section-nav-wrap mx-auto mb-5 w-full max-w-[1500px] px-4 sm:px-6 lg:px-8">
       <nav
         aria-label={`${sectionName} dashboard navigation`}
-        className="rounded-3xl border border-slate-200/80 bg-white/90 p-3 shadow-[0_12px_40px_-28px_rgba(15,23,42,0.45)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/90 sm:p-4"
+        className="min-w-0 rounded-3xl border border-slate-200/80 bg-white/90 p-3 shadow-[0_12px_40px_-28px_rgba(15,23,42,0.45)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/90 sm:p-4"
       >
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-6">
+        <div className="flex min-w-0 flex-col gap-3 xl:flex-row xl:items-center xl:gap-5">
           <div className="flex shrink-0 items-center gap-3 px-1">
             <span className="grid h-10 w-10 place-items-center rounded-2xl bg-gradient-to-br from-blue-600 to-violet-700 text-white shadow-md shadow-blue-900/15">
               <SectionIcon size={20} aria-hidden="true" />
@@ -71,14 +71,14 @@ export default function DashboardSectionNav() {
             </div>
           </div>
 
-          <div className="dashboard-section-nav-links flex min-w-0 gap-2 overflow-x-auto pb-1 lg:flex-1 lg:flex-wrap lg:overflow-visible lg:pb-0">
+          <div className="dashboard-section-nav-links flex min-w-0 flex-1 gap-2 overflow-x-auto pb-1 xl:pb-0">
             {pages.map(({ label, to, end }) => (
               <NavLink
                 key={to}
                 to={to}
                 end={end}
                 className={({ isActive }) =>
-                  `inline-flex min-h-10 shrink-0 items-center rounded-xl border px-3.5 py-2 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:text-sm ${
+                    `inline-flex min-h-10 shrink-0 whitespace-nowrap items-center rounded-xl border px-3.5 py-2 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:text-sm ${
                     isActive
                       ? "border-blue-200 bg-blue-50 text-blue-800 shadow-sm dark:border-blue-900 dark:bg-blue-950/70 dark:text-blue-200"
                       : "border-transparent text-slate-600 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-950 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-slate-900 dark:hover:text-white"
