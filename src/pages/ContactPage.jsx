@@ -58,13 +58,11 @@ const ContactPage = () => {
       <section className="bg-white py-32 md:px-10 px-5 text-2xl md:text-4xl">
            <Helmet>
                 <meta charSet="utf-8" />
-                <title>contact</title>
-                <link rel="canonical" href="https://www.to-analytics.com" />
-                <meta name="description" content={"to-analytics is an educational platform empowering career growth through affordable courses in diverse fields like Splunk, Linux, Data Science, Stock & Options, Videography, Drone Technology, Educational Consulting, Photography, and more."} />
-
-                <meta property="og:description" content={"to-analytics is an educational platform empowering career growth through affordable courses in diverse fields like Splunk, Linux, Data Science, Stock & Options, Videography, Drone Technology, Educational Consulting, Photography, and more."} />
-
-            
+                <title>Contact T.O Analytics | Training & Software Services</title>
+                <link rel="canonical" href="https://www.to-analytics.com/contact" />
+                <meta name="description" content="Contact T.O Analytics about technology training, mentorship, software development and learning programs." />
+                <meta property="og:title" content="Contact T.O Analytics | Training & Software Services" />
+                <meta property="og:description" content="Contact T.O Analytics about technology training, mentorship, software development and learning programs." />
 
             </Helmet>
         <div className="grid md:grid-cols-2 grid-col-1">

@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Toaster, toast } from "sonner";
 import { useState, useEffect, useContext, useRef } from "react";
 import { motion, useInView } from "framer-motion";
@@ -78,6 +78,7 @@ const COURSE = () => {
   const isInView = useInView(whatToLearnRef, { once: true, amount: 0.2 });
 
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const { course } = useParams();
 
   const {
@@ -140,6 +141,10 @@ const COURSE = () => {
     (item) => item.id === singleCourse.id
   );
 
+  const courseDescription = `${singleCourse.courseName} course by T.O Analytics. ${singleCourse.description}`
+    .replace(/\s+/g, " ")
+    .slice(0, 160);
+
   const buyCourse = () => {
     if (token) {
       navigate("/checkout");
@@ -182,15 +187,11 @@ const COURSE = () => {
       <Helmet>
         <meta charSet="utf-8" />
         <title>{singleCourse.courseName} | T.O Analytics</title>
-        <link rel="canonical" href="https://www.to-analytics.com" />
-        <meta
-          name="description"
-          content={`${singleCourse.courseName} course by T.O Analytics. ${singleCourse.description}`}
-        />
-        <meta
-          property="og:description"
-          content={`${singleCourse.courseName} course by T.O Analytics. ${singleCourse.description}`}
-        />
+        <link rel="canonical" href={`https://www.to-analytics.com${pathname}`} />
+        <meta name="description" content={courseDescription} />
+        <meta property="og:title" content={`${singleCourse.courseName} Course | T.O Analytics`} />
+        <meta property="og:description" content={courseDescription} />
+        <meta property="og:url" content={`https://www.to-analytics.com${pathname}`} />
       </Helmet>
 
       {/* ================= HERO ================= */}

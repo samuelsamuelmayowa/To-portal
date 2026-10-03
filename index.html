@@ -2,27 +2,44 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="canonical" href="https://www.to-analytics.com" />
-    <meta property="og:image" content="https://www.to-analytics.com" />
-    <meta property="og:url" content="https://www.to-analytics.com" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
-      name="keywords"
-      content="splunk , photography, stock , Linux, Data Science, Educational Consulting,Excel  fundamentals,SQL,Lighting techniques for video"
-    />
-    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
-    <link
-      rel="shortcut icon"
-      href="./src/assets/images/t.jpeg"
-      type="image/x-icon"
-      src=""
-    />
-    <meta
       name="description"
-      content="To-Analytics is an educational platform that offers affordable courses across a wide array of fields, including Splunk, Linux, Data Science, Stock & Options, Videography, Drone Technology, Educational Consulting, Photography, and more. Our courses are designed to foster career advancement and help you achieve your professional goals."
+      content="Build practical skills with hands-on Splunk, cybersecurity, Linux, data and stock trading education from T.O Analytics. Explore training, mentorship and software services."
     />
-
-    <title>T.O ANALYTICS</title>
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#ffffff" />
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+    <link rel="icon" href="/favicon.jpeg" type="image/jpeg" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="T.O Analytics" />
+    <meta property="og:title" content="T.O Analytics | Practical Tech Training & Software Solutions" />
+    <meta property="og:description" content="Build practical skills with hands-on Splunk, cybersecurity, Linux, data and stock trading education from T.O Analytics." />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="T.O Analytics | Practical Tech Training & Software Solutions" />
+    <meta name="twitter:description" content="Build practical skills with hands-on Splunk, cybersecurity, Linux, data and stock trading education from T.O Analytics." />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "EducationalOrganization",
+            "@id": "https://www.to-analytics.com/#organization",
+            "name": "T.O Analytics",
+            "url": "https://www.to-analytics.com/",
+            "description": "Practical technology education, mentorship and software solutions."
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://www.to-analytics.com/#website",
+            "url": "https://www.to-analytics.com/",
+            "name": "T.O Analytics",
+            "publisher": { "@id": "https://www.to-analytics.com/#organization" }
+          }
+        ]
+      }
+    </script>
+    <title>T.O Analytics | Practical Tech Training & Software Solutions</title>
   </head>
 
   <body>
@@ -33,7 +50,6 @@
 
       if (document.cookie && document.cookie !== "paypal") {
         var ca = document.cookie.split(";");
-        // console.log(ca);
         ca.forEach((x) => {
           var c = x.substring(0, x.indexOf("="));
           document.cookie = c + "=;expires=-1";

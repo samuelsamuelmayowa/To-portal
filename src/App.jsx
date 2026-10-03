@@ -32,7 +32,8 @@ import AdminLoginForm from "./pages/AdminLoginForm";
 import CheckOut from "./pages/CheckOut";
 import SendLinks from "./components/SendLinks";
 import SendMessages from "./components/SendMessages";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom";
+import RouteSeo from "./components/RouteSeo";
 
 import HomeLayout from "./layoutAuth/HomeLayout";
 import AdminLayout from "./layoutAuth/AdminLayout";
@@ -97,7 +98,19 @@ function applySavedTheme() {
 applySavedTheme();
 
 // 🟣 ROUTES
+function AppRouteLayout() {
+  return (
+    <>
+      <Outlet />
+      <RouteSeo />
+    </>
+  );
+}
+
 const router = createBrowserRouter([
+  {
+    element: <AppRouteLayout />,
+    children: [
   { path: '/mobile-entry', element: <MobileEntry /> },
   {
     path: "/",
@@ -454,6 +467,8 @@ element:<Apage/>
         path: "send-messages",
         element: <SendMessages />,
       },
+    ],
+  },
     ],
   },
 ]);

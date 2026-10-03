@@ -64,10 +64,10 @@ const AboutPage = () => {
                 <meta charSet="utf-8" />
                     <title>About </title>
                 <meta name="keywords" content="splunk , photography, stock , Linux, Data Science"/>
-                <link rel="canonical" href="https://www.to-analytics.com" />
-                <meta name="description" content={"To-Analytics is an educational platform that offers affordable courses across a wide array of fields, including Splunk, Linux, Data Science, Stock & Options, Videography, Drone Technology, Educational Consulting, Photography, and more. Our courses are designed to foster career advancement and help you achieve your professional goals."} />
-
-                <meta property="og:description" content={"To-Analytics is an educational platform that offers affordable courses across a wide array of fields, including Splunk, Linux, Data Science, Stock & Options, Videography, Drone Technology, Educational Consulting, Photography, and more. Our courses are designed to foster career advancement and help you achieve your professional goals."} />
+                <link rel="canonical" href="https://www.to-analytics.com/about" />
+                <meta name="description" content="Learn about T.O Analytics and our mission to make practical technology education, cybersecurity training and career development accessible." />
+                <meta property="og:title" content="About T.O Analytics | Practical Technology Education" />
+                <meta property="og:description" content="Learn about T.O Analytics and our mission to make practical technology education, cybersecurity training and career development accessible." />
             </Helmet>
                 <motion.div variants={container} initial="hidden" animate="visible" className="md:py-8 bg-white z-20">
                     <motion.h1 variants={h1} className="OUR-MISSION md:font-black my-4 md:my-8 font-bold text-3xl md:text-4xl">Our Mission</motion.h1>

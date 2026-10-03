@@ -113,10 +113,10 @@ const HomePage = () => {
       className="overflow-hidden bg-white text-slate-950"
     >
       <Helmet>
-        <title>T.O Analytics | Tech Training & Software Solutions</title>
+        <title>T.O Analytics | Practical Tech Training & Software Solutions</title>
         <meta
           name="description"
-          content="T.O Analytics offers practical tech training, software solutions and a new Beta 1 paper-trading simulator for risk-free stock market practice."
+          content="Build practical skills with hands-on Splunk, cybersecurity, Linux, data and stock trading education from T.O Analytics. Explore training, mentorship and software services."
         />
         <meta name="robots" content="index, follow" />
       </Helmet>
