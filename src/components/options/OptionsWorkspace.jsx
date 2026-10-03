@@ -15,7 +15,7 @@ export default function OptionsWorkspace({ active = true }) {
   const [search, setSearch] = useState('');
   const [expiration, setExpiration] = useState('');
   const [type, setType] = useState('call');
-  const [selected, setSelected] = useState(null);
+  const [selectedContract, setSelectedContract] = useState(null);
   const [advanced, setAdvanced] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [explored, setExplored] = useState(false);
@@ -25,22 +25,52 @@ export default function OptionsWorkspace({ active = true }) {
   const results = useOptionsSearch(search, active);
   const { quote, expirations, chain, account, positions, history, order, reset } = data;
   const dates = expirations.data?.expirations || [];
-  useEffect(() => { if (expirations.data && !expirations.data.expirations.includes(expiration)) setExpiration(expirations.data.expirations[0] || ''); }, [expirations.data, expiration]);
-  const contract = !chain.isError && selected?.underlyingSymbol === asset.symbol && selected?.expiration === expiration && selected?.type === type
-    ? chain.data?.contracts.find(c => c.symbol === selected.symbol) || null
+  useEffect(() => {
+    if (expirations.data && !expirations.data.expirations.includes(expiration)) {
+      setSelectedContract(null);
+      setExplored(false);
+      setExpiration(expirations.data.expirations[0] || '');
+    }
+  }, [expirations.data, expiration]);
+  const contract = !chain.isError && selectedContract?.underlyingSymbol === asset.symbol && selectedContract?.expiration === expiration && selectedContract?.type === type
+    ? chain.data?.contracts.find(c => c.symbol === selectedContract.symbol) || null
     : null;
   const underlyingQuote = quote.isError ? null : quote.data;
   const premium = getOptionMark(contract), count = Number(quantity);
   const validQuantity = Number.isSafeInteger(count) && count > 0 && count <= 10000;
-  const cost = calculateContractCost(premium, count);
+  const estimatedDebit = calculateContractCost(premium, count);
+  const optionsBuyingPower = account.data?.cash;
   const stale = contract && isStale(contract);
-  const blocked = !data.session || !contract || premium == null || !validQuantity || stale || calculateDTE(contract?.expiration) === 0 || !account.isSuccess || account.isError || cost > account.data.cash || order.isPending || reset.isPending || chain.isError;
+  const validMarketPrice = Number.isFinite(premium) && premium > 0 && !stale && calculateDTE(contract?.expiration) > 0 && !chain.isError;
+  const canBuy = Boolean(data.session && selectedContract && contract && validMarketPrice && validQuantity
+    && account.isSuccess && !account.isError && Number.isFinite(optionsBuyingPower)
+    && Number.isFinite(estimatedDebit) && estimatedDebit <= optionsBuyingPower
+    && !order.isPending && !reset.isPending);
+  const disabledReason = !selectedContract || !contract
+    ? 'Select a contract to continue'
+    : !validMarketPrice
+      ? 'Market price unavailable'
+      : !validQuantity
+        ? 'Enter 1–10,000 whole contracts'
+        : !Number.isFinite(optionsBuyingPower) || !account.isSuccess || account.isError
+          ? 'Options buying power is unavailable'
+          : estimatedDebit > optionsBuyingPower
+            ? 'Insufficient Options buying power'
+            : !data.session
+              ? 'Sign in to your practice account'
+              : order.isPending || reset.isPending
+                ? 'Order processing'
+                : '';
   const milestones = [Boolean(contract), explored, history.data?.history.some(f => f.action === 'buy'), history.data?.history.some(f => f.action === 'sell')];
-  function clearSelection() { setSelected(null); setExplored(false); setNotice(''); order.reset(); }
+  function clearSelection() { setSelectedContract(null); setExplored(false); setNotice(''); order.reset(); }
   function chooseAsset(next) { clearSelection(); setAsset(next); setExpiration(''); setSearch(''); }
   async function submit(symbol, qty, action) {
     setNotice('');
     try { const result = await order.mutateAsync({ symbol, quantity: qty, action, requestId: crypto.randomUUID() }); setNotice(`${action === 'buy' ? 'Buy to Open' : 'Sell to Close'} filled${result.fill ? ` at ${money(result.fill.premium)} per share` : ''}. Options virtual funds updated.`); } catch { /* Mutation error is displayed below. */ }
+  }
+  function submitBuy() {
+    if (!canBuy || !contract) return;
+    void submit(contract.symbol, count, 'buy');
   }
   return <div className="options-workspace">
     <header className="op-heading op-title"><div><span className="op-eyebrow">T.O. Analytics / Options desk</span><h2>Options simulator</h2><p>Practice Account · Virtual Funds · No Real Orders</p></div><button className="op-refresh" onClick={data.refresh} disabled={chain.isFetching || order.isPending}><RefreshCw size={15} /> Refresh</button></header>
@@ -56,12 +86,12 @@ export default function OptionsWorkspace({ active = true }) {
         <div className="op-filters"><label>Expiration<select value={expiration} disabled={!dates.length} onChange={e => { clearSelection(); setExpiration(e.target.value); }}>{!dates.length && <option value="">No expirations</option>}{dates.map(date => <option key={date} value={date}>{date} · {calculateDTE(date)} DTE</option>)}</select></label><div className="op-toggle">{['call', 'put'].map(value => <button key={value} aria-pressed={type === value} onClick={() => { clearSelection(); setType(value); }}>{value === 'call' ? 'CALLS' : 'PUTS'}</button>)}</div></div>
         <QueryStatus query={expirations} empty={!dates.length && 'No Options expirations are available for this symbol.'}>expiration dates</QueryStatus>
         {expirations.data?.hasMore && <p className="op-warning">The provider returned a partial expiration list.</p>}
-        {expiration && <OptionsChain query={chain} spot={underlyingQuote?.marketPrice} selected={contract} onSelect={c => { setSelected(c); setExplored(false); order.reset(); }} advanced={advanced} />}
+        {expiration && <OptionsChain query={chain} spot={underlyingQuote?.marketPrice} selected={contract} onSelect={c => { setSelectedContract(c); setExplored(false); setNotice(''); order.reset(); }} advanced={advanced} />}
       </section>
     </div><aside className="op-aside">
       <section className="op-panel"><span className="op-eyebrow">Selected contract</span><h3>{contract ? `${asset.symbol} ${money(contract.strike)} ${type.toUpperCase()}` : 'Choose a strike'}</h3>{contract ? <><p className="op-note">{contract.symbol} · {contract.expiration} · {calculateDTE(contract.expiration)} DTE</p><div className="op-heading"><strong className="op-spot-price">{money(premium)}</strong><span className="op-tag">{getMoneyness(type, contract.strike, underlyingQuote?.marketPrice, chain.data?.contracts.map(c => c.strike))}</span></div><p className="op-note">Estimated premium / share · Bid {money(contract.bid)} · Ask {money(contract.ask)} · Last {money(contract.last)}</p><OptionsGreeks contract={contract} /><p className="op-note">Quote: {contract.quoteTimestamp ? new Date(contract.quoteTimestamp).toLocaleString() : 'Unavailable'}<br />Premium timestamp: {contract.timestamp ? new Date(contract.timestamp).toLocaleString() : 'Unavailable'}</p>{stale && <p className="op-warning">Stale or unavailable timestamp. Practice trading is disabled until fresh market data is available.</p>}{premium == null && <p className="op-warning">This contract has no usable quote or latest trade.</p>}</> : <p className="op-empty">Select a contract from the chain to see its data and plan a trade.</p>}</section>
       <OptionsPayoff key={contract?.symbol || 'empty'} contract={contract} quantity={validQuantity ? count : 1} onExplore={() => setExplored(true)} />
-      <section className="op-panel op-ticket"><span className="op-eyebrow">Buy to Open</span><h3>Practice order</h3><label>Number of contracts<input type="number" min="1" max="10000" step="1" value={quantity} onChange={e => setQuantity(e.target.value)} /></label><dl className="op-order-summary"><div><dt>Estimated debit / maximum loss</dt><dd>{money(cost)}</dd></div><div><dt>Breakeven at expiration</dt><dd>{money(contract ? calculateBreakeven(type, contract.strike, premium) : null)}</dd></div><div><dt>Options buying power</dt><dd>{money(account.data?.cash)}</dd></div></dl>{!validQuantity && <p className="op-warning">Enter 1–10,000 whole contracts.</p>}{cost != null && account.data && cost > account.data.cash && <p className="op-warning">Insufficient Options practice buying power.</p>}<button className="op-primary" disabled={blocked} onClick={() => submit(contract.symbol, count, 'buy')}>{order.isPending ? 'Submitting…' : `Buy Practice ${type === 'call' ? 'Call' : 'Put'}`}</button><p className="op-note">Practice Order · No Real Money. The server verifies the current estimated premium before filling; it can differ from this preview.</p></section>
+      <section className="op-panel op-ticket"><span className="op-eyebrow">Buy to Open</span><h3>Practice order</h3><label>Number of contracts<input type="number" min="1" max="10000" step="1" value={quantity} onChange={e => setQuantity(e.target.value)} /></label><dl className="op-order-summary"><div><dt>Estimated debit / maximum loss</dt><dd>{money(estimatedDebit)}</dd></div><div><dt>Breakeven at expiration</dt><dd>{money(contract ? calculateBreakeven(type, contract.strike, premium) : null)}</dd></div><div><dt>Options buying power</dt><dd>{money(optionsBuyingPower)}</dd></div></dl>{!validQuantity && <p className="op-warning">Enter 1–10,000 whole contracts.</p>}{Number.isFinite(estimatedDebit) && Number.isFinite(optionsBuyingPower) && estimatedDebit > optionsBuyingPower && <p className="op-warning">Insufficient Options practice buying power.</p>}<button className="op-primary" disabled={!canBuy} onClick={submitBuy}>{order.isPending ? 'Submitting…' : !selectedContract ? 'Select a contract first' : `Buy Practice ${type === 'call' ? 'Call' : 'Put'}${Number.isFinite(estimatedDebit) ? ` — ${money(estimatedDebit)}` : ''}`}</button>{!canBuy && <p className="op-warning" role="status">{disabledReason}</p>}<p className="op-note">Practice Order · No Real Money. The server verifies the current estimated premium before filling; it can differ from this preview.</p></section>
     </aside></div>
     <div aria-live="polite">{order.isError && <p role="alert" className="op-error">{order.error.message}</p>}{notice && <p className="op-success">{notice}</p>}</div>
     <OptionsPositions query={positions} pending={order.isPending || reset.isPending} onClose={p => submit(p.symbol, p.quantity, 'sell')} />

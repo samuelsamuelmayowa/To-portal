@@ -67,4 +67,4 @@
   .options-workspace .op-order-summary dt { @apply text-slate-400; }
   .options-workspace .op-order-summary dd { @apply font-mono; }
   .options-workspace .op-primary { @apply w-full border-sky-500 bg-sky-500 py-3 font-semibold text-slate-950 hover:bg-sky-400 hover:text-slate-950; }
-
+  .options-workspace .op-primary:disabled, .options-workspace .op-primary:disabled:hover { @apply cursor-not-allowed border-slate-700 bg-slate-800 text-slate-400 opacity-100; }
