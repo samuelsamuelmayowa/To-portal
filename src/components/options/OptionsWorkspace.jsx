@@ -7,7 +7,7 @@ import OptionsPayoff from './OptionsPayoff';
 import { OptionsAccountSummary, OptionsPositions, OptionsHistory } from './OptionsPortfolio';
 import { OptionsGreeks, QueryStatus } from './OptionsPrimitives';
 import { useOptionsData, useOptionsSearch } from './useOptionsData';
-import { money, getOptionMark, calculateBreakeven, calculateContractCost, calculateDTE, getMoneyness, isStale } from '../../lib/optionsCalculations';
+import { money, getOptionMark, calculateBreakeven, calculateContractCost, calculateDTE, getMoneyness, isStale, canBuyOptionsOrder } from '../../lib/optionsCalculations';
 import './OptionsWorkspace.css';
 
 export default function OptionsWorkspace({ active = true }) {
@@ -42,10 +42,11 @@ export default function OptionsWorkspace({ active = true }) {
   const optionsBuyingPower = account.data?.cash;
   const stale = contract && isStale(contract);
   const validMarketPrice = Number.isFinite(premium) && premium > 0 && !stale && calculateDTE(contract?.expiration) > 0 && !chain.isError;
-  const canBuy = Boolean(data.session && selectedContract && contract && validMarketPrice && validQuantity
-    && account.isSuccess && !account.isError && Number.isFinite(optionsBuyingPower)
-    && Number.isFinite(estimatedDebit) && estimatedDebit <= optionsBuyingPower
-    && !order.isPending && !reset.isPending);
+  const canBuy = canBuyOptionsOrder({
+    selectedContract, contract, premium, quantity: count, buyingPower: optionsBuyingPower,
+    hasSession: Boolean(data.session), accountLoaded: account.isSuccess && !account.isError,
+    marketAvailable: validMarketPrice, pending: order.isPending || reset.isPending,
+  });
   const disabledReason = !selectedContract || !contract
     ? 'Select a contract to continue'
     : !validMarketPrice
@@ -86,7 +87,7 @@ export default function OptionsWorkspace({ active = true }) {
         <div className="op-filters"><label>Expiration<select value={expiration} disabled={!dates.length} onChange={e => { clearSelection(); setExpiration(e.target.value); }}>{!dates.length && <option value="">No expirations</option>}{dates.map(date => <option key={date} value={date}>{date} · {calculateDTE(date)} DTE</option>)}</select></label><div className="op-toggle">{['call', 'put'].map(value => <button key={value} aria-pressed={type === value} onClick={() => { clearSelection(); setType(value); }}>{value === 'call' ? 'CALLS' : 'PUTS'}</button>)}</div></div>
         <QueryStatus query={expirations} empty={!dates.length && 'No Options expirations are available for this symbol.'}>expiration dates</QueryStatus>
         {expirations.data?.hasMore && <p className="op-warning">The provider returned a partial expiration list.</p>}
-        {expiration && <OptionsChain query={chain} spot={underlyingQuote?.marketPrice} selected={contract} onSelect={c => { setSelectedContract(c); setExplored(false); setNotice(''); order.reset(); }} advanced={advanced} />}
+        {expiration && <OptionsChain query={chain} spot={underlyingQuote?.marketPrice} selectedContract={contract} onSelectContract={c => { setSelectedContract(c); setExplored(false); setNotice(''); order.reset(); }} advanced={advanced} />}
       </section>
     </div><aside className="op-aside">
       <section className="op-panel"><span className="op-eyebrow">Selected contract</span><h3>{contract ? `${asset.symbol} ${money(contract.strike)} ${type.toUpperCase()}` : 'Choose a strike'}</h3>{contract ? <><p className="op-note">{contract.symbol} · {contract.expiration} · {calculateDTE(contract.expiration)} DTE</p><div className="op-heading"><strong className="op-spot-price">{money(premium)}</strong><span className="op-tag">{getMoneyness(type, contract.strike, underlyingQuote?.marketPrice, chain.data?.contracts.map(c => c.strike))}</span></div><p className="op-note">Estimated premium / share · Bid {money(contract.bid)} · Ask {money(contract.ask)} · Last {money(contract.last)}</p><OptionsGreeks contract={contract} /><p className="op-note">Quote: {contract.quoteTimestamp ? new Date(contract.quoteTimestamp).toLocaleString() : 'Unavailable'}<br />Premium timestamp: {contract.timestamp ? new Date(contract.timestamp).toLocaleString() : 'Unavailable'}</p>{stale && <p className="op-warning">Stale or unavailable timestamp. Practice trading is disabled until fresh market data is available.</p>}{premium == null && <p className="op-warning">This contract has no usable quote or latest trade.</p>}</> : <p className="op-empty">Select a contract from the chain to see its data and plan a trade.</p>}</section>

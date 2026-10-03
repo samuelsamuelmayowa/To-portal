@@ -12,6 +12,13 @@ export const calculateContractCost = (premium, quantity = 1) => isNumber(premium
 export const calculateMaxLoss = calculateContractCost;
 export const calculatePositionMarketValue = calculateContractCost;
 export const calculateBreakeven = (type, strike, premium) => isNumber(premium) && isNumber(strike) ? strike + (type === 'call' ? premium : -premium) : null;
+export function canBuyOptionsOrder({ selectedContract, contract, premium, quantity, buyingPower, hasSession, accountLoaded, marketAvailable, pending }) {
+  const debit = calculateContractCost(premium, quantity);
+  return Boolean(selectedContract && contract && isNumber(premium) && premium > 0
+    && Number.isSafeInteger(quantity) && quantity > 0 && quantity <= 10000
+    && isNumber(buyingPower) && isNumber(debit) && debit <= buyingPower
+    && hasSession && accountLoaded && marketAvailable && !pending);
+}
 export const calculateRealizedPnl = (entry, exit, quantity) => isNumber(entry) && isNumber(exit) ? calculateContractCost(exit - entry, quantity) : null;
 export const calculateUnrealizedPnl = calculateRealizedPnl;
 export function calculateExpirationPayoff(type, strike, premium, price, quantity) {
