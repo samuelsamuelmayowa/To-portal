@@ -1,0 +1,1 @@
+i noticed something  ,maybe becos am on my ios , i notice the profile imeges are not showing, in the index side , hangout oimages are showing , but the react chat , and treadning people and people in sphere, dont not chnage any code , give me the reason why 

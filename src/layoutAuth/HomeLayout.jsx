@@ -10,6 +10,9 @@ function HomeLayout() {
     const location = useLocation()
     const { COURSES } = useContext(CartItemContext);
     const paths = COURSES.map((course) => `/courses/${course.courseName}`)
+    if (location.pathname.replace(/\/$/, "") === "/toskillab/lab") {
+        return <Outlet />;
+    }
     return (
         <>
             <div>

@@ -1,3 +1,5 @@
+import splunkLabTheme from "./splunkLab.theme.js";
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -6,7 +8,9 @@ export default {
   ],
   theme: {
     extend: {
+      ...splunkLabTheme,
       colors: {
+        ...splunkLabTheme.colors,
         darkMode: "class",
 
         PURPLE: "#c418ac",

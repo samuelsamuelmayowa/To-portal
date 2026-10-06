@@ -1,1163 +1,1621 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
-import { splunkLabApi } from "../services/splunkLabApi";
-import AdvancedPractice from "../components/splunk/AdvancedPractice";
-
-const CASES = [
-  {
-    id: "credential-storm",
-    code: "INC-1042",
-    title: "Credential Storm",
-    subtitle: "Brute-force attack followed by account compromise",
-    difficulty: "Intermediate",
-    duration: 35,
-    accent: "rose",
-    briefing:
-      "At 09:18 UTC, the identity team reported a spike in failed VPN logins. Determine the attacking source, affected user, and whether any login succeeded.",
-    index: "auth",
-    sourcetype: "vpn:auth",
-    fields: ["_time", "user", "src_ip", "action", "country", "device"],
-    events: [
-      { _time: "09:14:02", user: "d.adeleke", src_ip: "185.220.101.44", action: "failure", country: "NL", device: "unknown" },
-      { _time: "09:14:19", user: "d.adeleke", src_ip: "185.220.101.44", action: "failure", country: "NL", device: "unknown" },
-      { _time: "09:14:41", user: "d.adeleke", src_ip: "185.220.101.44", action: "failure", country: "NL", device: "unknown" },
-      { _time: "09:15:03", user: "d.adeleke", src_ip: "185.220.101.44", action: "failure", country: "NL", device: "unknown" },
-      { _time: "09:15:22", user: "d.adeleke", src_ip: "185.220.101.44", action: "failure", country: "NL", device: "unknown" },
-      { _time: "09:15:55", user: "d.adeleke", src_ip: "185.220.101.44", action: "success", country: "NL", device: "Chrome/Linux" },
-      { _time: "09:17:20", user: "m.okafor", src_ip: "102.89.33.18", action: "success", country: "NG", device: "Edge/Windows" },
-    ],
-    missions: [
-      {
-        id: "scope",
-        title: "Scope failed authentication",
-        instruction: "Search the authentication index for failed VPN events.",
-        points: 20,
-        required: ["index=auth", "action=failure"],
-        recommended: ["sourcetype=vpn:auth"],
-        result: [{ user: "d.adeleke", failures: 5, src_ip: "185.220.101.44" }],
-        hint: "Start with index=auth and filter action to failure.",
-        explanation: "Filtering the index and action early limits the events entering the pipeline.",
-      },
-      {
-        id: "aggregate",
-        title: "Identify targeted accounts",
-        instruction: "Count failures by user and source IP, then keep accounts with at least five failures.",
-        points: 30,
-        required: ["index=auth", "action=failure", "stats", "count", "by", "user", "src_ip", "where"],
-        anyOf: [[">=5", "> 4", ">4"]],
-        result: [{ user: "d.adeleke", src_ip: "185.220.101.44", failures: 5 }],
-        hint: "Use stats count AS failures BY user, src_ip, followed by where.",
-        explanation: "stats creates the grouped evidence; where applies the detection threshold after aggregation.",
-      },
-      {
-        id: "confirm",
-        title: "Confirm compromise",
-        instruction: "Show failure and success counts per user and source IP with conditional aggregation.",
-        points: 35,
-        required: ["index=auth", "stats", "count(eval", "action=", "failure", "success", "by", "user", "src_ip"],
-        result: [{ user: "d.adeleke", src_ip: "185.220.101.44", failures: 5, successes: 1, verdict: "Likely compromised" }],
-        hint: "Use count(eval(action=\"failure\")) and count(eval(action=\"success\")).",
-        explanation: "Conditional aggregation preserves both sides of the authentication sequence in one result row.",
-      },
-    ],
-    questions: [
-      { id: "actor", label: "Malicious source IP", answer: "185.220.101.44", placeholder: "e.g. 10.0.0.5" },
-      { id: "account", label: "Compromised account", answer: "d.adeleke", placeholder: "Username" },
-    ],
-    conclusion: "Five failures and one success from the same unfamiliar overseas IP strongly indicate credential compromise.",
-  },
-  {
-    id: "powershell",
-    code: "INC-1078",
-    title: "Encoded PowerShell",
-    subtitle: "Endpoint execution and command-line investigation",
-    difficulty: "Advanced",
-    duration: 45,
-    accent: "violet",
-    briefing:
-      "EDR detected PowerShell on a finance workstation shortly after a document was opened. Find the suspicious command, its parent process, and the affected host.",
-    index: "endpoint",
-    sourcetype: "sysmon:xml",
-    fields: ["_time", "host", "user", "Image", "ParentImage", "CommandLine", "EventCode"],
-    events: [
-      { _time: "11:02:11", host: "FIN-WS17", user: "a.bello", Image: "WINWORD.EXE", ParentImage: "explorer.exe", CommandLine: "WINWORD.EXE invoice.docm", EventCode: 1 },
-      { _time: "11:02:17", host: "FIN-WS17", user: "a.bello", Image: "powershell.exe", ParentImage: "WINWORD.EXE", CommandLine: "powershell -nop -w hidden -enc SQBFAFgA", EventCode: 1 },
-      { _time: "11:02:23", host: "FIN-WS17", user: "a.bello", Image: "rundll32.exe", ParentImage: "powershell.exe", CommandLine: "rundll32.exe C:\\ProgramData\\cache.dll,Start", EventCode: 1 },
-      { _time: "11:03:05", host: "HR-WS04", user: "k.obi", Image: "powershell.exe", ParentImage: "explorer.exe", CommandLine: "powershell Get-Printer", EventCode: 1 },
-    ],
-    missions: [
-      {
-        id: "encoded",
-        title: "Find encoded execution",
-        instruction: "Find process-creation events containing encoded PowerShell switches.",
-        points: 25,
-        required: ["index=endpoint", "eventcode=1", "powershell"],
-        anyOf: [["-enc", "encodedcommand", "*enc*"]],
-        result: [{ host: "FIN-WS17", user: "a.bello", Image: "powershell.exe", ParentImage: "WINWORD.EXE" }],
-        hint: "Search EventCode=1, powershell, and an encoded-command term such as *-enc*.",
-        explanation: "Process creation logs expose executable, parent, and command-line context.",
-      },
-      {
-        id: "extract",
-        title: "Extract the encoded payload",
-        instruction: "Use rex with a named group called encoded_payload to extract the value following -enc.",
-        points: 35,
-        required: ["index=endpoint", "rex", "?<encoded_payload>", "commandline", "-enc"],
-        result: [{ host: "FIN-WS17", encoded_payload: "SQBFAFgA", parent: "WINWORD.EXE" }],
-        hint: "Use | rex field=CommandLine \"-enc\\s+(?<encoded_payload>\\S+)\".",
-        explanation: "rex performs search-time extraction; a named capture group becomes a result field.",
-      },
-      {
-        id: "chain",
-        title: "Build the process chain",
-        instruction: "Create a chronological table containing time, host, user, parent, process, and command line.",
-        points: 25,
-        required: ["index=endpoint", "sort", "_time", "table", "host", "user", "parentimage", "image", "commandline"],
-        result: [
-          { _time: "11:02:11", parent: "explorer.exe", process: "WINWORD.EXE" },
-          { _time: "11:02:17", parent: "WINWORD.EXE", process: "powershell.exe" },
-          { _time: "11:02:23", parent: "powershell.exe", process: "rundll32.exe" },
-        ],
-        hint: "Filter to FIN-WS17, sort by _time, then use table with the requested fields.",
-        explanation: "A chronological process tree explains how the suspicious activity began and what executed next.",
-      },
-    ],
-    questions: [
-      { id: "host", label: "Affected host", answer: "FIN-WS17", placeholder: "Hostname" },
-      { id: "parent", label: "Suspicious parent process", answer: "WINWORD.EXE", placeholder: "Process name" },
-    ],
-    conclusion: "A macro-enabled Word document spawned hidden encoded PowerShell, which then launched rundll32 from ProgramData.",
-  },
-  {
-    id: "exfiltration",
-    code: "INC-1121",
-    title: "Midnight Exfiltration",
-    subtitle: "Proxy anomaly and outbound data investigation",
-    difficulty: "Expert",
-    duration: 50,
-    accent: "cyan",
-    briefing:
-      "Network monitoring shows an unusual outbound transfer after midnight. Identify the host, destination, and volume, then write a useful detection query.",
-    index: "proxy",
-    sourcetype: "web:proxy",
-    fields: ["_time", "src", "dest_domain", "bytes_out", "action", "user_agent"],
-    events: [
-      { _time: "00:41:02", src: "10.20.5.77", dest_domain: "sync-storage.cc", bytes_out: 188000000, action: "allowed", user_agent: "python-requests/2.31" },
-      { _time: "00:43:14", src: "10.20.5.77", dest_domain: "sync-storage.cc", bytes_out: 244000000, action: "allowed", user_agent: "python-requests/2.31" },
-      { _time: "00:47:51", src: "10.20.5.77", dest_domain: "sync-storage.cc", bytes_out: 221000000, action: "allowed", user_agent: "python-requests/2.31" },
-      { _time: "00:55:09", src: "10.20.8.14", dest_domain: "updates.microsoft.com", bytes_out: 8400000, action: "allowed", user_agent: "WindowsUpdate" },
-      { _time: "01:04:33", src: "10.20.5.77", dest_domain: "sync-storage.cc", bytes_out: 197000000, action: "allowed", user_agent: "python-requests/2.31" },
-    ],
-    missions: [
-      {
-        id: "volume",
-        title: "Measure outbound volume",
-        instruction: "Sum bytes sent by source and destination, convert the result to MB, and sort highest first.",
-        points: 30,
-        required: ["index=proxy", "stats", "sum(bytes_out)", "by", "src", "dest_domain", "eval"],
-        anyOf: [["/1024/1024", "/ 1024 / 1024", "/1048576"]],
-        result: [{ src: "10.20.5.77", dest_domain: "sync-storage.cc", outbound_mb: 810.62 }, { src: "10.20.8.14", dest_domain: "updates.microsoft.com", outbound_mb: 8.01 }],
-        hint: "Use stats sum(bytes_out) AS total_bytes BY src, dest_domain, then eval outbound_mb=round(total_bytes/1024/1024,2).",
-        explanation: "Aggregate raw bytes before converting units so the result reflects the complete transfer.",
-      },
-      {
-        id: "timeline",
-        title: "Plot the transfer timeline",
-        instruction: "Create a 5-minute timechart of outbound bytes by destination domain.",
-        points: 25,
-        required: ["index=proxy", "timechart", "span=5m", "sum(bytes_out)", "by", "dest_domain"],
-        result: [{ _time: "00:40", "sync-storage.cc": 432000000 }, { _time: "00:45", "sync-storage.cc": 221000000 }, { _time: "01:00", "sync-storage.cc": 197000000 }],
-        hint: "Use | timechart span=5m sum(bytes_out) BY dest_domain.",
-        explanation: "timechart returns time-series results and makes burst patterns visible.",
-      },
-      {
-        id: "detect",
-        title: "Author a reusable detection",
-        instruction: "Find sources sending over 500 MB in an hour and retain source, destination, and total bytes.",
-        points: 30,
-        required: ["index=proxy", "bin", "_time", "span=1h", "stats", "sum(bytes_out)", "by", "src", "dest_domain", "where"],
-        anyOf: [[">500", "> 500", ">524288000", "> 524288000"]],
-        result: [{ hour: "00:00", src: "10.20.5.77", dest_domain: "sync-storage.cc", outbound_mb: 810.62, severity: "high" }],
-        hint: "Bucket _time to one hour, aggregate bytes, convert to MB if needed, and apply the threshold with where.",
-        explanation: "Time bucketing plus aggregation creates a reusable threshold-based exfiltration analytic.",
-      },
-    ],
-    questions: [
-      { id: "source", label: "Suspected source host/IP", answer: "10.20.5.77", placeholder: "IP address" },
-      { id: "destination", label: "Suspicious destination", answer: "sync-storage.cc", placeholder: "Domain" },
-    ],
-    conclusion: "The host transferred roughly 811 MB to an uncommon domain with a scripting user-agent shortly after midnight.",
-  },
-];
-
-const LEARNING_GUIDES = {
-  scope: {
-    concept: "Filter events using fields",
-    plain: "An index is a collection of searchable data. A field filter keeps only events whose field has the value you request.",
-    syntax: "index=<data> field=<value>",
-    example: "index=shop status=cancelled",
-    starter: "index=auth sourcetype=vpn:auth action=_____",
-    checks: ["Choose the auth index", "Choose the vpn:auth log type", "Filter action to failed logins"],
-  },
-  aggregate: {
-    concept: "Count and group related events",
-    plain: "stats count calculates how many events belong to each group. BY user src_ip creates a separate row for each user and source address.",
-    syntax: "| stats count AS <name> BY <fields>",
-    example: "| stats count AS orders BY customer",
-    starter: "index=auth action=failure\n| stats count AS failures BY _____ _____\n| where failures>=_____",
-    checks: ["Keep failed events", "Group by user and source IP", "Keep counts of at least five"],
-  },
-  confirm: {
-    concept: "Count different conditions in one row",
-    plain: "count(eval(...)) counts only events that meet a condition. This lets you compare failures and successes for the same account.",
-    syntax: "count(eval(field=\"value\")) AS name",
-    example: "count(eval(status=\"error\")) AS errors",
-    starter: "index=auth\n| stats count(eval(action=\"_____\")) AS failures, count(eval(action=\"_____\")) AS successes BY user src_ip",
-    checks: ["Count failures", "Count successes", "Group both counts by user and source IP"],
-  },
-  encoded: {
-    concept: "Find suspicious command-line text",
-    plain: "Endpoint process events show which program ran and the command used to start it. Wildcards help find text inside a longer command line.",
-    syntax: "index=<data> Field=value *search-term*",
-    example: "index=endpoint EventCode=1 *script*",
-    starter: "index=endpoint EventCode=1 powershell *_____*",
-    checks: ["Search process-creation events", "Find PowerShell", "Look for its encoded-command switch"],
-  },
-  extract: {
-    concept: "Extract text into a new field",
-    plain: "rex applies a regular expression to a field. A named capture group creates a new searchable result field.",
-    syntax: "| rex field=Field \"pattern(?<new_field>...)\"",
-    example: "| rex field=message \"user=(?<username>\\S+)\"",
-    starter: "index=endpoint powershell *-enc*\n| rex field=CommandLine \"-enc\\s+(?<encoded_payload>_____)\"",
-    checks: ["Limit the search to encoded PowerShell", "Run rex on CommandLine", "Create encoded_payload"],
-  },
-  chain: {
-    concept: "Build a chronological process story",
-    plain: "sort arranges events, while table shows only the fields needed to explain what happened.",
-    syntax: "| sort _time | table field1 field2",
-    example: "| sort _time | table _time host process",
-    starter: "index=endpoint host=FIN-WS17\n| sort _time\n| table _time _____ _____ _____ _____ _____",
-    checks: ["Focus on the affected host", "Sort by time", "Display the requested process fields"],
-  },
-  volume: {
-    concept: "Measure and convert transferred data",
-    plain: "stats sum adds all outbound bytes. eval creates a new field and converts bytes into megabytes.",
-    syntax: "| stats sum(field) AS total BY fields | eval mb=round(total/1024/1024,2)",
-    example: "| stats sum(size) AS total BY host",
-    starter: "index=proxy\n| stats sum(bytes_out) AS total_bytes BY _____ _____\n| eval outbound_mb=round(total_bytes/1024/1024,2)\n| sort - outbound_mb",
-    checks: ["Sum outbound bytes", "Group by source and destination", "Convert bytes to MB"],
-  },
-  timeline: {
-    concept: "See activity over time",
-    plain: "timechart groups events into time buckets. span=5m creates one bucket every five minutes.",
-    syntax: "| timechart span=5m sum(field) BY category",
-    example: "| timechart span=5m count BY status",
-    starter: "index=proxy\n| timechart span=_____ sum(_____) BY _____",
-    checks: ["Use five-minute buckets", "Sum outbound bytes", "Split the chart by destination"],
-  },
-  detect: {
-    concept: "Turn an investigation into a detection",
-    plain: "bin creates hourly buckets, stats measures each bucket, and where keeps activity above the alert threshold.",
-    syntax: "| bin _time span=1h | stats ... | where total>threshold",
-    example: "| bin _time span=1h | stats count BY _time user",
-    starter: "index=proxy\n| bin _time span=1h\n| stats sum(bytes_out) AS total_bytes BY _time src dest_domain\n| where total_bytes>_____",
-    checks: ["Create hourly buckets", "Measure each source and destination", "Apply the 500 MB threshold"],
-  },
-};
-
-const COMMAND_REFERENCE = [
-  ["index=", "Chooses the dataset to search."],
-  ["sourcetype=", "Chooses the format or source of the events."],
-  ["field=value", "Keeps events with a matching field value."],
-  ["|", "Sends results into the next SPL command."],
-  ["stats", "Calculates counts, totals, averages, minimums, or maximums."],
-  ["BY", "Creates a separate result for each field value."],
-  ["where", "Filters calculated results."],
-  ["eval", "Creates or calculates a new field."],
-  ["rex", "Extracts text into a new field."],
-  ["timechart", "Groups calculated results into time buckets."],
-];
-
-const cx = (...values) => values.filter(Boolean).join(" ");
-const normalize = (value) => value.toLowerCase().replace(/[`']/g, '"').replace(/\s+/g, " ").trim();
-
-function gradeQuery(query, mission) {
-  const value = normalize(query);
-  const missing = mission.required.filter((token) => !value.includes(token.toLowerCase()));
-  const missingChoice = (mission.anyOf || []).filter((set) => !set.some((token) => value.includes(token.toLowerCase())));
-  const recommendedMissing = (mission.recommended || []).filter((token) => !value.includes(token.toLowerCase()));
-  if (!value) return { passed: false, score: 0, message: "Enter an SPL search before running it.", missing: mission.required.slice(0, 3) };
-  if (missing.length || missingChoice.length) {
-    const coverage = Math.max(0, mission.required.length - missing.length - missingChoice.length);
-    return {
-      passed: false,
-      score: Math.round((coverage / (mission.required.length + (mission.anyOf || []).length)) * mission.points * 0.45),
-      message: "The search ran, but it does not yet satisfy the mission objective.",
-      missing: [...missing.slice(0, 3), ...missingChoice.map((set) => `one of: ${set.join(" / ")}`).slice(0, 1)],
-    };
-  }
-  return {
-    passed: true,
-    score: mission.points,
-    message: recommendedMissing.length ? "Mission passed. Add the recommended filter for a more efficient search." : "Mission passed. The SPL returns the required evidence.",
-    missing: [],
-    optimization: recommendedMissing,
-  };
-}
-
-function Badge({ children, tone = "slate" }) {
-  const tones = {
-    slate: "border-slate-700 bg-slate-800/80 text-slate-300",
-    emerald: "border-emerald-500/30 bg-emerald-500/10 text-emerald-300",
-    amber: "border-amber-500/30 bg-amber-500/10 text-amber-300",
-    rose: "border-rose-500/30 bg-rose-500/10 text-rose-300",
-    violet: "border-violet-500/30 bg-violet-500/10 text-violet-300",
-    cyan: "border-cyan-500/30 bg-cyan-500/10 text-cyan-300",
-  };
-  return <span className={cx("inline-flex rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider", tones[tone])}>{children}</span>;
-}
-
-function Table({ rows }) {
-  if (!rows?.length) return <p className="p-5 text-sm text-slate-500">No matching events.</p>;
-  const columns = Object.keys(rows[0]);
-  return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full text-left font-mono text-xs">
-        <thead className="border-y border-slate-800 bg-slate-950/70 text-slate-500">
-          <tr>{columns.map((column) => <th key={column} className="whitespace-nowrap px-4 py-3 font-semibold">{column}</th>)}</tr>
-        </thead>
-        <tbody className="divide-y divide-slate-800/80">
-          {rows.map((row, rowIndex) => (
-            <tr key={rowIndex} className="hover:bg-slate-800/30">
-              {columns.map((column) => <td key={column} className="max-w-[320px] whitespace-nowrap px-4 py-3 text-slate-300">{String(row[column])}</td>)}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function ModeSelector({ mode, onChange }) {
-  return (
-    <div className="grid gap-3 rounded-2xl border border-slate-800 bg-slate-900/70 p-3 sm:grid-cols-2">
-      {[{
-        id: "learn", title: "Learn Mode", text: "Guided lessons, starter searches, command explanations, and locked progression.", badge: "Best for beginners",
-      }, {
-        id: "challenge", title: "SOC Challenge", text: "Minimal guidance, open mission navigation, and an assessment-style experience.", badge: "For experienced learners",
-      }].map((item) => (
-        <button key={item.id} type="button" onClick={() => onChange(item.id)} className={cx("rounded-xl border p-4 text-left transition", mode === item.id ? "border-violet-400 bg-violet-500/10" : "border-slate-800 bg-slate-950/50 hover:border-slate-600")}>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-violet-300">{item.badge}</span>
-          <b className="mt-1 block">{item.title}</b>
-          <span className="mt-1 block text-xs leading-5 text-slate-400">{item.text}</span>
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function LearningPanel({ mission, onUseStarter }) {
-  const guide = LEARNING_GUIDES[mission.id];
-  const [open, setOpen] = useState(true);
-  if (!guide) return null;
-  return (
-    <section className="overflow-hidden rounded-2xl border border-cyan-500/25 bg-cyan-500/5">
-      <button type="button" onClick={() => setOpen((value) => !value)} className="flex w-full items-center justify-between gap-4 p-5 text-left">
-        <div><p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300">Learn before you search</p><h3 className="mt-1 font-extrabold">{guide.concept}</h3></div>
-        <span className="text-cyan-300">{open ? "−" : "+"}</span>
-      </button>
-      {open && <div className="grid gap-4 border-t border-cyan-500/20 p-5 lg:grid-cols-2">
-        <div>
-          <p className="text-sm leading-6 text-slate-300">{guide.plain}</p>
-          <p className="mt-4 text-[10px] font-bold uppercase tracking-wider text-slate-500">Command pattern</p>
-          <code className="mt-2 block overflow-x-auto rounded-lg bg-slate-950 p-3 text-xs text-cyan-200">{guide.syntax}</code>
-          <p className="mt-3 text-[10px] font-bold uppercase tracking-wider text-slate-500">Unrelated example</p>
-          <code className="mt-2 block overflow-x-auto rounded-lg bg-slate-950 p-3 text-xs text-violet-200">{guide.example}</code>
-        </div>
-        <div>
-          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Your thinking checklist</p>
-          <ol className="mt-3 space-y-2">{guide.checks.map((step, index) => <li key={step} className="flex gap-3 text-sm text-slate-300"><span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-cyan-500/15 text-xs font-bold text-cyan-300">{index + 1}</span>{step}</li>)}</ol>
-          <button type="button" onClick={() => onUseStarter(guide.starter)} className="mt-5 rounded-lg border border-cyan-400/40 bg-cyan-500/10 px-4 py-2.5 text-xs font-bold text-cyan-200 hover:bg-cyan-500/20">Use starter search</button>
-          <p className="mt-2 text-[11px] text-slate-500">Replace every _____ blank before running the search.</p>
-        </div>
-      </div>}
-    </section>
-  );
-}
-
-function CommandReference() {
-  const [open, setOpen] = useState(false);
-  return (
-    <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
-      <button type="button" onClick={() => setOpen((value) => !value)} className="flex w-full items-center justify-between text-left"><div><h2 className="font-bold">SPL quick reference</h2><p className="mt-1 text-xs text-slate-500">Plain-language command help</p></div><span>{open ? "−" : "+"}</span></button>
-      {open && <dl className="mt-4 space-y-3 border-t border-slate-800 pt-4">{COMMAND_REFERENCE.map(([command, explanation]) => <div key={command}><dt className="font-mono text-xs font-bold text-cyan-300">{command}</dt><dd className="mt-1 text-xs leading-5 text-slate-400">{explanation}</dd></div>)}</dl>}
-    </section>
-  );
-}
-
-function CasePicker({ onSelect, history, mode, onModeChange, onAdvanced }) {
-  return (
-    <main className="min-h-screen bg-[#070b14] text-white">
-      <div className="mx-auto max-w-7xl px-5 pb-20 pt-8 sm:px-8">
-        <header className="flex flex-wrap items-center justify-between gap-4">
-          <Link to="/toskillab" className="flex items-center gap-3 font-bold"><span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-PURPLE to-violet-500">TO</span> Skill Lab</Link>
-          <Badge tone="emerald">Simulator online</Badge>
-        </header>
-        <section className="py-16 lg:py-24">
-          <div className="max-w-4xl">
-            <Badge tone="violet">Splunk SOC Workspace</Badge>
-            <h1 className="mt-6 text-4xl font-black leading-tight sm:text-6xl">Investigate real incidents.<br/><span className="bg-gradient-to-r from-violet-400 to-cyan-300 bg-clip-text text-transparent">Prove your SPL skills.</span></h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-400">Work through realistic security data, write searches in a simulated Splunk console, collect evidence, and submit a defensible analyst conclusion.</p>
-          </div>
-          <button onClick={onAdvanced} className="mt-8 rounded-2xl border border-cyan-400/40 bg-cyan-500/10 px-6 py-5 text-left hover:bg-cyan-500/20"><span className="block text-xs font-bold uppercase tracking-widest text-cyan-300">New · Advanced practice</span><strong className="mt-2 block text-xl">Start your next analyst shift →</strong><span className="mt-2 block text-sm text-slate-300">21 tasks · event replay · real search results · investigation reports</span></button>
-          <div className="mt-9 max-w-3xl"><ModeSelector mode={mode} onChange={onModeChange} /></div>
-          <div className="mt-12 grid gap-5 lg:grid-cols-3">
-            {CASES.map((item, index) => {
-              const completed = history[item.id];
-              return (
-                <motion.button key={item.id} type="button" onClick={() => onSelect(index)} whileHover={{ y: -6 }} className="group rounded-3xl border border-slate-800 bg-slate-900/70 p-6 text-left shadow-2xl shadow-black/20 transition hover:border-violet-500/50">
-                  <div className="flex items-center justify-between"><Badge tone={item.accent}>{item.difficulty}</Badge><span className="font-mono text-xs text-slate-600">{item.code}</span></div>
-                  <div className="my-8 grid h-14 w-14 place-items-center rounded-2xl border border-slate-700 bg-slate-950 text-2xl">{index === 0 ? "⌁" : index === 1 ? ">_" : "↗"}</div>
-                  <h2 className="text-xl font-extrabold">{item.title}</h2>
-                  <p className="mt-2 min-h-[48px] text-sm leading-6 text-slate-400">{item.subtitle}</p>
-                  <div className="mt-7 flex items-center justify-between border-t border-slate-800 pt-5 text-sm"><span className="text-slate-500">{item.duration} min · {item.missions.length} missions</span><span className="font-bold text-violet-300">{completed ? `${completed.score}% complete` : "Start case →"}</span></div>
-                </motion.button>
-              );
-            })}
-          </div>
-        </section>
-      </div>
-    </main>
-  );
-}
-
-function LabWorkspace({ caseData, onExit, onComplete, mode }) {
-  const [missionIndex, setMissionIndex] = useState(0);
-  const [query, setQuery] = useState(`index=${caseData.index} sourcetype=${caseData.sourcetype}`);
-  const [run, setRun] = useState(null);
-  const [completed, setCompleted] = useState({});
-  const [hints, setHints] = useState({});
-  const [findings, setFindings] = useState({});
-  const [tab, setTab] = useState("events");
-  const [elapsed, setElapsed] = useState(0);
-  const [submitted, setSubmitted] = useState(false);
-  const [attemptId, setAttemptId] = useState(null);
-  const [connection, setConnection] = useState("connecting");
-  const [running, setRunning] = useState(false);
-  const [apiMessage, setApiMessage] = useState("");
-  const mission = caseData.missions[missionIndex];
-  const learnMode = mode === "learn";
-
-  useEffect(() => {
-    let active = true;
-
-    const startAttempt = async () => {
-      setConnection("connecting");
-      setApiMessage("");
-
-      try {
-        const attempt = await splunkLabApi.start(caseData.id);
-        if (!active) return;
-        setAttemptId(attempt.attemptId);
-        setConnection("online");
-      } catch (error) {
-        if (!active) return;
-        setAttemptId(null);
-        setConnection("local");
-        setApiMessage(
-          error?.response?.data?.message ||
-            "The online simulator is unavailable. Local practice mode is active."
-        );
-      }
-    };
-
-    startAttempt();
-    return () => { active = false; };
-  }, [caseData.id]);
-
-  useEffect(() => {
-    const timer = window.setInterval(() => setElapsed((value) => value + 1), 1000);
-    return () => window.clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    const saved = localStorage.getItem(`toSplunkLab:${caseData.id}`);
-    if (!saved) return;
-    try {
-      const parsed = JSON.parse(saved);
-      setMissionIndex(parsed.missionIndex || 0);
-      setCompleted(parsed.completed || {});
-      setHints(parsed.hints || {});
-      setFindings(parsed.findings || {});
-    } catch { localStorage.removeItem(`toSplunkLab:${caseData.id}`); }
-  }, [caseData.id]);
-
-  useEffect(() => {
-    localStorage.setItem(`toSplunkLab:${caseData.id}`, JSON.stringify({ missionIndex, completed, hints, findings }));
-  }, [caseData.id, missionIndex, completed, hints, findings]);
-
-  const runLocalSearch = () => {
-    const grade = gradeQuery(query, mission);
-    const result = { ...grade, rows: grade.passed ? mission.result : [] };
-    setRun(result);
-    if (grade.passed) {
-      setCompleted((value) => ({
-        ...value,
-        [mission.id]: Math.max(value[mission.id] || 0, grade.score),
-      }));
-    }
-  };
-
-  const runSearch = async () => {
-    if (!query.trim() || running) return;
-    setRunning(true);
-    setTab("results");
-    setApiMessage("");
-
-    if (!attemptId || connection !== "online") {
-      runLocalSearch();
-      setRunning(false);
-      return;
-    }
-
-    try {
-      const result = await splunkLabApi.run(
-        attemptId,
-        mission.key || mission.id,
-        query
-      );
-
-      setRun({
-        ...result,
-        score: result.points || 0,
-        rows: result.rows || [],
-      });
-
-      if (result.passed) {
-        setCompleted((value) => ({
-          ...value,
-          [mission.id]: Math.max(
-            value[mission.id] || 0,
-            result.points || mission.points
-          ),
-        }));
-      }
-    } catch (error) {
-      const message =
-        error?.response?.data?.message ||
-        "The server could not run this search.";
-
-      setRun({
-        passed: false,
-        score: 0,
-        rows: [],
-        message,
-        command: error?.response?.data?.command,
-      });
-      setApiMessage(message);
-    } finally {
-      setRunning(false);
-    }
-  };
-
-  const revealHint = async () => {
-    const existing = Array.isArray(hints[mission.id])
-      ? hints[mission.id]
-      : hints[mission.id]
-        ? [hints[mission.id]]
-        : [];
-    if (existing.length >= 3) return;
-
-    if (attemptId && connection === "online") {
-      try {
-        const result = await splunkLabApi.hint(
-          attemptId,
-          mission.key || mission.id
-        );
-        setHints((value) => ({
-          ...value,
-          [mission.id]: [...existing, result.hint || mission.hint],
-        }));
-        return;
-      } catch (error) {
-        setApiMessage(
-          error?.response?.data?.message ||
-            "The online hint could not be loaded. Showing the local hint."
-        );
-      }
-    }
-
-    const guide = LEARNING_GUIDES[mission.id];
-    const localHints = [
-      guide?.plain,
-      `Command pattern: ${guide?.syntax || mission.hint}`,
-      mission.hint,
-    ].filter(Boolean);
-    setHints((value) => ({
-      ...value,
-      [mission.id]: [...existing, localHints[Math.min(existing.length, localHints.length - 1)]],
-    }));
-  };
-
-  const missionPoints = Object.values(completed).reduce((sum, value) => sum + value, 0);
-  const maxMissionPoints = caseData.missions.reduce((sum, item) => sum + item.points, 0);
-  const correctFindings = caseData.questions.filter((item) => normalize(findings[item.id] || "") === normalize(item.answer)).length;
-  const hintsUsed = Object.values(hints).reduce((total, value) => total + (Array.isArray(value) ? value.length : value ? 1 : 0), 0);
-  const canSubmit = Object.keys(completed).length === caseData.missions.length && caseData.questions.every((item) => findings[item.id]?.trim());
-  const score = Math.max(0, Math.round(((missionPoints + correctFindings * 15) / (maxMissionPoints + caseData.questions.length * 15)) * 100) - hintsUsed * 3);
-
-  const submit = async () => {
-    if (!canSubmit) return;
-
-    if (attemptId && connection === "online") {
-      try {
-        await splunkLabApi.submit(attemptId);
-      } catch (error) {
-        setApiMessage(
-          error?.response?.data?.message ||
-            "Your result was saved on this device, but the server copy could not be completed."
-        );
-      }
-    }
-
-    setSubmitted(true);
-    onComplete({ caseId: caseData.id, score, elapsed, completedAt: new Date().toISOString(), hintsUsed });
-  };
-
-  const clock = `${String(Math.floor(elapsed / 60)).padStart(2, "0")}:${String(elapsed % 60).padStart(2, "0")}`;
-
-  if (submitted) {
-    const strong = score >= 80;
-    return (
-      <main className="min-h-screen bg-[#070b14] px-5 py-10 text-white">
-        <div className="mx-auto max-w-5xl">
-          <div className="rounded-[32px] border border-slate-800 bg-slate-900/80 p-7 shadow-2xl sm:p-10">
-            <div className="flex flex-wrap items-start justify-between gap-6"><div><Badge tone={strong ? "emerald" : score >= 60 ? "amber" : "rose"}>Case completed</Badge><h1 className="mt-4 text-3xl font-black">Investigation report</h1><p className="mt-2 text-slate-400">{caseData.code} · {caseData.title}</p></div><div className="grid h-28 w-28 place-items-center rounded-full border-8 border-violet-500/30 bg-violet-500/10"><div className="text-center"><b className="text-3xl">{score}%</b><span className="block text-[10px] uppercase tracking-widest text-slate-400">score</span></div></div></div>
-            <div className="mt-9 grid gap-4 sm:grid-cols-3">{[["SPL missions", `${Object.keys(completed).length}/${caseData.missions.length}`], ["Evidence accuracy", `${correctFindings}/${caseData.questions.length}`], ["Investigation time", clock]].map(([label, value]) => <div key={label} className="rounded-2xl border border-slate-800 bg-slate-950/60 p-5"><p className="text-xs uppercase tracking-wider text-slate-500">{label}</p><p className="mt-2 text-2xl font-bold">{value}</p></div>)}</div>
-            <section className="mt-8 rounded-2xl border border-slate-800 bg-slate-950/60 p-6"><h2 className="font-bold text-violet-300">Analyst conclusion</h2><p className="mt-3 leading-7 text-slate-300">{caseData.conclusion}</p></section>
-            <section className="mt-5 rounded-2xl border border-slate-800 p-6"><h2 className="font-bold">Hiring signal</h2><p className="mt-2 text-slate-400">{score >= 85 ? "Strong evidence of practical Splunk investigation ability. Ready for an advanced technical interview." : score >= 70 ? "Good investigation foundation. Review the missed evidence before a technical interview." : "Complete the case again without hints and strengthen SPL transformation commands."}</p></section>
-            <div className="mt-8 flex flex-wrap gap-3"><button onClick={onExit} className="rounded-xl bg-violet-600 px-6 py-3 font-bold hover:bg-violet-500">Choose another case</button><button onClick={() => window.location.reload()} className="rounded-xl border border-slate-700 px-6 py-3 font-bold hover:bg-slate-800">Retry case</button></div>
-          </div>
-        </div>
-      </main>
-    );
-  }
-
-  return (
-    <main className="min-h-screen bg-[#070b14] text-white">
-      <header className="border-b border-slate-800 bg-slate-950/90 px-4 py-3 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-4"><button onClick={onExit} className="text-sm font-bold text-slate-400 hover:text-white">← Case library</button><div className="hidden text-center sm:block"><p className="text-sm font-bold">{caseData.code} · {caseData.title}</p><p className="text-[11px] text-slate-500">{learnMode ? "Guided learning environment" : "Professional challenge environment"}</p></div><div className="flex items-center gap-3"><Badge tone={learnMode ? "cyan" : "violet"}>{learnMode ? "Learn" : "Challenge"}</Badge><span className="font-mono text-sm text-slate-300">{clock}</span></div></div>
-      </header>
-
-      <div className="mx-auto grid max-w-[1500px] gap-4 p-4 xl:grid-cols-[300px_minmax(0,1fr)_320px]">
-        <aside className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4 xl:min-h-[calc(100vh-90px)]">
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Investigation</p>
-          <h1 className="mt-3 text-xl font-black">{caseData.title}</h1><p className="mt-2 text-sm leading-6 text-slate-400">{caseData.briefing}</p>
-          <div className="my-5 h-px bg-slate-800" />
-          <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Missions</p>
-          <div className="space-y-2">{caseData.missions.map((item, index) => {
-            const locked = learnMode && index > 0 && !completed[caseData.missions[index - 1].id];
-            return <button key={item.id} disabled={locked} onClick={() => { setMissionIndex(index); setRun(null); setTab("events"); }} className={cx("flex w-full gap-3 rounded-xl border p-3 text-left transition", index === missionIndex ? "border-violet-500/50 bg-violet-500/10" : "border-transparent hover:bg-slate-800/60", locked && "cursor-not-allowed opacity-45")}><span className={cx("grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-bold", completed[item.id] ? "bg-emerald-500 text-slate-950" : index === missionIndex ? "bg-violet-500" : "bg-slate-800 text-slate-500")}>{completed[item.id] ? "✓" : locked ? "🔒" : index + 1}</span><span><b className="block text-sm">{item.title}</b><small className="text-slate-500">{locked ? "Complete the previous mission" : `${item.points} points`}</small></span></button>;
-          })}</div>
-          <div className="mt-6 rounded-xl bg-slate-950/70 p-4"><div className="flex justify-between text-xs"><span className="text-slate-500">Case progress</span><b>{Object.keys(completed).length}/{caseData.missions.length}</b></div><div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-800"><div className="h-full bg-gradient-to-r from-violet-500 to-cyan-400 transition-all" style={{ width: `${(Object.keys(completed).length / caseData.missions.length) * 100}%` }} /></div></div>
-        </aside>
-
-        <section className="min-w-0 space-y-4">
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
-            <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-wider text-violet-300">Mission {missionIndex + 1}</p><h2 className="mt-1 text-lg font-bold">{mission.title}</h2></div><Badge tone={completed[mission.id] ? "emerald" : "amber"}>{completed[mission.id] ? "Passed" : `${mission.points} pts`}</Badge></div>
-            <p className="mt-3 text-sm leading-6 text-slate-400">{mission.instruction}</p>
-          </div>
-
-          {learnMode && <LearningPanel mission={mission} onUseStarter={setQuery} />}
-
-          <div className="overflow-hidden rounded-2xl border border-slate-800 bg-[#0b101b] shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 bg-slate-900 px-4 py-3"><div className="flex gap-1.5"><i className="h-3 w-3 rounded-full bg-rose-500"/><i className="h-3 w-3 rounded-full bg-amber-400"/><i className="h-3 w-3 rounded-full bg-emerald-500"/></div><span className="font-mono text-xs text-slate-500">search & reporting</span><span className={cx("text-xs", connection === "online" ? "text-emerald-400" : connection === "connecting" ? "text-cyan-400" : "text-amber-400")}>{connection === "online" ? "● backend connected" : connection === "connecting" ? "● connecting" : "● local practice"}</span></div>
-            <div className="p-4">
-              <label className="mb-2 block text-[11px] font-bold uppercase tracking-wider text-slate-500">SPL search</label>
-              <textarea value={query} onChange={(event) => setQuery(event.target.value)} spellCheck={false} className="h-32 w-full resize-none rounded-xl border border-slate-700 bg-slate-950 p-4 font-mono text-sm leading-6 text-cyan-200 outline-none transition focus:border-violet-500" placeholder="index=... | stats ..." />
-              {apiMessage && <p className="mt-2 text-xs text-amber-300">{apiMessage}</p>}
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-3"><div className="text-xs text-slate-500">Time range: <b className="text-slate-300">Last 24 hours</b></div><button disabled={running || !query.trim()} onClick={runSearch} className="rounded-lg bg-emerald-500 px-6 py-2.5 text-sm font-black text-slate-950 hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50">{running ? "Running…" : "▶ Run search"}</button></div>
-            </div>
-            <div className="flex gap-1 border-y border-slate-800 px-4">{["events", "results"].map((item) => <button key={item} onClick={() => setTab(item)} className={cx("border-b-2 px-4 py-3 text-xs font-bold capitalize", tab === item ? "border-violet-400 text-white" : "border-transparent text-slate-500")}>{item} {item === "events" ? `(${caseData.events.length})` : run?.rows ? `(${run.rows.length})` : ""}</button>)}</div>
-            <div className="min-h-[250px]">
-              {tab === "events" ? <Table rows={caseData.events} /> : run ? <><div className={cx("m-4 rounded-xl border p-4 text-sm", run.passed ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-200" : "border-amber-500/30 bg-amber-500/10 text-amber-100")}><b>{run.message}</b>{run.missing?.length > 0 && <p className="mt-2 text-xs opacity-80">Still needed: {run.missing.join(", ")}</p>}{run.optimization?.length > 0 && <p className="mt-2 text-xs opacity-80">Optimization: add {run.optimization.join(", ")}</p>}</div><Table rows={run.rows} /></> : <p className="p-8 text-center text-sm text-slate-500">Run your SPL to view mission results.</p>}
-            </div>
-          </div>
-
-          <div className="flex justify-between gap-3"><button disabled={missionIndex === 0} onClick={() => { setMissionIndex((v) => v - 1); setRun(null); }} className="rounded-xl border border-slate-700 px-5 py-3 text-sm font-bold disabled:opacity-30">Previous</button><button disabled={!completed[mission.id] || missionIndex === caseData.missions.length - 1} onClick={() => { setMissionIndex((v) => v + 1); setRun(null); setTab("events"); }} className="rounded-xl bg-violet-600 px-5 py-3 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-30">Next mission →</button></div>
-        </section>
-
-        <aside className="space-y-4">
-          {learnMode && <section className="rounded-2xl border border-violet-500/20 bg-violet-500/5 p-5"><p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-300">How to use this lab</p><ol className="mt-3 space-y-2 text-xs leading-5 text-slate-300"><li>1. Read the learning card.</li><li>2. Inspect the raw events and fields.</li><li>3. Complete the starter search blanks.</li><li>4. Run the search and study the results.</li><li>5. Record evidence in the notebook.</li></ol></section>}
-          <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5"><div className="flex items-center justify-between"><h2 className="font-bold">Data source</h2><Badge>{caseData.events.length} events</Badge></div><dl className="mt-4 space-y-3 text-xs"><div className="flex justify-between"><dt className="text-slate-500">index</dt><dd className="font-mono text-cyan-300">{caseData.index}</dd></div><div className="flex justify-between"><dt className="text-slate-500">sourcetype</dt><dd className="font-mono text-cyan-300">{caseData.sourcetype}</dd></div></dl><div className="mt-4 flex flex-wrap gap-1.5">{caseData.fields.map((field) => <span key={field} className="rounded bg-slate-800 px-2 py-1 font-mono text-[10px] text-slate-400">{field}</span>)}</div></section>
-          {learnMode && <CommandReference />}
-          <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5"><div className="flex items-center justify-between"><h2 className="font-bold">Analyst notebook</h2><span className="text-xs text-slate-500">Evidence</span></div><div className="mt-4 space-y-4">{caseData.questions.map((item) => <label key={item.id} className="block text-xs text-slate-400">{item.label}<input value={findings[item.id] || ""} onChange={(event) => setFindings((value) => ({ ...value, [item.id]: event.target.value }))} placeholder={item.placeholder} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 font-mono text-xs text-white outline-none focus:border-violet-500" /></label>)}</div></section>
-          <section className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-5"><div className="flex items-center justify-between"><h2 className="font-bold text-amber-200">Progressive hints</h2><span className="text-xs text-amber-400">−3 pts each</span></div>{hints[mission.id] && <ol className="mt-3 space-y-2">{(Array.isArray(hints[mission.id]) ? hints[mission.id] : [hints[mission.id]]).map((hint, index) => <li key={`${hint}-${index}`} className="rounded-lg bg-slate-950/40 p-3 text-sm leading-6 text-amber-100/80"><b className="mr-2 text-amber-300">Hint {index + 1}:</b>{hint}</li>)}</ol>}<button onClick={revealHint} disabled={(Array.isArray(hints[mission.id]) ? hints[mission.id].length : hints[mission.id] ? 1 : 0) >= 3} className="mt-3 text-sm font-bold text-amber-300 hover:text-amber-200 disabled:cursor-not-allowed disabled:opacity-40">{hints[mission.id] ? "Reveal next hint" : "Reveal first hint"}</button></section>
-          <button disabled={!canSubmit} onClick={submit} className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-4 font-black shadow-lg shadow-violet-950/40 disabled:cursor-not-allowed disabled:grayscale disabled:opacity-40">Submit investigation</button>
-          {!canSubmit && <p className="text-center text-xs leading-5 text-slate-500">Complete every mission and fill in the evidence notebook to submit.</p>}
-        </aside>
-      </div>
-    </main>
-  );
-}
-
+import { useEffect, useRef, useState } from "react";
+import logo from "../assets/images/logo2.png";
+import "./SplunkLab.css";
+const roles = {"analyst": "Splunk Analyst", "soc": "SOC Analyst", "engineer": "Splunk Engineer"};
+const levels = {"entry": "Entry Level (0–2 Years)", "mid": "Mid-Level (2–5 Years)", "senior": "Senior Level (5+ Years)"};
+// The supplied page is a front-end simulation preview; its scorecard and logs are sample data.
 export default function SplunkLab() {
-  const [advanced, setAdvanced] = useState(false);
-  const [selected, setSelected] = useState(null);
-  const [mode, setMode] = useState(() => localStorage.getItem("toSplunkLabMode") || "learn");
-  const [history, setHistory] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("toSplunkLabHistory") || "{}"); } catch { return {}; }
-  });
-
-  const changeMode = (nextMode) => {
-    setMode(nextMode);
-    localStorage.setItem("toSplunkLabMode", nextMode);
-  };
-
-  const complete = (result) => {
-    setHistory((value) => {
-      const next = { ...value, [result.caseId]: result };
-      localStorage.setItem("toSplunkLabHistory", JSON.stringify(next));
-      return next;
-    });
-  };
-
-  if (advanced) return <AdvancedPractice onExit={() => setAdvanced(false)} />;
-
+  const [selectedRole, setSelectedRole] = useState("analyst");
+  const [selectedLevel, setSelectedLevel] = useState("entry");
+  const [selectedAnswer, setSelectedAnswer] = useState(1);
+  const [query, setQuery] = useState('index=security_auth sourcetype="cisco:vpn" | stats count by src_ip, user, action | sort - count');
+  const [answer, setAnswer] = useState("198.51.100.42");
+  const [searching, setSearching] = useState(false);
+  const [labFeedback, setLabFeedback] = useState("");
+  const searchTimeout = useRef(null);
+  useEffect(() => () => window.clearTimeout(searchTimeout.current), []);
+  function launch() {
+    document.getElementById("simulator")?.scrollIntoView({ behavior: "smooth" });
+  }
+  function runSearch() {
+    if (!query.trim() || searching) return;
+    setSearching(true);
+    searchTimeout.current = window.setTimeout(() => setSearching(false), 500);
+  }
   return (
-    <AnimatePresence mode="wait">
-      {selected === null ? <motion.div key="picker" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><CasePicker onSelect={setSelected} history={history} mode={mode} onModeChange={changeMode} onAdvanced={() => setAdvanced(true)} /></motion.div> : <motion.div key={`${CASES[selected].id}-${mode}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><LabWorkspace caseData={CASES[selected]} onExit={() => setSelected(null)} onComplete={complete} mode={mode} /></motion.div>}
-    </AnimatePresence>
+    <div className="splunk-lab bg-lab-bg-canvas font-lab-body-md text-lab-on-surface antialiased">
+   
+    <main className="w-full pt-16 bg-lab-bg-canvas min-h-screen">
+      <p className="px-4 lg:px-8 py-2 bg-lab-bg-surface text-lab-text-secondary text-lab-body-sm border-b border-slate-800">
+        Simulation preview: questions, search results, scores, and attempt history are sample data.
+      </p>
+      <div className="flex flex-col w-full text-lab-on-surface">
+        <section className="relative w-full px-4 lg:px-8 py-lab-space-xl lg:py-lab-space-2xl overflow-hidden bg-lab-bg-surface-elevated/40">
+          <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{"backgroundImage": "radial-gradient(#38BDF8 1px, transparent 1px)", "backgroundSize": "28px 28px"}}>
+          </div>
+          <div className="absolute -top-32 -left-20 w-96 h-96 bg-lab-primary-container/20 rounded-lab-full blur-3xl pointer-events-none">
+          </div>
+          <div className="absolute top-1/2 -right-32 w-80 h-80 bg-lab-telemetry-cyan/10 rounded-lab-full blur-3xl pointer-events-none">
+          </div>
+          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-lab-space-xl items-center relative z-10">
+            <div className="lg:col-span-7 flex flex-col items-start">
+              <div className="flex flex-wrap items-center gap-lab-space-xs mb-lab-space-base">
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-lab-full bg-lab-status-success/10 border border-lab-status-success/25 shadow-sm">
+                  <span className="w-2 h-2 rounded-lab-full bg-lab-status-success animate-ping">
+                  </span>
+                  <span className="font-lab-label-caps text-lab-label-caps text-lab-status-success tracking-wider uppercase">
+                    {"T.O. SKILL LAB // VERIFIED EVALUATION"}
+                  </span>
+                </div>
+                <span className="text-lab-text-muted font-lab-label-caps text-lab-label-caps tracking-widest hidden sm:inline-block">
+                  {"ENV: SPLUNK CORE v9.2.1"}
+                </span>
+              </div>
+              <h1 className="font-lab-display-hero text-lab-display-hero-mobile md:text-lab-headline-xl lg:text-lab-display-hero text-lab-text-primary tracking-tight font-extrabold max-w-2xl leading-none">
+                {"Practice the interview. "}
+                <span className="bg-gradient-to-r from-lab-telemetry-cyan via-lab-primary to-lab-accent-royal-indigo bg-clip-text text-transparent">
+                  {"Prove the skill."}
+                </span>
+                {" Earn the offer."}
+              </h1>
+              <p className="mt-lab-space-base font-lab-body-lg text-lab-body-lg text-lab-text-secondary max-w-xl">
+                {" Prepare for real-world Splunk and SOC interviews through timed technical questions and live hands-on log triage labs calibrated to enterprise hiring pipelines. "}
+              </p>
+              <div className="mt-lab-space-xl flex flex-wrap items-center gap-lab-space-base w-full sm:w-auto">
+                <a className="w-full sm:w-auto px-lab-space-lg py-3.5 rounded-lab-lg bg-gradient-to-r from-lab-primary-container via-lab-accent-electric-blue to-lab-telemetry-teal text-lab-text-primary font-lab-headline-sm text-lab-headline-sm font-semibold flex items-center justify-center gap-lab-space-sm shadow-xl shadow-lab-accent-electric-blue/20 hover:brightness-110 active:scale-[0.98] transition-all" href="#interview-setup">
+                  <span>
+                    {"Start Interview Simulation"}
+                  </span>
+                  <span className="material-symbols-outlined text-[20px]">
+                    {"arrow_forward"}
+                  </span>
+                </a>
+                <a className="w-full sm:w-auto px-lab-space-lg py-3.5 rounded-lab-lg bg-lab-bg-surface border border-slate-800 text-lab-text-primary font-lab-headline-sm text-lab-headline-sm hover:border-lab-telemetry-cyan/50 hover:bg-lab-bg-surface-hover transition-all flex items-center justify-center gap-lab-space-xs" href="#role-tracks">
+                  <span>
+                    {"Explore Roles"}
+                  </span>
+                  <span className="material-symbols-outlined text-lab-text-muted text-[18px]">
+                    {"expand_more"}
+                  </span>
+                </a>
+              </div>
+              <div className="mt-lab-space-xl pt-lab-space-base border-t border-slate-800/80 w-full grid grid-cols-2 sm:grid-cols-4 gap-lab-space-sm">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-lab-telemetry-cyan text-[18px]">
+                    {"timer"}
+                  </span>
+                  <span className="font-lab-code-block text-lab-code-block text-lab-text-secondary">
+                    {"Timed Technical"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-lab-telemetry-teal text-[18px]">
+                    {"terminal"}
+                  </span>
+                  <span className="font-lab-code-block text-lab-code-block text-lab-text-secondary">
+                    {"Hands-on Labs"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-lab-status-warning text-[18px]">
+                    {"bolt"}
+                  </span>
+                  <span className="font-lab-code-block text-lab-code-block text-lab-text-secondary">
+                    {"Live Telemetry"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-lab-primary text-[18px]">
+                    {"verified"}
+                  </span>
+                  <span className="font-lab-code-block text-lab-code-block text-lab-text-secondary">
+                    {"SOC Calibration"}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="lg:col-span-5 relative">
+              <div className="relative rounded-lab-xl bg-lab-bg-surface-elevated border border-lab-telemetry-cyan/30 shadow-2xl p-lab-space-base overflow-hidden">
+                <div className="absolute top-0 right-0 px-3 py-1 bg-lab-telemetry-cyan/15 rounded-bl-lab-lg border-l border-b border-lab-telemetry-cyan/30">
+                  <span className="font-lab-label-caps text-lab-label-caps text-lab-telemetry-cyan">
+                    {"CANDIDATE SESSION // LIVE"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-lab-space-sm mb-lab-space-base">
+                  <img className="h-6 w-auto object-contain" src={logo} alt="T.O. Analytics" />
+                  <div className="h-4 w-px bg-slate-800">
+                  </div>
+                  <span className="font-lab-label-caps text-lab-label-caps text-lab-text-secondary tracking-widest">
+                    {"EVALUATION COCKPIT"}
+                  </span>
+                </div>
+                <div className="space-y-lab-space-sm bg-lab-bg-canvas/90 p-lab-space-base rounded-lab-lg border border-slate-800/90 font-lab-code-block text-lab-code-block">
+                  <div className="flex justify-between items-center py-1 border-b border-slate-800/60">
+                    <span className="text-lab-text-muted">
+                      {"ACTIVE ROLE:"}
+                    </span>
+                    <span className="text-lab-telemetry-cyan font-semibold">
+{roles[selectedRole]}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-1 border-b border-slate-800/60">
+                    <span className="text-lab-text-muted">
+                      {"DIFFICULTY LEVEL:"}
+                    </span>
+                    <span className="text-lab-status-success font-medium">
+{levels[selectedLevel]}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-1 border-b border-slate-800/60">
+                    <span className="text-lab-text-muted">
+                      {"INTERVIEW DEPTH:"}
+                    </span>
+                    <span className="text-lab-text-primary">
+                      {"10 Questions (75s/per)"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-1 border-b border-slate-800/60">
+                    <span className="text-lab-text-muted">
+                      {"PRACTICAL LAB:"}
+                    </span>
+                    <span className="text-lab-telemetry-teal">
+                      {"2 Investigation Scenarios"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-1">
+                    <span className="text-lab-text-muted">
+                      {"READINESS BENCHMARK:"}
+                    </span>
+                    <span className="text-lab-status-success flex items-center gap-1 font-semibold">
+                      {" 86% [Strong Hire Indicator] "}
+                      <span className="material-symbols-outlined text-[14px]">
+                        {"trending_up"}
+                      </span>
+                    </span>
+                  </div>
+                </div>
+                <div className="mt-lab-space-base p-lab-space-sm rounded-lab-DEFAULT bg-lab-primary-container/10 border border-lab-primary-container/20 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-lab-full bg-lab-telemetry-cyan animate-pulse">
+                    </span>
+                    <span className="font-lab-body-sm text-lab-body-sm text-lab-text-secondary">
+                      {"Diagnostic Engine: "}
+                      <strong className="text-lab-text-primary">
+                        {"ARMED"}
+                      </strong>
+                    </span>
+                  </div>
+                  <span className="font-lab-code-block text-lab-code-block text-lab-text-muted">
+                    {"LATENCY: 12ms"}
+                  </span>
+                </div>
+                <button className="mt-lab-space-base w-full py-3 rounded-lab-lg bg-lab-primary-container hover:bg-lab-accent-electric-blue text-lab-text-primary font-lab-headline-sm text-lab-headline-sm font-semibold transition-all flex items-center justify-center gap-2 shadow-lg shadow-lab-primary-container/25" onClick={launch} id="quickLaunchBtn" type="button">
+                  <span className="material-symbols-outlined text-[20px]">
+                    {"play_circle"}
+                  </span>
+                  <span>
+                    {"Launch Evaluation Matrix"}
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section className="w-full px-4 lg:px-8 py-lab-space-xl bg-lab-bg-surface border-y border-slate-800/60">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-lab-space-xl gap-lab-space-sm">
+              <div>
+                <span className="font-lab-label-caps text-lab-label-caps text-lab-telemetry-cyan uppercase tracking-widest">
+                  {"EVALUATION PROTOCOL"}
+                </span>
+                <h2 className="font-lab-headline-lg text-lab-headline-lg text-lab-text-primary mt-1 font-bold">
+                  {"How the Simulation Works"}
+                </h2>
+              </div>
+              <p className="font-lab-body-sm text-lab-body-sm text-lab-text-muted max-w-md">
+                {"Every candidate path mirrors enterprise technical screening procedures used by Fortune 500 SOC teams."}
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-lab-space-base relative">
+              <div className="p-lab-space-base rounded-lab-xl bg-lab-bg-surface-elevated border border-slate-800 hover:border-lab-telemetry-cyan/40 transition-all flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-lab-space-base">
+                    <span className="font-lab-code-block text-lab-label-caps text-lab-telemetry-cyan px-2 py-0.5 rounded-lab-DEFAULT bg-lab-telemetry-cyan/10">
+                      {"STAGE 01"}
+                    </span>
+                    <span className="material-symbols-outlined text-lab-text-muted text-[22px]">
+                      {"tune"}
+                    </span>
+                  </div>
+                  <h3 className="font-lab-headline-sm text-lab-headline-sm font-semibold text-lab-text-primary mb-1">
+                    {"Choose Track"}
+                  </h3>
+                  <p className="font-lab-body-sm text-lab-body-sm text-lab-text-secondary">
+                    {"Select your target role and enterprise seniority level to tailor interview rigor."}
+                  </p>
+                </div>
+                <div className="mt-lab-space-base pt-lab-space-sm border-t border-slate-800/70 text-lab-text-muted font-lab-code-block text-lab-code-block">
+                  {" Splunk / SOC / Platform "}
+                </div>
+              </div>
+              <div className="p-lab-space-base rounded-lab-xl bg-lab-bg-surface-elevated border border-slate-800 hover:border-lab-telemetry-cyan/40 transition-all flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-lab-space-base">
+                    <span className="font-lab-code-block text-lab-label-caps text-lab-primary px-2 py-0.5 rounded-lab-DEFAULT bg-lab-primary/10">
+                      {"STAGE 02"}
+                    </span>
+                    <span className="material-symbols-outlined text-lab-text-muted text-[22px]">
+                      {"timer"}
+                    </span>
+                  </div>
+                  <h3 className="font-lab-headline-sm text-lab-headline-sm font-semibold text-lab-text-primary mb-1">
+                    {"Technical Screening"}
+                  </h3>
+                  <p className="font-lab-body-sm text-lab-body-sm text-lab-text-secondary">
+                    {"Answer rapid-fire scenario questions under realistic countdown constraints."}
+                  </p>
+                </div>
+                <div className="mt-lab-space-base pt-lab-space-sm border-t border-slate-800/70 text-lab-text-muted font-lab-code-block text-lab-code-block">
+                  {" 10 Scenarios // 75s Window "}
+                </div>
+              </div>
+              <div className="p-lab-space-base rounded-lab-xl bg-lab-bg-surface-elevated border border-slate-800 hover:border-lab-telemetry-cyan/40 transition-all flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-lab-space-base">
+                    <span className="font-lab-code-block text-lab-label-caps text-lab-telemetry-teal px-2 py-0.5 rounded-lab-DEFAULT bg-lab-telemetry-teal/10">
+                      {"STAGE 03"}
+                    </span>
+                    <span className="material-symbols-outlined text-lab-text-muted text-[22px]">
+                      {"terminal"}
+                    </span>
+                  </div>
+                  <h3 className="font-lab-headline-sm text-lab-headline-sm font-semibold text-lab-text-primary mb-1">
+                    {"Live Hands-on Lab"}
+                  </h3>
+                  <p className="font-lab-body-sm text-lab-body-sm text-lab-text-secondary">
+                    {"Execute actual SPL commands to isolate incidents, pivot on IOCs, and neutralize threats."}
+                  </p>
+                </div>
+                <div className="mt-lab-space-base pt-lab-space-sm border-t border-slate-800/70 text-lab-text-muted font-lab-code-block text-lab-code-block">
+                  {" Live SIEM Sandboxed Data "}
+                </div>
+              </div>
+              <div className="p-lab-space-base rounded-lab-xl bg-lab-bg-surface-elevated border border-lab-status-success/30 hover:border-lab-status-success/60 transition-all flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-lab-space-base">
+                    <span className="font-lab-code-block text-lab-label-caps text-lab-status-success px-2 py-0.5 rounded-lab-DEFAULT bg-lab-status-success/10">
+                      {"STAGE 04"}
+                    </span>
+                    <span className="material-symbols-outlined text-lab-status-success text-[22px]">
+                      {"verified_user"}
+                    </span>
+                  </div>
+                  <h3 className="font-lab-headline-sm text-lab-headline-sm font-semibold text-lab-text-primary mb-1">
+                    {"Verified Assessment"}
+                  </h3>
+                  <p className="font-lab-body-sm text-lab-body-sm text-lab-text-secondary">
+                    {"Receive competency scoring, an interview debrief, and your virtual hiring credential."}
+                  </p>
+                </div>
+                <div className="mt-lab-space-base pt-lab-space-sm border-t border-slate-800/70 text-lab-text-muted font-lab-code-block text-lab-code-block">
+                  {" Offer Letter + Talent Audit "}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section className="w-full px-4 lg:px-8 py-lab-space-2xl bg-lab-bg-canvas" id="role-tracks">
+          <div className="max-w-7xl mx-auto">
+            <div className="mb-lab-space-xl">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="w-2 h-2 bg-lab-telemetry-cyan rounded-lab-full">
+                </span>
+                <span className="font-lab-label-caps text-lab-label-caps text-lab-telemetry-cyan tracking-wider">
+                  {"TRACK SELECTION MATRIX"}
+                </span>
+              </div>
+              <h2 className="font-lab-headline-xl text-lab-headline-lg lg:text-lab-headline-xl font-bold text-lab-text-primary">
+                {"Choose Your Interview Track"}
+              </h2>
+              <p className="font-lab-body-lg text-lab-body-lg text-lab-text-secondary max-w-3xl mt-1">
+                {" Select the enterprise discipline you want to test. Questions, log streams, and evaluation benchmarks dynamically regenerate based on your specialization. "}
+              </p>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-lab-space-base" id="roleSelectorGroup">
+              <div className={"role-card cursor-pointer p-lab-space-lg rounded-lab-xl transition-all flex flex-col justify-between" + (selectedRole === "analyst" ? " border-2 border-lab-telemetry-cyan bg-lab-bg-surface-elevated shadow-xl shadow-lab-telemetry-cyan/5" : " border border-slate-800 bg-lab-bg-surface")} onClick={() => setSelectedRole("analyst")} data-role="analyst">
+                <div>
+                  <div className="flex items-center justify-between mb-lab-space-base">
+                    <div className="w-12 h-12 rounded-lab-lg bg-lab-telemetry-cyan/15 flex items-center justify-center text-lab-telemetry-cyan">
+                      <span className="material-symbols-outlined text-[28px]">
+                        {"query_stats"}
+                      </span>
+                    </div>
+                    <span className={"font-lab-label-caps text-lab-label-caps px-2.5 py-1 rounded-lab-DEFAULT font-bold tracking-wider " + (selectedRole === "analyst" ? "bg-lab-telemetry-cyan text-lab-on-secondary" : "bg-slate-800 text-lab-text-muted")}>
+{selectedRole === "analyst" ? "SELECTED" : "STANDBY"}
+                    </span>
+                  </div>
+                  <h3 className="font-lab-headline-md text-lab-headline-md font-bold text-lab-text-primary">
+                    {"Splunk Analyst"}
+                  </h3>
+                  <p className="font-lab-body-md text-lab-body-md text-lab-text-secondary mt-2">
+                    {" Search, investigate, and pivot on unstructured machine telemetry to generate executive visibility, triage operational anomalies, and engineer dashboards. "}
+                  </p>
+                  <div className="mt-lab-space-base flex flex-wrap gap-1.5">
+                    <span className="px-2 py-0.5 rounded-lab-DEFAULT bg-lab-bg-surface font-lab-code-block text-lab-code-block text-lab-text-muted border border-slate-800">
+                      {"SPL Search"}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-lab-DEFAULT bg-lab-bg-surface font-lab-code-block text-lab-code-block text-lab-text-muted border border-slate-800">
+                      {"Dashboards"}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-lab-DEFAULT bg-lab-bg-surface font-lab-code-block text-lab-code-block text-lab-text-muted border border-slate-800">
+                      {"Data Models"}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-lab-DEFAULT bg-lab-bg-surface font-lab-code-block text-lab-code-block text-lab-text-muted border border-slate-800">
+                      {"Field Extraction"}
+                    </span>
+                  </div>
+                </div>
+                <button aria-pressed={selectedRole === "analyst"} className={"mt-lab-space-lg w-full py-2.5 rounded-lab-lg font-lab-headline-sm text-lab-body-md font-bold transition-all " + (selectedRole === "analyst" ? "bg-lab-telemetry-cyan text-lab-on-secondary" : "bg-lab-bg-surface-elevated border border-slate-700 text-lab-text-primary")} type="button">
+{(selectedRole === "analyst" ? "Selected: " : "Prepare for ") + roles["analyst"]}
+                </button>
+              </div>
+              <div className={"role-card cursor-pointer p-lab-space-lg rounded-lab-xl transition-all flex flex-col justify-between" + (selectedRole === "soc" ? " border-2 border-lab-telemetry-cyan bg-lab-bg-surface-elevated shadow-xl shadow-lab-telemetry-cyan/5" : " border border-slate-800 bg-lab-bg-surface")} onClick={() => setSelectedRole("soc")} data-role="soc">
+                <div>
+                  <div className="flex items-center justify-between mb-lab-space-base">
+                    <div className="w-12 h-12 rounded-lab-lg bg-lab-primary/10 flex items-center justify-center text-lab-primary">
+                      <span className="material-symbols-outlined text-[28px]">
+                        {"shield"}
+                      </span>
+                    </div>
+                    <span className={"font-lab-label-caps text-lab-label-caps px-2.5 py-1 rounded-lab-DEFAULT font-bold tracking-wider " + (selectedRole === "soc" ? "bg-lab-telemetry-cyan text-lab-on-secondary" : "bg-slate-800 text-lab-text-muted")}>
+{selectedRole === "soc" ? "SELECTED" : "STANDBY"}
+                    </span>
+                  </div>
+                  <h3 className="font-lab-headline-md text-lab-headline-md font-bold text-lab-text-primary">
+                    {"SOC Analyst"}
+                  </h3>
+                  <p className="font-lab-body-md text-lab-body-md text-lab-text-secondary mt-2">
+                    {" Triage real-time threat detections, trace lateral movements, correlate authentication failures, and execute containment protocols inside Splunk ES. "}
+                  </p>
+                  <div className="mt-lab-space-base flex flex-wrap gap-1.5">
+                    <span className="px-2 py-0.5 rounded-lab-DEFAULT bg-lab-bg-surface font-lab-code-block text-lab-code-block text-lab-text-muted border border-slate-800">
+                      {"SIEM Triage"}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-lab-DEFAULT bg-lab-bg-surface font-lab-code-block text-lab-code-block text-lab-text-muted border border-slate-800">
+                      {"MITRE ATT&CK"}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-lab-DEFAULT bg-lab-bg-surface font-lab-code-block text-lab-code-block text-lab-text-muted border border-slate-800">
+                      {"Incident Response"}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-lab-DEFAULT bg-lab-bg-surface font-lab-code-block text-lab-code-block text-lab-text-muted border border-slate-800">
+                      {"Notable Events"}
+                    </span>
+                  </div>
+                </div>
+                <button aria-pressed={selectedRole === "soc"} className={"mt-lab-space-lg w-full py-2.5 rounded-lab-lg font-lab-headline-sm text-lab-body-md font-bold transition-all " + (selectedRole === "soc" ? "bg-lab-telemetry-cyan text-lab-on-secondary" : "bg-lab-bg-surface-elevated border border-slate-700 text-lab-text-primary")} type="button">
+{(selectedRole === "soc" ? "Selected: " : "Prepare for ") + roles["soc"]}
+                </button>
+              </div>
+              <div className={"role-card cursor-pointer p-lab-space-lg rounded-lab-xl transition-all flex flex-col justify-between" + (selectedRole === "engineer" ? " border-2 border-lab-telemetry-cyan bg-lab-bg-surface-elevated shadow-xl shadow-lab-telemetry-cyan/5" : " border border-slate-800 bg-lab-bg-surface")} onClick={() => setSelectedRole("engineer")} data-role="engineer">
+                <div>
+                  <div className="flex items-center justify-between mb-lab-space-base">
+                    <div className="w-12 h-12 rounded-lab-lg bg-lab-tertiary-container/20 flex items-center justify-center text-lab-tertiary">
+                      <span className="material-symbols-outlined text-[28px]">
+                        {"dns"}
+                      </span>
+                    </div>
+                    <span className={"font-lab-label-caps text-lab-label-caps px-2.5 py-1 rounded-lab-DEFAULT font-bold tracking-wider " + (selectedRole === "engineer" ? "bg-lab-telemetry-cyan text-lab-on-secondary" : "bg-slate-800 text-lab-text-muted")}>
+{selectedRole === "engineer" ? "SELECTED" : "STANDBY"}
+                    </span>
+                  </div>
+                  <h3 className="font-lab-headline-md text-lab-headline-md font-bold text-lab-text-primary">
+                    {"Splunk Engineer"}
+                  </h3>
+                  <p className="font-lab-body-md text-lab-body-md text-lab-text-secondary mt-2">
+                    {" Architect multi-site indexer clusters, optimize pipeline throughput, manage deployment servers, configure data inputs, and fine-tune search concurrency. "}
+                  </p>
+                  <div className="mt-lab-space-base flex flex-wrap gap-1.5">
+                    <span className="px-2 py-0.5 rounded-lab-DEFAULT bg-lab-bg-surface font-lab-code-block text-lab-code-block text-lab-text-muted border border-slate-800">
+                      {"Clustering"}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-lab-DEFAULT bg-lab-bg-surface font-lab-code-block text-lab-code-block text-lab-text-muted border border-slate-800">
+                      {"Universal Forwarders"}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-lab-DEFAULT bg-lab-bg-surface font-lab-code-block text-lab-code-block text-lab-text-muted border border-slate-800">
+                      {"Props & Transforms"}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-lab-DEFAULT bg-lab-bg-surface font-lab-code-block text-lab-code-block text-lab-text-muted border border-slate-800">
+                      {"Index Sizing"}
+                    </span>
+                  </div>
+                </div>
+                <button aria-pressed={selectedRole === "engineer"} className={"mt-lab-space-lg w-full py-2.5 rounded-lab-lg font-lab-headline-sm text-lab-body-md font-bold transition-all " + (selectedRole === "engineer" ? "bg-lab-telemetry-cyan text-lab-on-secondary" : "bg-lab-bg-surface-elevated border border-slate-700 text-lab-text-primary")} type="button">
+{(selectedRole === "engineer" ? "Selected: " : "Prepare for ") + roles["engineer"]}
+                </button>
+              </div>
+            </div>
+            <div className="mt-lab-space-2xl">
+              <div className="flex items-center justify-between mb-lab-space-base">
+                <div>
+                  <h3 className="font-lab-headline-sm text-lab-headline-sm font-semibold text-lab-text-primary">
+                    {"Select Experience Seniority"}
+                  </h3>
+                  <p className="font-lab-body-sm text-lab-body-sm text-lab-text-muted">
+                    {"Assessment depth and log dataset complexity will calibrate to your choice."}
+                  </p>
+                </div>
+                <span className="font-lab-code-block text-lab-code-block text-lab-telemetry-cyan px-2.5 py-1 bg-lab-telemetry-cyan/10 rounded-lab-DEFAULT">
+                  {"CALIBRATION: DYNAMIC"}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-lab-space-base" id="levelSelectorGroup">
+                <button className={"level-card cursor-pointer p-lab-space-base rounded-lab-xl transition-all text-left" + (selectedLevel === "entry" ? " border-2 border-lab-telemetry-cyan bg-lab-bg-surface-elevated" : " border border-slate-800 bg-lab-bg-surface")} onClick={() => setSelectedLevel("entry")} aria-pressed={selectedLevel === "entry"} data-level="entry" type="button">
+                  <div className="flex items-center justify-between">
+                    <span className="font-lab-headline-sm text-lab-headline-sm font-bold text-lab-text-primary">
+                      {"Entry Level"}
+                    </span>
+                    <span className="font-lab-label-caps text-lab-label-caps px-2 py-0.5 rounded-lab-DEFAULT bg-lab-telemetry-cyan/20 text-lab-telemetry-cyan">
+                      {"0–2 YEARS"}
+                    </span>
+                  </div>
+                  <p className="font-lab-body-sm text-lab-body-sm text-lab-text-secondary mt-2">
+                    {"Core syntax, basic searches, fundamental stats commands, and guided triage questions."}
+                  </p>
+                </button>
+                <button className={"level-card cursor-pointer p-lab-space-base rounded-lab-xl transition-all text-left" + (selectedLevel === "mid" ? " border-2 border-lab-telemetry-cyan bg-lab-bg-surface-elevated" : " border border-slate-800 bg-lab-bg-surface")} onClick={() => setSelectedLevel("mid")} aria-pressed={selectedLevel === "mid"} data-level="mid" type="button">
+                  <div className="flex items-center justify-between">
+                    <span className="font-lab-headline-sm text-lab-headline-sm font-bold text-lab-text-primary">
+                      {"Mid Level"}
+                    </span>
+                    <span className="font-lab-label-caps text-lab-label-caps px-2 py-0.5 rounded-lab-DEFAULT bg-slate-800 text-lab-text-muted">
+                      {"2–5 YEARS"}
+                    </span>
+                  </div>
+                  <p className="font-lab-body-sm text-lab-body-sm text-lab-text-secondary mt-2">
+                    {"Correlation rules, advanced subsearches, transaction tracing, and unguided triage."}
+                  </p>
+                </button>
+                <button className={"level-card cursor-pointer p-lab-space-base rounded-lab-xl transition-all text-left" + (selectedLevel === "senior" ? " border-2 border-lab-telemetry-cyan bg-lab-bg-surface-elevated" : " border border-slate-800 bg-lab-bg-surface")} onClick={() => setSelectedLevel("senior")} aria-pressed={selectedLevel === "senior"} data-level="senior" type="button">
+                  <div className="flex items-center justify-between">
+                    <span className="font-lab-headline-sm text-lab-headline-sm font-bold text-lab-text-primary">
+                      {"Senior / Architect"}
+                    </span>
+                    <span className="font-lab-label-caps text-lab-label-caps px-2 py-0.5 rounded-lab-DEFAULT bg-slate-800 text-lab-text-muted">
+                      {"5+ YEARS"}
+                    </span>
+                  </div>
+                  <p className="font-lab-body-sm text-lab-body-sm text-lab-text-secondary mt-2">
+                    {"High-volume architecture, index concurrency bottlenecks, security operations strategy."}
+                  </p>
+                </button>
+              </div>
+            </div>
+            <div className="mt-lab-space-2xl p-lab-space-lg rounded-lab-xl bg-lab-bg-surface-elevated border border-slate-800" id="interview-setup">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-lab-space-base pb-lab-space-base border-b border-slate-800/80">
+                <div>
+                  <span className="font-lab-label-caps text-lab-label-caps text-lab-telemetry-teal uppercase tracking-widest">
+                    {"PRE-FLIGHT VERIFICATION BRIEFING"}
+                  </span>
+                  <h3 className="font-lab-headline-md text-lab-headline-md font-bold text-lab-text-primary mt-1">
+                    {"Ready for Assessment Simulation"}
+                  </h3>
+                </div>
+                <div className="flex items-center gap-lab-space-sm">
+                  <span className="font-lab-code-block text-lab-code-block text-lab-text-muted">
+                    {"TOKEN: #TO-SIM-8942-SEC"}
+                  </span>
+                  <div className="h-2 w-2 rounded-lab-full bg-lab-status-success animate-ping">
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-lab-space-base py-lab-space-base font-lab-code-block text-lab-code-block border-b border-slate-800/80">
+                <div>
+                  <div className="text-lab-text-muted text-[11px]">
+                    {"TARGET ROLE"}
+                  </div>
+                  <div className="text-lab-telemetry-cyan font-semibold text-lab-body-md mt-1">
+{roles[selectedRole]}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-lab-text-muted text-[11px]">
+                    {"SENIORITY"}
+                  </div>
+                  <div className="text-lab-text-primary font-semibold text-lab-body-md mt-1">
+{levels[selectedLevel]}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-lab-text-muted text-[11px]">
+                    {"INTERVIEW ROUND"}
+                  </div>
+                  <div className="text-lab-text-primary font-semibold text-lab-body-md mt-1">
+                    {"10 Questions"}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-lab-text-muted text-[11px]">
+                    {"TIME PER QUESTION"}
+                  </div>
+                  <div className="text-lab-status-warning font-semibold text-lab-body-md mt-1">
+                    {"75 Seconds"}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-lab-text-muted text-[11px]">
+                    {"PRACTICAL LAB"}
+                  </div>
+                  <div className="text-lab-telemetry-teal font-semibold text-lab-body-md mt-1">
+                    {"2 Incident Tasks"}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-lab-text-muted text-[11px]">
+                    {"EST. TOTAL TIME"}
+                  </div>
+                  <div className="text-lab-text-primary font-semibold text-lab-body-md mt-1">
+                    {"25 Minutes"}
+                  </div>
+                </div>
+              </div>
+              <div className="mt-lab-space-base flex flex-col md:flex-row items-center justify-between gap-lab-space-base">
+                <div className="flex flex-wrap items-center gap-lab-space-base font-lab-body-sm text-lab-body-sm text-lab-text-secondary">
+                  <span className="flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-lab-status-success text-[16px]">
+                      {"check_circle"}
+                    </span>
+                    {" Automated Proctoring"}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-lab-status-success text-[16px]">
+                      {"check_circle"}
+                    </span>
+                    {" Code Syntax Verification"}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-lab-status-success text-[16px]">
+                      {"check_circle"}
+                    </span>
+                    {" Offer Eligibility Tracking"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-lab-space-base w-full md:w-auto">
+                  <a className="w-full md:w-auto px-lab-space-xl py-3 rounded-lab-lg bg-gradient-to-r from-lab-primary-container to-lab-accent-electric-blue text-lab-text-primary font-lab-headline-sm text-lab-body-md font-bold shadow-lg shadow-lab-accent-electric-blue/25 hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2" href="#simulator">
+                    <span>
+                      {"Begin Interview Assessment"}
+                    </span>
+                    <span className="material-symbols-outlined text-[18px]">
+                      {"play_arrow"}
+                    </span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section className="w-full px-4 lg:px-8 py-lab-space-2xl bg-lab-bg-surface-elevated/70 border-t border-slate-800" id="simulator">
+          <div className="max-w-5xl mx-auto">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-lab-space-sm mb-lab-space-base">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-lab-full bg-lab-status-success">
+                  </span>
+                  <span className="font-lab-label-caps text-lab-label-caps text-lab-status-success">
+                    {"ASSESSMENT IN PROGRESS"}
+                  </span>
+                  <span className="text-lab-text-muted">
+                    {"•"}
+                  </span>
+                  <span className="font-lab-label-caps text-lab-label-caps text-lab-text-secondary">
+                    {`${roles[selectedRole]} [${selectedLevel}]`.toUpperCase()}
+                  </span>
+                </div>
+                <h2 className="font-lab-headline-md text-lab-headline-md font-bold text-lab-text-primary mt-1">
+                  {"Technical Interview Stage"}
+                </h2>
+              </div>
+              <div className="flex items-center gap-lab-space-sm bg-lab-bg-canvas px-4 py-2 rounded-lab-lg border border-slate-800">
+                <span className="material-symbols-outlined text-lab-status-warning text-[20px] animate-pulse">
+                  {"timer"}
+                </span>
+                <div className="flex flex-col">
+                  <span className="font-lab-label-caps text-[10px] text-lab-text-muted uppercase">
+                    {"TIME REMAINING"}
+                  </span>
+                  <span className="font-lab-code-block text-lab-headline-sm font-bold text-lab-status-warning leading-none" id="interviewTimer">
+                    {"01:12"}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="rounded-lab-xl bg-lab-bg-surface border border-slate-800 shadow-2xl p-lab-space-lg lg:p-lab-space-xl relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-slate-800">
+                <div className="h-full bg-gradient-to-r from-lab-status-warning to-lab-telemetry-cyan w-[78%] transition-all duration-1000">
+                </div>
+              </div>
+              <div className="flex items-center justify-between pb-lab-space-base border-b border-slate-800/80">
+                <span className="font-lab-label-caps text-lab-label-caps text-lab-telemetry-cyan px-2.5 py-1 rounded-lab-DEFAULT bg-lab-telemetry-cyan/10">
+                  {"CATEGORY: SPL STATISTICAL AGGREGATION"}
+                </span>
+                <span className="font-lab-code-block text-lab-code-block text-lab-text-secondary font-medium">
+                  {"QUESTION 04 / 10"}
+                </span>
+              </div>
+              <div className="my-lab-space-lg">
+                <h3 className="font-lab-headline-md text-lab-headline-sm lg:text-lab-headline-md font-semibold text-lab-text-primary leading-snug">
+                  {" Which command should be used in Splunk to calculate aggregations such as count, sum, and average across events grouped by a specific field? "}
+                </h3>
+                <p className="font-lab-body-sm text-lab-body-sm text-lab-text-muted mt-2">
+                  {" Consider search performance and pipeline optimization best practices. "}
+                </p>
+              </div>
+              <div className="space-y-lab-space-sm" id="mcqOptions">
+                <button onClick={() => setSelectedAnswer(0)} aria-pressed={selectedAnswer === 0} className={"w-full text-left cursor-pointer p-lab-space-base rounded-lab-lg transition-all flex items-center justify-between gap-3 " + (selectedAnswer === 0 ? "bg-lab-telemetry-cyan/10 border-2 border-lab-telemetry-cyan" : "bg-lab-bg-surface-elevated border border-slate-800 hover:border-slate-700")} type="button">
+                  <div className="flex items-center gap-lab-space-base">
+                    <span className="w-8 h-8 rounded-lab-DEFAULT bg-lab-bg-canvas border border-slate-800 font-lab-code-block text-lab-code-block flex items-center justify-center font-bold text-lab-text-secondary">
+                      {"A"}
+                    </span>
+                    <div>
+                      <span className="font-lab-code-block text-lab-code-inline text-lab-text-primary font-bold">
+                        {"eval"}
+                      </span>
+                      <span className="font-lab-body-sm text-lab-body-sm text-lab-text-muted ml-2">
+                        {"Computes mathematical or boolean expressions on a per-event basis."}
+                      </span>
+                    </div>
+                  </div>
+                  <div className={"w-5 h-5 shrink-0 rounded-full border flex items-center justify-center " + (selectedAnswer === 0 ? "bg-lab-telemetry-cyan border-lab-telemetry-cyan text-lab-on-secondary" : "border-slate-700")}>
+{selectedAnswer === 0 && <span className="material-symbols-outlined text-[14px]">check</span>}
+                  </div>
+                </button>
+                <button onClick={() => setSelectedAnswer(1)} aria-pressed={selectedAnswer === 1} className={"w-full text-left cursor-pointer p-lab-space-base rounded-lab-lg transition-all flex items-center justify-between gap-3 " + (selectedAnswer === 1 ? "bg-lab-telemetry-cyan/10 border-2 border-lab-telemetry-cyan" : "bg-lab-bg-surface-elevated border border-slate-800 hover:border-slate-700")} type="button">
+                  <div className="flex items-center gap-lab-space-base">
+                    <span className="w-8 h-8 rounded-lab-DEFAULT bg-lab-bg-canvas text-lab-text-secondary font-lab-code-block text-lab-code-block flex items-center justify-center font-bold">
+                      {"B"}
+                    </span>
+                    <div>
+                      <span className="font-lab-code-block text-lab-code-inline text-lab-text-primary font-bold">
+                        {"stats"}
+                      </span>
+                      <span className="font-lab-body-sm text-lab-body-sm text-lab-text-secondary ml-2">
+                        {"Aggregates search results to calculate summary metrics by group-by fields."}
+                      </span>
+                    </div>
+                  </div>
+                  <div className={"w-5 h-5 shrink-0 rounded-full border flex items-center justify-center " + (selectedAnswer === 1 ? "bg-lab-telemetry-cyan border-lab-telemetry-cyan text-lab-on-secondary" : "border-slate-700")}>
+{selectedAnswer === 1 && <span className="material-symbols-outlined text-[14px]">check</span>}
+                  </div>
+                </button>
+                <button onClick={() => setSelectedAnswer(2)} aria-pressed={selectedAnswer === 2} className={"w-full text-left cursor-pointer p-lab-space-base rounded-lab-lg transition-all flex items-center justify-between gap-3 " + (selectedAnswer === 2 ? "bg-lab-telemetry-cyan/10 border-2 border-lab-telemetry-cyan" : "bg-lab-bg-surface-elevated border border-slate-800 hover:border-slate-700")} type="button">
+                  <div className="flex items-center gap-lab-space-base">
+                    <span className="w-8 h-8 rounded-lab-DEFAULT bg-lab-bg-canvas border border-slate-800 font-lab-code-block text-lab-code-block flex items-center justify-center font-bold text-lab-text-secondary">
+                      {"C"}
+                    </span>
+                    <div>
+                      <span className="font-lab-code-block text-lab-code-inline text-lab-text-primary font-bold">
+                        {"table"}
+                      </span>
+                      <span className="font-lab-body-sm text-lab-body-sm text-lab-text-muted ml-2">
+                        {"Returns only specified fields in tabular format without data aggregation."}
+                      </span>
+                    </div>
+                  </div>
+                  <div className={"w-5 h-5 shrink-0 rounded-full border flex items-center justify-center " + (selectedAnswer === 2 ? "bg-lab-telemetry-cyan border-lab-telemetry-cyan text-lab-on-secondary" : "border-slate-700")}>
+{selectedAnswer === 2 && <span className="material-symbols-outlined text-[14px]">check</span>}
+                  </div>
+                </button>
+                <button onClick={() => setSelectedAnswer(3)} aria-pressed={selectedAnswer === 3} className={"w-full text-left cursor-pointer p-lab-space-base rounded-lab-lg transition-all flex items-center justify-between gap-3 " + (selectedAnswer === 3 ? "bg-lab-telemetry-cyan/10 border-2 border-lab-telemetry-cyan" : "bg-lab-bg-surface-elevated border border-slate-800 hover:border-slate-700")} type="button">
+                  <div className="flex items-center gap-lab-space-base">
+                    <span className="w-8 h-8 rounded-lab-DEFAULT bg-lab-bg-canvas border border-slate-800 font-lab-code-block text-lab-code-block flex items-center justify-center font-bold text-lab-text-secondary">
+                      {"D"}
+                    </span>
+                    <div>
+                      <span className="font-lab-code-block text-lab-code-inline text-lab-text-primary font-bold">
+                        {"rex"}
+                      </span>
+                      <span className="font-lab-body-sm text-lab-body-sm text-lab-text-muted ml-2">
+                        {"Performs regular expression matches to extract fields from raw events."}
+                      </span>
+                    </div>
+                  </div>
+                  <div className={"w-5 h-5 shrink-0 rounded-full border flex items-center justify-center " + (selectedAnswer === 3 ? "bg-lab-telemetry-cyan border-lab-telemetry-cyan text-lab-on-secondary" : "border-slate-700")}>
+{selectedAnswer === 3 && <span className="material-symbols-outlined text-[14px]">check</span>}
+                  </div>
+                </button>
+              </div>
+              <div className="mt-lab-space-lg pt-lab-space-base border-t border-slate-800/80 flex items-center justify-between">
+                <button className="px-4 py-2 rounded-lab-DEFAULT bg-lab-bg-surface-elevated border border-slate-800 text-lab-text-secondary hover:text-lab-text-primary font-lab-body-sm text-lab-body-sm flex items-center gap-1 transition-all" disabled title="Design preview control" type="button">
+                  <span className="material-symbols-outlined text-[16px]">
+                    {"chevron_left"}
+                  </span>
+                  <span>
+                    {"Previous Question"}
+                  </span>
+                </button>
+                <div className="hidden sm:flex items-center gap-1.5 font-lab-code-block text-lab-code-block text-lab-text-muted">
+                  <span className="w-2.5 h-2.5 rounded-lab-full bg-lab-status-success">
+                  </span>
+                  <span className="w-2.5 h-2.5 rounded-lab-full bg-lab-status-success">
+                  </span>
+                  <span className="w-2.5 h-2.5 rounded-lab-full bg-lab-status-success">
+                  </span>
+                  <span className="w-2.5 h-2.5 rounded-lab-full bg-lab-telemetry-cyan ring-2 ring-lab-telemetry-cyan/40">
+                  </span>
+                  <span className="w-2.5 h-2.5 rounded-lab-full bg-slate-800">
+                  </span>
+                  <span className="w-2.5 h-2.5 rounded-lab-full bg-slate-800">
+                  </span>
+                  <span className="w-2.5 h-2.5 rounded-lab-full bg-slate-800">
+                  </span>
+                  <span className="w-2.5 h-2.5 rounded-lab-full bg-slate-800">
+                  </span>
+                  <span className="w-2.5 h-2.5 rounded-lab-full bg-slate-800">
+                  </span>
+                  <span className="w-2.5 h-2.5 rounded-lab-full bg-slate-800">
+                  </span>
+                </div>
+                <button className="px-5 py-2 rounded-lab-DEFAULT bg-lab-primary-container hover:bg-lab-accent-electric-blue text-lab-text-primary font-lab-body-sm text-lab-body-sm font-semibold flex items-center gap-1.5 transition-all shadow-md shadow-lab-primary-container/20" disabled title="Design preview control" type="button">
+                  <span>
+                    {"Lock & Next"}
+                  </span>
+                  <span className="material-symbols-outlined text-[16px]">
+                    {"chevron_right"}
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section className="w-full px-4 lg:px-8 py-lab-space-2xl bg-lab-bg-canvas border-t border-slate-800">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-lab-space-sm mb-lab-space-lg">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-lab-label-caps text-lab-label-caps text-lab-telemetry-teal uppercase tracking-widest">
+                    {"STAGE 02 // PRACTICAL INVESTIGATION LAB"}
+                  </span>
+                  <span className="px-2 py-0.5 rounded-lab-DEFAULT bg-lab-status-danger/10 border border-lab-status-danger/30 text-lab-status-danger font-lab-code-block text-lab-label-caps">
+                    {"LIVE INCIDENT ACTIVE"}
+                  </span>
+                </div>
+                <h2 className="font-lab-headline-lg text-lab-headline-lg font-bold text-lab-text-primary mt-1">
+                  {"SOC Scenario: Credential Storm Triage"}
+                </h2>
+              </div>
+              <div className="flex items-center gap-lab-space-base">
+                <div className="bg-lab-bg-surface-elevated px-3 py-1.5 rounded-lab-DEFAULT border border-slate-800 font-lab-code-block text-lab-code-block flex items-center gap-2">
+                  <span className="text-lab-text-muted">
+                    {"SCORE POOL:"}
+                  </span>
+                  <span className="text-lab-telemetry-cyan font-bold">
+                    {"150 PTS"}
+                  </span>
+                </div>
+                <div className="bg-lab-bg-surface-elevated px-3 py-1.5 rounded-lab-DEFAULT border border-slate-800 font-lab-code-block text-lab-code-block flex items-center gap-2">
+                  <span className="text-lab-text-muted">
+                    {"SESSION ELAPSED:"}
+                  </span>
+                  <span className="text-lab-status-warning font-bold">
+                    {"06:42"}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-lab-space-base">
+              <div className="lg:col-span-4 flex flex-col gap-lab-space-base">
+                <div className="p-lab-space-base rounded-lab-xl bg-lab-bg-surface border border-slate-800">
+                  <div className="flex items-center justify-between pb-lab-space-sm border-b border-slate-800">
+                    <span className="font-lab-label-caps text-lab-label-caps text-lab-text-muted">
+                      {"INCIDENT TICKET #084-SEC"}
+                    </span>
+                    <span className="font-lab-code-block text-lab-code-block text-lab-status-danger font-semibold">
+                      {"SEV-2 ALERT"}
+                    </span>
+                  </div>
+                  <h4 className="font-lab-headline-sm text-lab-headline-sm font-semibold text-lab-text-primary mt-lab-space-sm">
+                    {"Credential Storm Investigation"}
+                  </h4>
+                  <p className="font-lab-body-sm text-lab-body-sm text-lab-text-secondary mt-2 leading-relaxed">
+                    {" The Identity & Access Gateway detected a critical surge in failed VPN authentications. Investigate the raw telemetry to isolate the offending IP address, enumerate affected users, and confirm whether any compromised credential succeeded. "}
+                  </p>
+                  <div className="mt-lab-space-base pt-lab-space-base border-t border-slate-800">
+                    <span className="font-lab-label-caps text-lab-label-caps text-lab-telemetry-cyan block mb-2">
+                      {"MISSION OBJECTIVES"}
+                    </span>
+                    <div className="space-y-2 font-lab-body-sm text-lab-body-sm">
+                      <div className="flex items-start gap-2 p-2 rounded-lab-DEFAULT bg-lab-status-success/5 border border-lab-status-success/20">
+                        <span className="material-symbols-outlined text-lab-status-success text-[18px]">
+                          {"check_box"}
+                        </span>
+                        <span className="text-lab-text-primary text-[13px]">
+                          {"01. Identify suspicious VPN auth volume"}
+                        </span>
+                      </div>
+                      <div className="flex items-start gap-2 p-2 rounded-lab-DEFAULT bg-lab-status-success/5 border border-lab-status-success/20">
+                        <span className="material-symbols-outlined text-lab-status-success text-[18px]">
+                          {"check_box"}
+                        </span>
+                        <span className="text-lab-text-primary text-[13px]">
+                          {"02. Enumerate targeted employee accounts"}
+                        </span>
+                      </div>
+                      <div className="flex items-start gap-2 p-2 rounded-lab-DEFAULT bg-lab-telemetry-cyan/10 border border-lab-telemetry-cyan/40">
+                        <span className="material-symbols-outlined text-lab-telemetry-cyan text-[18px]">
+                          {"radio_button_checked"}
+                        </span>
+                        <span className="text-lab-telemetry-cyan font-medium text-[13px]">
+                          {"03. Isolate the primary source IP address (Active)"}
+                        </span>
+                      </div>
+                      <div className="flex items-start gap-2 p-2 rounded-lab-DEFAULT bg-lab-bg-surface-elevated border border-slate-800 opacity-60">
+                        <span className="material-symbols-outlined text-lab-text-muted text-[18px]">
+                          {"check_box_outline_blank"}
+                        </span>
+                        <span className="text-lab-text-muted text-[13px]">
+                          {"04. Confirm if any account login succeeded"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-lab-space-base pt-lab-space-sm border-t border-slate-800">
+                    <div className="flex justify-between font-lab-code-block text-lab-code-block text-lab-text-muted mb-1">
+                      <span>
+                        {"LAB COMPLETION"}
+                      </span>
+                      <span className="text-lab-telemetry-cyan font-bold">
+                        {"50%"}
+                      </span>
+                    </div>
+                    <div className="h-1.5 w-full bg-slate-800 rounded-lab-full overflow-hidden">
+                      <div className="h-full bg-lab-telemetry-cyan w-1/2">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-lab-space-base rounded-lab-xl bg-lab-bg-surface border border-slate-800">
+                  <details className="group cursor-pointer">
+                    <summary className="flex items-center justify-between font-lab-headline-sm text-lab-body-md font-semibold text-lab-text-primary list-none">
+                      <span className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-lab-status-warning text-[18px]">
+                          {"lightbulb"}
+                        </span>
+                        <span>
+                          {"SPL Syntax Reference / Hints"}
+                        </span>
+                      </span>
+                      <span className="material-symbols-outlined text-lab-text-muted text-[18px] group-open:rotate-180 transition-transform">
+                        {"expand_more"}
+                      </span>
+                    </summary>
+                    <div className="mt-lab-space-base text-lab-text-secondary font-lab-code-block text-lab-code-block space-y-2 border-t border-slate-800 pt-lab-space-sm">
+                      <div className="p-2 rounded-lab-DEFAULT bg-lab-bg-canvas text-lab-telemetry-cyan">
+                        {" stats count by src_ip user status "}
+                      </div>
+                      <div className="p-2 rounded-lab-DEFAULT bg-lab-bg-canvas text-lab-text-muted">
+                        {" where count > 50 | sort - count "}
+                      </div>
+                      <p className="font-lab-body-sm text-lab-body-sm text-lab-text-muted">
+                        {"Hint: Filter for "}
+                        <code className="text-lab-telemetry-cyan">
+                          {"sourcetype=\"cisco:vpn\""}
+                        </code>
+                        {" to inspect session renegotiation handshakes."}
+                      </p>
+                    </div>
+                  </details>
+                </div>
+              </div>
+              <div className="lg:col-span-8 flex flex-col rounded-lab-xl bg-[#05070B] border border-slate-800 shadow-2xl overflow-hidden">
+                <div className="px-lab-space-base py-2.5 bg-lab-bg-surface-elevated border-b border-slate-800 flex items-center justify-between">
+                  <div className="flex items-center gap-lab-space-sm">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-3 h-3 rounded-lab-full bg-lab-status-danger/70">
+                      </span>
+                      <span className="w-3 h-3 rounded-lab-full bg-lab-status-warning/70">
+                      </span>
+                      <span className="w-3 h-3 rounded-lab-full bg-lab-status-success/70">
+                      </span>
+                    </div>
+                    <span className="font-lab-code-block text-lab-code-block text-lab-text-secondary font-medium ml-2">
+                      {"SPLUNK WEB SEARCH TERMINAL // SH-01.PROD"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 font-lab-code-block text-lab-label-caps text-lab-telemetry-teal">
+                    <span className="w-2 h-2 rounded-lab-full bg-lab-telemetry-teal animate-pulse">
+                    </span>
+                    <span>
+                      {"INDEX: security_auth"}
+                    </span>
+                  </div>
+                </div>
+                <div className="p-lab-space-base bg-[#090D14] border-b border-slate-800/80">
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="relative flex-1">
+                      <span className="absolute left-3 top-2.5 font-lab-code-block text-lab-code-inline text-lab-telemetry-cyan font-bold">
+                        {">"}
+                      </span>
+                      <input className="w-full pl-8 pr-3 py-2 bg-lab-bg-canvas rounded-lab-DEFAULT border border-slate-800 focus:border-lab-telemetry-cyan focus:outline-none text-lab-text-primary font-lab-code-block text-lab-code-inline" value={query} onChange={(event) => setQuery(event.target.value)} aria-label="SPL search query" id="splQueryInput" type="text" />
+                    </div>
+                    <div className="flex gap-2">
+                      <select className="bg-lab-bg-surface border border-slate-800 text-lab-text-secondary font-lab-code-block text-lab-code-block rounded-lab-DEFAULT px-3 py-2 focus:outline-none" aria-label="Search time range">
+                        <option>
+                          {"Last 24 Hours"}
+                        </option>
+                        <option>
+                          {"Last 7 Days"}
+                        </option>
+                        <option>
+                          {"Real-Time (1m window)"}
+                        </option>
+                      </select>
+                      <button className="px-4 py-2 rounded-lab-DEFAULT bg-lab-telemetry-teal hover:bg-lab-telemetry-teal/80 text-lab-on-secondary font-lab-code-block text-lab-code-block font-bold flex items-center gap-1.5 shadow-md shadow-lab-telemetry-teal/20 transition-all" onClick={runSearch} disabled={searching} aria-live="polite" id="runSearchBtn" type="button">
+<span className="material-symbols-outlined text-[16px]">{searching ? "refresh" : "play_arrow"}</span><span>{searching ? "Executing..." : "Search"}</span>
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-lab-space-base mt-lab-space-base font-lab-code-block text-lab-code-block">
+                    <button className="text-lab-text-muted hover:text-lab-text-primary py-1" disabled title="Design preview control" type="button">
+                      {"Events (1,482)"}
+                    </button>
+                    <button className="text-lab-telemetry-cyan border-b-2 border-lab-telemetry-cyan py-1 font-semibold flex items-center gap-1" disabled title="Design preview control" type="button">
+                      <span>
+                        {"Statistics"}
+                      </span>
+                      <span className="px-1.5 py-[0.05rem] bg-lab-telemetry-cyan/20 rounded-lab-DEFAULT text-[10px]">
+                        {"4"}
+                      </span>
+                    </button>
+                    <button className="text-lab-text-muted hover:text-lab-text-primary py-1" disabled title="Design preview control" type="button">
+                      {"Visualization"}
+                    </button>
+                    <div className="ml-auto text-lab-text-muted text-[11px]">
+                      {"Returned 4 rows in 0.048 seconds"}
+                    </div>
+                  </div>
+                </div>
+                <div className="overflow-x-auto flex-1 p-lab-space-base">
+                  <table className="w-full text-left font-lab-code-block text-lab-code-block">
+                    <thead>
+                      <tr className="border-b border-slate-800 text-lab-text-muted text-[11px] uppercase tracking-wider">
+                        <th className="pb-2">
+                          {"#"}
+                        </th>
+                        <th className="pb-2">
+                          {"src_ip"}
+                        </th>
+                        <th className="pb-2">
+                          {"user"}
+                        </th>
+                        <th className="pb-2">
+                          {"action"}
+                        </th>
+                        <th className="pb-2 text-right">
+                          {"count"}
+                        </th>
+                        <th className="pb-2 text-right">
+                          {"Verdict"}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/60 text-lab-text-secondary">
+                      <tr className="hover:bg-lab-bg-surface-elevated/80 transition-colors bg-lab-status-danger/5">
+                        <td className="py-2.5 text-lab-text-muted">
+                          {"1"}
+                        </td>
+                        <td className="py-2.5 font-bold text-lab-status-danger">
+                          {"198.51.100.42"}
+                        </td>
+                        <td className="py-2.5 text-lab-text-primary">
+                          {"jdoe_admin"}
+                        </td>
+                        <td className="py-2.5">
+                          <span className="px-2 py-0.5 rounded-lab-DEFAULT bg-lab-status-danger/20 text-lab-status-danger text-[11px]">
+                            {"REJECTED"}
+                          </span>
+                        </td>
+                        <td className="py-2.5 text-right font-bold text-lab-text-primary">
+                          {"318"}
+                        </td>
+                        <td className="py-2.5 text-right">
+                          <span className="text-lab-status-danger font-medium">
+                            {"SUSPICIOUS // ATTACK SOURCE"}
+                          </span>
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-lab-bg-surface-elevated/80 transition-colors bg-lab-status-danger/5">
+                        <td className="py-2.5 text-lab-text-muted">
+                          {"2"}
+                        </td>
+                        <td className="py-2.5 font-bold text-lab-status-danger">
+                          {"198.51.100.42"}
+                        </td>
+                        <td className="py-2.5 text-lab-text-primary">
+                          {"svc_splunk_indexer"}
+                        </td>
+                        <td className="py-2.5">
+                          <span className="px-2 py-0.5 rounded-lab-DEFAULT bg-lab-status-danger/20 text-lab-status-danger text-[11px]">
+                            {"REJECTED"}
+                          </span>
+                        </td>
+                        <td className="py-2.5 text-right font-bold text-lab-text-primary">
+                          {"142"}
+                        </td>
+                        <td className="py-2.5 text-right">
+                          <span className="text-lab-status-danger font-medium">
+                            {"BRUTE-FORCE TARGET"}
+                          </span>
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-lab-bg-surface-elevated/80 transition-colors">
+                        <td className="py-2.5 text-lab-text-muted">
+                          {"3"}
+                        </td>
+                        <td className="py-2.5 text-lab-text-primary">
+                          {"192.0.2.14"}
+                        </td>
+                        <td className="py-2.5 text-lab-text-primary">
+                          {"m.rossi"}
+                        </td>
+                        <td className="py-2.5">
+                          <span className="px-2 py-0.5 rounded-lab-DEFAULT bg-lab-status-success/20 text-lab-status-success text-[11px]">
+                            {"SUCCESS"}
+                          </span>
+                        </td>
+                        <td className="py-2.5 text-right text-lab-text-primary">
+                          {"3"}
+                        </td>
+                        <td className="py-2.5 text-right">
+                          <span className="text-lab-status-success">
+                            {"BENIGN USER"}
+                          </span>
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-lab-bg-surface-elevated/80 transition-colors">
+                        <td className="py-2.5 text-lab-text-muted">
+                          {"4"}
+                        </td>
+                        <td className="py-2.5 text-lab-text-primary">
+                          {"203.0.113.88"}
+                        </td>
+                        <td className="py-2.5 text-lab-text-primary">
+                          {"c_davis"}
+                        </td>
+                        <td className="py-2.5">
+                          <span className="px-2 py-0.5 rounded-lab-DEFAULT bg-lab-status-success/20 text-lab-status-success text-[11px]">
+                            {"SUCCESS"}
+                          </span>
+                        </td>
+                        <td className="py-2.5 text-right text-lab-text-primary">
+                          {"1"}
+                        </td>
+                        <td className="py-2.5 text-right">
+                          <span className="text-lab-status-success">
+                            {"BENIGN USER"}
+                          </span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div className="p-lab-space-base bg-lab-bg-surface border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-lab-space-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lab-text-muted font-lab-body-sm text-lab-body-sm">
+                      {"Detected Malicious Source IP:"}
+                    </span>
+                    <input className="px-3 py-1 bg-lab-bg-canvas border border-lab-telemetry-cyan text-lab-telemetry-cyan rounded-lab-DEFAULT font-lab-code-block text-lab-code-block focus:outline-none w-40 text-center font-bold" value={answer} onChange={(event) => setAnswer(event.target.value)} aria-label="Detected malicious source IP" type="text" />
+                  </div>
+                  <button className="w-full sm:w-auto px-lab-space-base py-2 rounded-lab-DEFAULT bg-lab-status-success hover:bg-lab-status-success/80 text-lab-on-primary font-lab-headline-sm text-lab-body-md font-bold transition-all flex items-center justify-center gap-1.5 shadow-md shadow-lab-status-success/20" onClick={() => setLabFeedback(answer.trim() === "198.51.100.42" ? "Verified (150 Pts)" : "Check the suspicious source IP and try again.")} aria-live="polite" id="submitLabAnswerBtn" type="button">
+<span className="material-symbols-outlined text-[18px]">verified</span><span>{labFeedback || "Submit Objective & Advance"}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section className="w-full px-4 lg:px-8 py-lab-space-2xl bg-lab-bg-surface-elevated border-t border-slate-800">
+          <div className="max-w-7xl mx-auto">
+            <div className="p-lab-space-xl rounded-lab-xl bg-lab-bg-surface border border-slate-800 relative overflow-hidden">
+              <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-lab-status-success/5 rounded-lab-full blur-3xl pointer-events-none">
+              </div>
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-lab-space-lg pb-lab-space-lg border-b border-slate-800">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-lab-label-caps text-lab-label-caps px-2.5 py-1 rounded-lab-DEFAULT bg-lab-status-success/15 border border-lab-status-success/30 text-lab-status-success font-bold flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[14px]">
+                        {"check_circle"}
+                      </span>
+                      <span>
+                        {"BENCHMARK PASSED // STRONG CANDIDATE"}
+                      </span>
+                    </span>
+                    <span className="font-lab-code-block text-lab-code-block text-lab-text-muted">
+                      {"SESSION ID: #EV-2026-993"}
+                    </span>
+                  </div>
+                  <h2 className="font-lab-headline-xl text-lab-headline-lg lg:text-lab-headline-xl font-bold text-lab-text-primary">
+                    {"Performance Evaluation Scorecard"}
+                  </h2>
+                  <p className="font-lab-body-md text-lab-body-md text-lab-text-secondary mt-1">
+                    {"Role: Splunk Analyst (Entry Level) • Completed in 22 min 14 sec"}
+                  </p>
+                </div>
+                <div className="flex items-center gap-lab-space-base bg-lab-bg-surface-elevated p-lab-space-base rounded-lab-xl border border-slate-800">
+                  <div className="text-right">
+                    <span className="font-lab-label-caps text-lab-label-caps text-lab-text-muted block">
+                      {"COMPOSITE RATING"}
+                    </span>
+                    <span className="font-lab-display-hero text-lab-headline-xl font-extrabold text-lab-status-success">
+                      {"82"}
+                      <span className="text-lab-text-muted text-lab-headline-md font-normal">
+                        {"/100"}
+                      </span>
+                    </span>
+                  </div>
+                  <div className="h-12 w-px bg-slate-800">
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-lab-code-block text-lab-code-block text-lab-telemetry-cyan font-bold">
+                      {"TOP 12%"}
+                    </span>
+                    <span className="font-lab-body-sm text-lab-body-sm text-lab-text-secondary">
+                      {"Of Simulated Candidates"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-lab-space-base py-lab-space-lg border-b border-slate-800">
+                <div>
+                  <span className="font-lab-label-caps text-lab-label-caps text-lab-text-muted block">
+                    {"TECHNICAL INTERVIEW"}
+                  </span>
+                  <span className="font-lab-headline-lg text-lab-headline-lg font-bold text-lab-text-primary mt-1 block">
+                    {"8 "}
+                    <span className="text-lab-text-muted text-lab-body-md font-normal">
+                      {"/ 10 Correct"}
+                    </span>
+                  </span>
+                  <span className="font-lab-code-block text-lab-code-block text-lab-status-success">
+                    {"80% Accuracy"}
+                  </span>
+                </div>
+                <div>
+                  <span className="font-lab-label-caps text-lab-label-caps text-lab-text-muted block">
+                    {"HANDS-ON SOC LAB"}
+                  </span>
+                  <span className="font-lab-headline-lg text-lab-headline-lg font-bold text-lab-telemetry-cyan mt-1 block">
+                    {"17 "}
+                    <span className="text-lab-text-muted text-lab-body-md font-normal">
+                      {"/ 20 Scored"}
+                    </span>
+                  </span>
+                  <span className="font-lab-code-block text-lab-code-block text-lab-telemetry-cyan">
+                    {"85% Objectives Met"}
+                  </span>
+                </div>
+                <div>
+                  <span className="font-lab-label-caps text-lab-label-caps text-lab-text-muted block">
+                    {"AVG RESPONSE VELOCITY"}
+                  </span>
+                  <span className="font-lab-headline-lg text-lab-headline-lg font-bold text-lab-text-primary mt-1 block">
+                    {"42.4s"}
+                  </span>
+                  <span className="font-lab-code-block text-lab-code-block text-lab-text-secondary">
+                    {"Well under 75s cap"}
+                  </span>
+                </div>
+                <div>
+                  <span className="font-lab-label-caps text-lab-label-caps text-lab-text-muted block">
+                    {"HIRING INDEX"}
+                  </span>
+                  <span className="font-lab-headline-lg text-lab-headline-lg font-bold text-lab-status-success mt-1 block">
+                    {"STRONG HIRE"}
+                  </span>
+                  <span className="font-lab-code-block text-lab-code-block text-lab-status-success">
+                    {"Cleared Interview Bar"}
+                  </span>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-lab-space-xl pt-lab-space-lg">
+                <div>
+                  <h4 className="font-lab-headline-sm text-lab-headline-sm font-semibold text-lab-text-primary mb-lab-space-base">
+                    {"Skill Vector Breakdown"}
+                  </h4>
+                  <div className="space-y-lab-space-base">
+                    <div>
+                      <div className="flex justify-between font-lab-code-block text-lab-code-block mb-1">
+                        <span className="text-lab-text-secondary">
+                          {"SPL Syntax & Grouping (stats, eval)"}
+                        </span>
+                        <span className="text-lab-status-success font-bold">
+                          {"90%"}
+                        </span>
+                      </div>
+                      <div className="h-2 w-full bg-lab-bg-surface-elevated rounded-lab-full overflow-hidden">
+                        <div className="h-full bg-lab-status-success w-[90%]">
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between font-lab-code-block text-lab-code-block mb-1">
+                        <span className="text-lab-text-secondary">
+                          {"Incident Triage & Authentication Logs"}
+                        </span>
+                        <span className="text-lab-telemetry-cyan font-bold">
+                          {"82%"}
+                        </span>
+                      </div>
+                      <div className="h-2 w-full bg-lab-bg-surface-elevated rounded-lab-full overflow-hidden">
+                        <div className="h-full bg-lab-telemetry-cyan w-[82%]">
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between font-lab-code-block text-lab-code-block mb-1">
+                        <span className="text-lab-text-secondary">
+                          {"Search Pipeline Optimization"}
+                        </span>
+                        <span className="text-lab-status-warning font-bold">
+                          {"74%"}
+                        </span>
+                      </div>
+                      <div className="h-2 w-full bg-lab-bg-surface-elevated rounded-lab-full overflow-hidden">
+                        <div className="h-full bg-lab-status-warning w-[74%]">
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between font-lab-code-block text-lab-code-block mb-1">
+                        <span className="text-lab-text-secondary">
+                          {"Security Investigation Methodology"}
+                        </span>
+                        <span className="text-lab-primary font-bold">
+                          {"85%"}
+                        </span>
+                      </div>
+                      <div className="h-2 w-full bg-lab-bg-surface-elevated rounded-lab-full overflow-hidden">
+                        <div className="h-full bg-lab-primary w-[85%]">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-lab-space-sm">
+                  <h4 className="font-lab-headline-sm text-lab-headline-sm font-semibold text-lab-text-primary mb-lab-space-base">
+                    {"Proctor Evaluation Notes"}
+                  </h4>
+                  <div className="p-lab-space-base rounded-lab-lg bg-lab-bg-surface-elevated border border-slate-800">
+                    <span className="font-lab-code-block text-lab-label-caps text-lab-status-success font-bold flex items-center gap-1 mb-1">
+                      <span className="material-symbols-outlined text-[16px]">
+                        {"thumb_up"}
+                      </span>
+                      {" KEY STRENGTH "}
+                    </span>
+                    <p className="font-lab-body-sm text-lab-body-sm text-lab-text-secondary">
+                      {"Candidate demonstrated fluent knowledge of streaming commands vs. non-streaming transformations, minimizing memory load in search pipelines."}
+                    </p>
+                  </div>
+                  <div className="p-lab-space-base rounded-lab-lg bg-lab-bg-surface-elevated border border-slate-800">
+                    <span className="font-lab-code-block text-lab-label-caps text-lab-status-warning font-bold flex items-center gap-1 mb-1">
+                      <span className="material-symbols-outlined text-[16px]">
+                        {"trending_up"}
+                      </span>
+                      {" RECOMMENDED FOCUS "}
+                    </span>
+                    <p className="font-lab-body-sm text-lab-body-sm text-lab-text-secondary">
+                      {"Practice subsearch duration limits and data model acceleration syntax before advancing to Mid-Level SOC Analyst scenarios."}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section className="w-full px-4 lg:px-8 py-lab-space-2xl bg-lab-bg-canvas relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-lab-primary-container/5 to-transparent pointer-events-none">
+          </div>
+          <div className="max-w-4xl mx-auto relative z-10">
+            <div className="rounded-2xl bg-gradient-to-b from-[#121927] to-lab-bg-surface-elevated border-2 border-lab-telemetry-cyan/40 p-lab-space-xl lg:p-lab-space-2xl shadow-2xl shadow-lab-telemetry-cyan/10">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-lab-space-base pb-lab-space-lg border-b border-slate-800">
+                <div className="flex items-center gap-lab-space-base">
+                  <img className="h-10 w-auto object-contain" src={logo} alt="T.O. Analytics" />
+                  <div>
+                    <span className="font-lab-label-caps text-lab-label-caps text-lab-telemetry-cyan uppercase tracking-widest">
+                      {"OFFICIAL TALENT PIPELINE // CREDENTIAL #TO-8894"}
+                    </span>
+                    <h3 className="font-lab-headline-md text-lab-headline-md font-bold text-lab-text-primary">
+                      {"Virtual Employment Assessment Clearance"}
+                    </h3>
+                  </div>
+                </div>
+                <div className="px-3 py-1.5 rounded-lab-full bg-lab-status-success/15 border border-lab-status-success/40 text-lab-status-success font-lab-label-caps text-lab-label-caps font-bold">
+                  {" OFFER ELIGIBLE "}
+                </div>
+              </div>
+              <div className="py-lab-space-xl space-y-lab-space-base">
+                <p className="font-lab-headline-sm text-lab-headline-sm font-medium text-lab-text-primary">
+                  {" Congratulations, Candidate. "}
+                </p>
+                <p className="font-lab-body-lg text-lab-body-lg text-lab-text-secondary leading-relaxed">
+                  {" Based on your technical screening score of "}
+                  <strong className="text-lab-status-success">
+                    {"82/100"}
+                  </strong>
+                  {" and successful resolution of the SOC incident triage lab, you have officially satisfied the hiring benchmark for the following virtual position: "}
+                </p>
+                <div className="p-lab-space-lg rounded-lab-xl bg-lab-bg-surface border border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-lab-space-base font-lab-code-block text-lab-code-block">
+                  <div>
+                    <span className="text-lab-text-muted text-[11px] block">
+                      {"ROLE CLEARANCE"}
+                    </span>
+                    <span className="text-lab-telemetry-cyan font-bold text-lab-headline-sm mt-1 block">
+                      {"Junior Splunk Analyst"}
+                    </span>
+                    <span className="text-lab-text-secondary text-[12px]">
+                      {"T.O. Skill Lab Division"}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-lab-text-muted text-[11px] block">
+                      {"COHORT GROUP"}
+                    </span>
+                    <span className="text-lab-text-primary font-bold text-lab-headline-sm mt-1 block">
+                      {"2026-Q2 Operations"}
+                    </span>
+                    <span className="text-lab-text-secondary text-[12px]">
+                      {"Cyber Defense Sandbox"}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-lab-text-muted text-[11px] block">
+                      {"STATUS"}
+                    </span>
+                    <span className="text-lab-status-success font-bold text-lab-headline-sm mt-1 block">
+                      {"Offer Ready"}
+                    </span>
+                    <span className="text-lab-text-secondary text-[12px]">
+                      {"Candidate Pool Activated"}
+                    </span>
+                  </div>
+                </div>
+                <p className="font-lab-body-sm text-lab-body-sm text-lab-text-muted italic">
+                  {" This verification credential affirms that your search construction, incident triage response, and data investigation methodology meet professional standards. "}
+                </p>
+              </div>
+              <div className="pt-lab-space-base border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-lab-space-base">
+                <div className="flex items-center gap-2 text-lab-text-muted font-lab-code-block text-lab-code-block text-[12px]">
+                  <span className="material-symbols-outlined text-[16px] text-lab-telemetry-teal">
+                    {"lock"}
+                  </span>
+                  <span>
+                    {"Cryptographically Verified Simulation Signature"}
+                  </span>
+                </div>
+                <div className="flex flex-wrap items-center gap-lab-space-sm w-full sm:w-auto">
+                  <button className="w-full sm:w-auto px-lab-space-base py-3 rounded-lab-lg bg-lab-bg-surface border border-slate-700 hover:border-slate-600 text-lab-text-primary font-lab-body-sm text-lab-body-sm font-semibold transition-all flex items-center justify-center gap-2" disabled title="Design preview control" type="button">
+                    <span className="material-symbols-outlined text-[18px]">
+                      {"download"}
+                    </span>
+                    <span>
+                      {"Download Digital Offer PDF"}
+                    </span>
+                  </button>
+                  <a className="w-full sm:w-auto px-lab-space-lg py-3 rounded-lab-lg bg-lab-telemetry-cyan text-lab-on-secondary font-lab-headline-sm text-lab-body-md font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-lab-telemetry-cyan/20" href="#role-tracks">
+                    <span>
+                      {"Advance to Mid-Level Track"}
+                    </span>
+                    <span className="material-symbols-outlined text-[18px]">
+                      {"arrow_forward"}
+                    </span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section className="w-full px-4 lg:px-8 py-lab-space-2xl bg-lab-bg-surface border-t border-slate-800">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-lab-space-sm mb-lab-space-xl">
+              <div>
+                <span className="font-lab-label-caps text-lab-label-caps text-lab-text-muted uppercase tracking-widest">
+                  {"RECORD OF ATTEMPTS"}
+                </span>
+                <h2 className="font-lab-headline-lg text-lab-headline-lg font-bold text-lab-text-primary mt-1">
+                  {"Candidate Simulation Audit Log"}
+                </h2>
+              </div>
+              <div className="flex items-center gap-lab-space-sm">
+                <a className="px-4 py-2 rounded-lab-DEFAULT bg-lab-primary-container text-lab-text-primary font-lab-body-sm text-lab-body-sm font-semibold hover:bg-lab-accent-electric-blue transition-all flex items-center gap-1.5" href="#interview-setup">
+                  <span className="material-symbols-outlined text-[18px]">
+                    {"restart_alt"}
+                  </span>
+                  <span>
+                    {"New Simulation Run"}
+                  </span>
+                </a>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-lab-space-base mb-lab-space-xl">
+              <div className="p-lab-space-base rounded-lab-xl bg-lab-bg-surface-elevated border border-slate-800">
+                <span className="font-lab-label-caps text-lab-label-caps text-lab-text-muted">
+                  {"BEST SCORE"}
+                </span>
+                <span className="font-lab-headline-lg text-lab-headline-lg font-bold text-lab-status-success block mt-1">
+                  {"82%"}
+                </span>
+                <span className="font-lab-body-sm text-lab-body-sm text-lab-text-secondary">
+                  {"Splunk Analyst Track"}
+                </span>
+              </div>
+              <div className="p-lab-space-base rounded-lab-xl bg-lab-bg-surface-elevated border border-slate-800">
+                <span className="font-lab-label-caps text-lab-label-caps text-lab-text-muted">
+                  {"INTERVIEWS COMPLETED"}
+                </span>
+                <span className="font-lab-headline-lg text-lab-headline-lg font-bold text-lab-text-primary block mt-1">
+                  {"3"}
+                </span>
+                <span className="font-lab-body-sm text-lab-body-sm text-lab-text-secondary">
+                  {"30 Total Questions"}
+                </span>
+              </div>
+              <div className="p-lab-space-base rounded-lab-xl bg-lab-bg-surface-elevated border border-slate-800">
+                <span className="font-lab-label-caps text-lab-label-caps text-lab-text-muted">
+                  {"LABS SOLVED"}
+                </span>
+                <span className="font-lab-headline-lg text-lab-headline-lg font-bold text-lab-telemetry-cyan block mt-1">
+                  {"5"}
+                </span>
+                <span className="font-lab-body-sm text-lab-body-sm text-lab-text-secondary">
+                  {"All Severities Solved"}
+                </span>
+              </div>
+              <div className="p-lab-space-base rounded-lab-xl bg-lab-bg-surface-elevated border border-slate-800">
+                <span className="font-lab-label-caps text-lab-label-caps text-lab-text-muted">
+                  {"CURRENT STANDING"}
+                </span>
+                <span className="font-lab-headline-lg text-lab-headline-lg font-bold text-lab-status-success block mt-1">
+                  {"STRONG HIRE"}
+                </span>
+                <span className="font-lab-body-sm text-lab-body-sm text-lab-text-secondary">
+                  {"Cleared Threshold"}
+                </span>
+              </div>
+            </div>
+            <div className="rounded-lab-xl bg-lab-bg-surface-elevated border border-slate-800 overflow-x-auto">
+              <table className="w-full text-left font-lab-body-sm text-lab-body-sm">
+                <thead>
+                  <tr className="border-b border-slate-800 font-lab-label-caps text-lab-label-caps text-lab-text-muted bg-lab-bg-canvas/50">
+                    <th className="p-lab-space-base">
+                      {"ROLE TRACK"}
+                    </th>
+                    <th className="p-lab-space-base">
+                      {"LEVEL"}
+                    </th>
+                    <th className="p-lab-space-base">
+                      {"INTERVIEW"}
+                    </th>
+                    <th className="p-lab-space-base">
+                      {"LAB PTS"}
+                    </th>
+                    <th className="p-lab-space-base">
+                      {"TOTAL"}
+                    </th>
+                    <th className="p-lab-space-base">
+                      {"OUTCOME"}
+                    </th>
+                    <th className="p-lab-space-base text-right">
+                      {"DATE"}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/80 font-lab-code-block text-lab-code-block">
+                  <tr className="hover:bg-lab-bg-surface-hover transition-colors">
+                    <td className="p-lab-space-base font-semibold text-lab-text-primary">
+                      {"Splunk Analyst"}
+                    </td>
+                    <td className="p-lab-space-base text-lab-text-secondary">
+                      {"Entry Level"}
+                    </td>
+                    <td className="p-lab-space-base text-lab-status-success">
+                      {"8/10 (80%)"}
+                    </td>
+                    <td className="p-lab-space-base text-lab-telemetry-cyan">
+                      {"17/20 (85%)"}
+                    </td>
+                    <td className="p-lab-space-base font-bold text-lab-status-success">
+                      {"82%"}
+                    </td>
+                    <td className="p-lab-space-base">
+                      <span className="px-2 py-0.5 rounded-lab-DEFAULT bg-lab-status-success/15 text-lab-status-success text-[11px] font-bold">
+                        {"OFFER EXTENDED"}
+                      </span>
+                    </td>
+                    <td className="p-lab-space-base text-right text-lab-text-muted">
+                      {"Today, 14:28"}
+                    </td>
+                  </tr>
+                  <tr className="hover:bg-lab-bg-surface-hover transition-colors">
+                    <td className="p-lab-space-base font-semibold text-lab-text-primary">
+                      {"Splunk Analyst"}
+                    </td>
+                    <td className="p-lab-space-base text-lab-text-secondary">
+                      {"Entry Level"}
+                    </td>
+                    <td className="p-lab-space-base text-lab-status-warning">
+                      {"6/10 (60%)"}
+                    </td>
+                    <td className="p-lab-space-base text-lab-status-warning">
+                      {"14/20 (70%)"}
+                    </td>
+                    <td className="p-lab-space-base font-bold text-lab-status-warning">
+                      {"65%"}
+                    </td>
+                    <td className="p-lab-space-base">
+                      <span className="px-2 py-0.5 rounded-lab-DEFAULT bg-lab-status-warning/15 text-lab-status-warning text-[11px] font-bold">
+                        {"RETRY RECOMMENDED"}
+                      </span>
+                    </td>
+                    <td className="p-lab-space-base text-right text-lab-text-muted">
+                      {"Yesterday, 19:10"}
+                    </td>
+                  </tr>
+                  <tr className="hover:bg-lab-bg-surface-hover transition-colors">
+                    <td className="p-lab-space-base font-semibold text-lab-text-primary">
+                      {"SOC Analyst"}
+                    </td>
+                    <td className="p-lab-space-base text-lab-text-secondary">
+                      {"Entry Level"}
+                    </td>
+                    <td className="p-lab-space-base text-lab-status-danger">
+                      {"5/10 (50%)"}
+                    </td>
+                    <td className="p-lab-space-base text-lab-status-warning">
+                      {"12/20 (60%)"}
+                    </td>
+                    <td className="p-lab-space-base font-bold text-lab-status-danger">
+                      {"55%"}
+                    </td>
+                    <td className="p-lab-space-base">
+                      <span className="px-2 py-0.5 rounded-lab-DEFAULT bg-lab-status-danger/15 text-lab-status-danger text-[11px] font-bold">
+                        {"NOT CLEARED"}
+                      </span>
+                    </td>
+                    <td className="p-lab-space-base text-right text-lab-text-muted">
+                      {"Apr 18, 2026"}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+    <footer className="w-full bg-lab-bg-surface border-t border-slate-800/80 py-lab-space-xl">
+      <div className="w-full px-4 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-lab-space-base font-lab-body-sm text-lab-body-sm text-lab-text-muted">
+        <div className="flex items-center gap-lab-space-sm">
+          <span className="font-lab-label-caps text-lab-label-caps text-lab-text-secondary">
+            {"T.O. SKILL LAB PLATFORM"}
+          </span>
+          <span>
+            {"•"}
+          </span>
+          <span>
+            {"Mission-Critical Evaluation Suite"}
+          </span>
+        </div>
+        <div className="flex items-center gap-lab-space-base">
+          <a className="hover:text-lab-on-surface transition-colors" href="#role-tracks">
+            {"Architecture Telemetry"}
+          </a>
+          <a className="hover:text-lab-on-surface transition-colors" href="#role-tracks">
+            {"SOC Scenarios"}
+          </a>
+          <a className="hover:text-lab-on-surface transition-colors" href="#role-tracks">
+            {"Privacy & Compliance"}
+          </a>
+        </div>
+      </div>
+    </footer>
+    </div>
   );
 }
-
-
-
-// import { useEffect, useMemo, useState } from "react";
-// import { Link } from "react-router-dom";
-// import { AnimatePresence, motion } from "framer-motion";
-
-// const CASES = [
-//   {
-//     id: "credential-storm",
-//     code: "INC-1042",
-//     title: "Credential Storm",
-//     subtitle: "Brute-force attack followed by account compromise",
-//     difficulty: "Intermediate",
-//     duration: 35,
-//     accent: "rose",
-//     briefing:
-//       "At 09:18 UTC, the identity team reported a spike in failed VPN logins. Determine the attacking source, affected user, and whether any login succeeded.",
-//     index: "auth",
-//     sourcetype: "vpn:auth",
-//     fields: ["_time", "user", "src_ip", "action", "country", "device"],
-//     events: [
-//       { _time: "09:14:02", user: "d.adeleke", src_ip: "185.220.101.44", action: "failure", country: "NL", device: "unknown" },
-//       { _time: "09:14:19", user: "d.adeleke", src_ip: "185.220.101.44", action: "failure", country: "NL", device: "unknown" },
-//       { _time: "09:14:41", user: "d.adeleke", src_ip: "185.220.101.44", action: "failure", country: "NL", device: "unknown" },
-//       { _time: "09:15:03", user: "d.adeleke", src_ip: "185.220.101.44", action: "failure", country: "NL", device: "unknown" },
-//       { _time: "09:15:22", user: "d.adeleke", src_ip: "185.220.101.44", action: "failure", country: "NL", device: "unknown" },
-//       { _time: "09:15:55", user: "d.adeleke", src_ip: "185.220.101.44", action: "success", country: "NL", device: "Chrome/Linux" },
-//       { _time: "09:17:20", user: "m.okafor", src_ip: "102.89.33.18", action: "success", country: "NG", device: "Edge/Windows" },
-//     ],
-//     missions: [
-//       {
-//         id: "scope",
-//         title: "Scope failed authentication",
-//         instruction: "Search the authentication index for failed VPN events.",
-//         points: 20,
-//         required: ["index=auth", "action=failure"],
-//         recommended: ["sourcetype=vpn:auth"],
-//         result: [{ user: "d.adeleke", failures: 5, src_ip: "185.220.101.44" }],
-//         hint: "Start with index=auth and filter action to failure.",
-//         explanation: "Filtering the index and action early limits the events entering the pipeline.",
-//       },
-//       {
-//         id: "aggregate",
-//         title: "Identify targeted accounts",
-//         instruction: "Count failures by user and source IP, then keep accounts with at least five failures.",
-//         points: 30,
-//         required: ["index=auth", "action=failure", "stats", "count", "by", "user", "src_ip", "where"],
-//         anyOf: [[">=5", "> 4", ">4"]],
-//         result: [{ user: "d.adeleke", src_ip: "185.220.101.44", failures: 5 }],
-//         hint: "Use stats count AS failures BY user, src_ip, followed by where.",
-//         explanation: "stats creates the grouped evidence; where applies the detection threshold after aggregation.",
-//       },
-//       {
-//         id: "confirm",
-//         title: "Confirm compromise",
-//         instruction: "Show failure and success counts per user and source IP with conditional aggregation.",
-//         points: 35,
-//         required: ["index=auth", "stats", "count(eval", "action=", "failure", "success", "by", "user", "src_ip"],
-//         result: [{ user: "d.adeleke", src_ip: "185.220.101.44", failures: 5, successes: 1, verdict: "Likely compromised" }],
-//         hint: "Use count(eval(action=\"failure\")) and count(eval(action=\"success\")).",
-//         explanation: "Conditional aggregation preserves both sides of the authentication sequence in one result row.",
-//       },
-//     ],
-//     questions: [
-//       { id: "actor", label: "Malicious source IP", answer: "185.220.101.44", placeholder: "e.g. 10.0.0.5" },
-//       { id: "account", label: "Compromised account", answer: "d.adeleke", placeholder: "Username" },
-//     ],
-//     conclusion: "Five failures and one success from the same unfamiliar overseas IP strongly indicate credential compromise.",
-//   },
-//   {
-//     id: "powershell",
-//     code: "INC-1078",
-//     title: "Encoded PowerShell",
-//     subtitle: "Endpoint execution and command-line investigation",
-//     difficulty: "Advanced",
-//     duration: 45,
-//     accent: "violet",
-//     briefing:
-//       "EDR detected PowerShell on a finance workstation shortly after a document was opened. Find the suspicious command, its parent process, and the affected host.",
-//     index: "endpoint",
-//     sourcetype: "sysmon:xml",
-//     fields: ["_time", "host", "user", "Image", "ParentImage", "CommandLine", "EventCode"],
-//     events: [
-//       { _time: "11:02:11", host: "FIN-WS17", user: "a.bello", Image: "WINWORD.EXE", ParentImage: "explorer.exe", CommandLine: "WINWORD.EXE invoice.docm", EventCode: 1 },
-//       { _time: "11:02:17", host: "FIN-WS17", user: "a.bello", Image: "powershell.exe", ParentImage: "WINWORD.EXE", CommandLine: "powershell -nop -w hidden -enc SQBFAFgA", EventCode: 1 },
-//       { _time: "11:02:23", host: "FIN-WS17", user: "a.bello", Image: "rundll32.exe", ParentImage: "powershell.exe", CommandLine: "rundll32.exe C:\\ProgramData\\cache.dll,Start", EventCode: 1 },
-//       { _time: "11:03:05", host: "HR-WS04", user: "k.obi", Image: "powershell.exe", ParentImage: "explorer.exe", CommandLine: "powershell Get-Printer", EventCode: 1 },
-//     ],
-//     missions: [
-//       {
-//         id: "encoded",
-//         title: "Find encoded execution",
-//         instruction: "Find process-creation events containing encoded PowerShell switches.",
-//         points: 25,
-//         required: ["index=endpoint", "eventcode=1", "powershell"],
-//         anyOf: [["-enc", "encodedcommand", "*enc*"]],
-//         result: [{ host: "FIN-WS17", user: "a.bello", Image: "powershell.exe", ParentImage: "WINWORD.EXE" }],
-//         hint: "Search EventCode=1, powershell, and an encoded-command term such as *-enc*.",
-//         explanation: "Process creation logs expose executable, parent, and command-line context.",
-//       },
-//       {
-//         id: "extract",
-//         title: "Extract the encoded payload",
-//         instruction: "Use rex with a named group called encoded_payload to extract the value following -enc.",
-//         points: 35,
-//         required: ["index=endpoint", "rex", "?<encoded_payload>", "commandline", "-enc"],
-//         result: [{ host: "FIN-WS17", encoded_payload: "SQBFAFgA", parent: "WINWORD.EXE" }],
-//         hint: "Use | rex field=CommandLine \"-enc\\s+(?<encoded_payload>\\S+)\".",
-//         explanation: "rex performs search-time extraction; a named capture group becomes a result field.",
-//       },
-//       {
-//         id: "chain",
-//         title: "Build the process chain",
-//         instruction: "Create a chronological table containing time, host, user, parent, process, and command line.",
-//         points: 25,
-//         required: ["index=endpoint", "sort", "_time", "table", "host", "user", "parentimage", "image", "commandline"],
-//         result: [
-//           { _time: "11:02:11", parent: "explorer.exe", process: "WINWORD.EXE" },
-//           { _time: "11:02:17", parent: "WINWORD.EXE", process: "powershell.exe" },
-//           { _time: "11:02:23", parent: "powershell.exe", process: "rundll32.exe" },
-//         ],
-//         hint: "Filter to FIN-WS17, sort by _time, then use table with the requested fields.",
-//         explanation: "A chronological process tree explains how the suspicious activity began and what executed next.",
-//       },
-//     ],
-//     questions: [
-//       { id: "host", label: "Affected host", answer: "FIN-WS17", placeholder: "Hostname" },
-//       { id: "parent", label: "Suspicious parent process", answer: "WINWORD.EXE", placeholder: "Process name" },
-//     ],
-//     conclusion: "A macro-enabled Word document spawned hidden encoded PowerShell, which then launched rundll32 from ProgramData.",
-//   },
-//   {
-//     id: "exfiltration",
-//     code: "INC-1121",
-//     title: "Midnight Exfiltration",
-//     subtitle: "Proxy anomaly and outbound data investigation",
-//     difficulty: "Expert",
-//     duration: 50,
-//     accent: "cyan",
-//     briefing:
-//       "Network monitoring shows an unusual outbound transfer after midnight. Identify the host, destination, and volume, then write a useful detection query.",
-//     index: "proxy",
-//     sourcetype: "web:proxy",
-//     fields: ["_time", "src", "dest_domain", "bytes_out", "action", "user_agent"],
-//     events: [
-//       { _time: "00:41:02", src: "10.20.5.77", dest_domain: "sync-storage.cc", bytes_out: 188000000, action: "allowed", user_agent: "python-requests/2.31" },
-//       { _time: "00:43:14", src: "10.20.5.77", dest_domain: "sync-storage.cc", bytes_out: 244000000, action: "allowed", user_agent: "python-requests/2.31" },
-//       { _time: "00:47:51", src: "10.20.5.77", dest_domain: "sync-storage.cc", bytes_out: 221000000, action: "allowed", user_agent: "python-requests/2.31" },
-//       { _time: "00:55:09", src: "10.20.8.14", dest_domain: "updates.microsoft.com", bytes_out: 8400000, action: "allowed", user_agent: "WindowsUpdate" },
-//       { _time: "01:04:33", src: "10.20.5.77", dest_domain: "sync-storage.cc", bytes_out: 197000000, action: "allowed", user_agent: "python-requests/2.31" },
-//     ],
-//     missions: [
-//       {
-//         id: "volume",
-//         title: "Measure outbound volume",
-//         instruction: "Sum bytes sent by source and destination, convert the result to MB, and sort highest first.",
-//         points: 30,
-//         required: ["index=proxy", "stats", "sum(bytes_out)", "by", "src", "dest_domain", "eval"],
-//         anyOf: [["/1024/1024", "/ 1024 / 1024", "/1048576"]],
-//         result: [{ src: "10.20.5.77", dest_domain: "sync-storage.cc", outbound_mb: 810.62 }, { src: "10.20.8.14", dest_domain: "updates.microsoft.com", outbound_mb: 8.01 }],
-//         hint: "Use stats sum(bytes_out) AS total_bytes BY src, dest_domain, then eval outbound_mb=round(total_bytes/1024/1024,2).",
-//         explanation: "Aggregate raw bytes before converting units so the result reflects the complete transfer.",
-//       },
-//       {
-//         id: "timeline",
-//         title: "Plot the transfer timeline",
-//         instruction: "Create a 5-minute timechart of outbound bytes by destination domain.",
-//         points: 25,
-//         required: ["index=proxy", "timechart", "span=5m", "sum(bytes_out)", "by", "dest_domain"],
-//         result: [{ _time: "00:40", "sync-storage.cc": 432000000 }, { _time: "00:45", "sync-storage.cc": 221000000 }, { _time: "01:00", "sync-storage.cc": 197000000 }],
-//         hint: "Use | timechart span=5m sum(bytes_out) BY dest_domain.",
-//         explanation: "timechart returns time-series results and makes burst patterns visible.",
-//       },
-//       {
-//         id: "detect",
-//         title: "Author a reusable detection",
-//         instruction: "Find sources sending over 500 MB in an hour and retain source, destination, and total bytes.",
-//         points: 30,
-//         required: ["index=proxy", "bin", "_time", "span=1h", "stats", "sum(bytes_out)", "by", "src", "dest_domain", "where"],
-//         anyOf: [[">500", "> 500", ">524288000", "> 524288000"]],
-//         result: [{ hour: "00:00", src: "10.20.5.77", dest_domain: "sync-storage.cc", outbound_mb: 810.62, severity: "high" }],
-//         hint: "Bucket _time to one hour, aggregate bytes, convert to MB if needed, and apply the threshold with where.",
-//         explanation: "Time bucketing plus aggregation creates a reusable threshold-based exfiltration analytic.",
-//       },
-//     ],
-//     questions: [
-//       { id: "source", label: "Suspected source host/IP", answer: "10.20.5.77", placeholder: "IP address" },
-//       { id: "destination", label: "Suspicious destination", answer: "sync-storage.cc", placeholder: "Domain" },
-//     ],
-//     conclusion: "The host transferred roughly 811 MB to an uncommon domain with a scripting user-agent shortly after midnight.",
-//   },
-// ];
-
-// const cx = (...values) => values.filter(Boolean).join(" ");
-// const normalize = (value) => value.toLowerCase().replace(/[`']/g, '"').replace(/\s+/g, " ").trim();
-
-// function gradeQuery(query, mission) {
-//   const value = normalize(query);
-//   const missing = mission.required.filter((token) => !value.includes(token.toLowerCase()));
-//   const missingChoice = (mission.anyOf || []).filter((set) => !set.some((token) => value.includes(token.toLowerCase())));
-//   const recommendedMissing = (mission.recommended || []).filter((token) => !value.includes(token.toLowerCase()));
-//   if (!value) return { passed: false, score: 0, message: "Enter an SPL search before running it.", missing: mission.required.slice(0, 3) };
-//   if (missing.length || missingChoice.length) {
-//     const coverage = Math.max(0, mission.required.length - missing.length - missingChoice.length);
-//     return {
-//       passed: false,
-//       score: Math.round((coverage / (mission.required.length + (mission.anyOf || []).length)) * mission.points * 0.45),
-//       message: "The search ran, but it does not yet satisfy the mission objective.",
-//       missing: [...missing.slice(0, 3), ...missingChoice.map((set) => `one of: ${set.join(" / ")}`).slice(0, 1)],
-//     };
-//   }
-//   return {
-//     passed: true,
-//     score: mission.points,
-//     message: recommendedMissing.length ? "Mission passed. Add the recommended filter for a more efficient search." : "Mission passed. The SPL returns the required evidence.",
-//     missing: [],
-//     optimization: recommendedMissing,
-//   };
-// }
-
-// function Badge({ children, tone = "slate" }) {
-//   const tones = {
-//     slate: "border-slate-700 bg-slate-800/80 text-slate-300",
-//     emerald: "border-emerald-500/30 bg-emerald-500/10 text-emerald-300",
-//     amber: "border-amber-500/30 bg-amber-500/10 text-amber-300",
-//     rose: "border-rose-500/30 bg-rose-500/10 text-rose-300",
-//     violet: "border-violet-500/30 bg-violet-500/10 text-violet-300",
-//     cyan: "border-cyan-500/30 bg-cyan-500/10 text-cyan-300",
-//   };
-//   return <span className={cx("inline-flex rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider", tones[tone])}>{children}</span>;
-// }
-
-// function Table({ rows }) {
-//   if (!rows?.length) return <p className="p-5 text-sm text-slate-500">No matching events.</p>;
-//   const columns = Object.keys(rows[0]);
-//   return (
-//     <div className="overflow-x-auto">
-//       <table className="min-w-full text-left font-mono text-xs">
-//         <thead className="border-y border-slate-800 bg-slate-950/70 text-slate-500">
-//           <tr>{columns.map((column) => <th key={column} className="whitespace-nowrap px-4 py-3 font-semibold">{column}</th>)}</tr>
-//         </thead>
-//         <tbody className="divide-y divide-slate-800/80">
-//           {rows.map((row, rowIndex) => (
-//             <tr key={rowIndex} className="hover:bg-slate-800/30">
-//               {columns.map((column) => <td key={column} className="max-w-[320px] whitespace-nowrap px-4 py-3 text-slate-300">{String(row[column])}</td>)}
-//             </tr>
-//           ))}
-//         </tbody>
-//       </table>
-//     </div>
-//   );
-// }
-
-// function CasePicker({ onSelect, history }) {
-//   return (
-//     <main className="min-h-screen bg-[#070b14] text-white">
-//       <div className="mx-auto max-w-7xl px-5 pb-20 pt-8 sm:px-8">
-//         <header className="flex flex-wrap items-center justify-between gap-4">
-//           <Link to="/toskillab" className="flex items-center gap-3 font-bold"><span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-PURPLE to-violet-500">TO</span> Skill Lab</Link>
-//           <Badge tone="emerald">Simulator online</Badge>
-//         </header>
-//         <section className="py-16 lg:py-24">
-//           <div className="max-w-4xl">
-//             <Badge tone="violet">Splunk SOC Workspace</Badge>
-//             <h1 className="mt-6 text-4xl font-black leading-tight sm:text-6xl">Investigate real incidents.<br/><span className="bg-gradient-to-r from-violet-400 to-cyan-300 bg-clip-text text-transparent">Prove your SPL skills.</span></h1>
-//             <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-400">Work through realistic security data, write searches in a simulated Splunk console, collect evidence, and submit a defensible analyst conclusion.</p>
-//           </div>
-//           <div className="mt-12 grid gap-5 lg:grid-cols-3">
-//             {CASES.map((item, index) => {
-//               const completed = history[item.id];
-//               return (
-//                 <motion.button key={item.id} type="button" onClick={() => onSelect(index)} whileHover={{ y: -6 }} className="group rounded-3xl border border-slate-800 bg-slate-900/70 p-6 text-left shadow-2xl shadow-black/20 transition hover:border-violet-500/50">
-//                   <div className="flex items-center justify-between"><Badge tone={item.accent}>{item.difficulty}</Badge><span className="font-mono text-xs text-slate-600">{item.code}</span></div>
-//                   <div className="my-8 grid h-14 w-14 place-items-center rounded-2xl border border-slate-700 bg-slate-950 text-2xl">{index === 0 ? "⌁" : index === 1 ? ">_" : "↗"}</div>
-//                   <h2 className="text-xl font-extrabold">{item.title}</h2>
-//                   <p className="mt-2 min-h-[48px] text-sm leading-6 text-slate-400">{item.subtitle}</p>
-//                   <div className="mt-7 flex items-center justify-between border-t border-slate-800 pt-5 text-sm"><span className="text-slate-500">{item.duration} min · {item.missions.length} missions</span><span className="font-bold text-violet-300">{completed ? `${completed.score}% complete` : "Start case →"}</span></div>
-//                 </motion.button>
-//               );
-//             })}
-//           </div>
-//         </section>
-//       </div>
-//     </main>
-//   );
-// }
-
-// function LabWorkspace({ caseData, onExit, onComplete }) {
-//   const [missionIndex, setMissionIndex] = useState(0);
-//   const [query, setQuery] = useState(`index=${caseData.index} sourcetype=${caseData.sourcetype}`);
-//   const [run, setRun] = useState(null);
-//   const [completed, setCompleted] = useState({});
-//   const [hints, setHints] = useState({});
-//   const [findings, setFindings] = useState({});
-//   const [tab, setTab] = useState("events");
-//   const [elapsed, setElapsed] = useState(0);
-//   const [submitted, setSubmitted] = useState(false);
-//   const mission = caseData.missions[missionIndex];
-
-//   useEffect(() => {
-//     const timer = window.setInterval(() => setElapsed((value) => value + 1), 1000);
-//     return () => window.clearInterval(timer);
-//   }, []);
-
-//   useEffect(() => {
-//     const saved = localStorage.getItem(`toSplunkLab:${caseData.id}`);
-//     if (!saved) return;
-//     try {
-//       const parsed = JSON.parse(saved);
-//       setMissionIndex(parsed.missionIndex || 0);
-//       setCompleted(parsed.completed || {});
-//       setHints(parsed.hints || {});
-//       setFindings(parsed.findings || {});
-//     } catch { localStorage.removeItem(`toSplunkLab:${caseData.id}`); }
-//   }, [caseData.id]);
-
-//   useEffect(() => {
-//     localStorage.setItem(`toSplunkLab:${caseData.id}`, JSON.stringify({ missionIndex, completed, hints, findings }));
-//   }, [caseData.id, missionIndex, completed, hints, findings]);
-
-//   const runSearch = () => {
-//     const grade = gradeQuery(query, mission);
-//     setRun({ ...grade, rows: grade.passed ? mission.result : [] });
-//     setTab("results");
-//     if (grade.passed) setCompleted((value) => ({ ...value, [mission.id]: Math.max(value[mission.id] || 0, grade.score) }));
-//   };
-
-//   const missionPoints = Object.values(completed).reduce((sum, value) => sum + value, 0);
-//   const maxMissionPoints = caseData.missions.reduce((sum, item) => sum + item.points, 0);
-//   const correctFindings = caseData.questions.filter((item) => normalize(findings[item.id] || "") === normalize(item.answer)).length;
-//   const hintsUsed = Object.keys(hints).length;
-//   const canSubmit = Object.keys(completed).length === caseData.missions.length && caseData.questions.every((item) => findings[item.id]?.trim());
-//   const score = Math.max(0, Math.round(((missionPoints + correctFindings * 15) / (maxMissionPoints + caseData.questions.length * 15)) * 100) - hintsUsed * 3);
-
-//   const submit = () => {
-//     if (!canSubmit) return;
-//     setSubmitted(true);
-//     onComplete({ caseId: caseData.id, score, elapsed, completedAt: new Date().toISOString(), hintsUsed });
-//   };
-
-//   const clock = `${String(Math.floor(elapsed / 60)).padStart(2, "0")}:${String(elapsed % 60).padStart(2, "0")}`;
-
-//   if (submitted) {
-//     const strong = score >= 80;
-//     return (
-//       <main className="min-h-screen bg-[#070b14] px-5 py-10 text-white">
-//         <div className="mx-auto max-w-5xl">
-//           <div className="rounded-[32px] border border-slate-800 bg-slate-900/80 p-7 shadow-2xl sm:p-10">
-//             <div className="flex flex-wrap items-start justify-between gap-6"><div><Badge tone={strong ? "emerald" : score >= 60 ? "amber" : "rose"}>Case completed</Badge><h1 className="mt-4 text-3xl font-black">Investigation report</h1><p className="mt-2 text-slate-400">{caseData.code} · {caseData.title}</p></div><div className="grid h-28 w-28 place-items-center rounded-full border-8 border-violet-500/30 bg-violet-500/10"><div className="text-center"><b className="text-3xl">{score}%</b><span className="block text-[10px] uppercase tracking-widest text-slate-400">score</span></div></div></div>
-//             <div className="mt-9 grid gap-4 sm:grid-cols-3">{[["SPL missions", `${Object.keys(completed).length}/${caseData.missions.length}`], ["Evidence accuracy", `${correctFindings}/${caseData.questions.length}`], ["Investigation time", clock]].map(([label, value]) => <div key={label} className="rounded-2xl border border-slate-800 bg-slate-950/60 p-5"><p className="text-xs uppercase tracking-wider text-slate-500">{label}</p><p className="mt-2 text-2xl font-bold">{value}</p></div>)}</div>
-//             <section className="mt-8 rounded-2xl border border-slate-800 bg-slate-950/60 p-6"><h2 className="font-bold text-violet-300">Analyst conclusion</h2><p className="mt-3 leading-7 text-slate-300">{caseData.conclusion}</p></section>
-//             <section className="mt-5 rounded-2xl border border-slate-800 p-6"><h2 className="font-bold">Hiring signal</h2><p className="mt-2 text-slate-400">{score >= 85 ? "Strong evidence of practical Splunk investigation ability. Ready for an advanced technical interview." : score >= 70 ? "Good investigation foundation. Review the missed evidence before a technical interview." : "Complete the case again without hints and strengthen SPL transformation commands."}</p></section>
-//             <div className="mt-8 flex flex-wrap gap-3"><button onClick={onExit} className="rounded-xl bg-violet-600 px-6 py-3 font-bold hover:bg-violet-500">Choose another case</button><button onClick={() => window.location.reload()} className="rounded-xl border border-slate-700 px-6 py-3 font-bold hover:bg-slate-800">Retry case</button></div>
-//           </div>
-//         </div>
-//       </main>
-//     );
-//   }
-
-//   return (
-//     <main className="min-h-screen bg-[#070b14] text-white">
-//       <header className="border-b border-slate-800 bg-slate-950/90 px-4 py-3 backdrop-blur-xl">
-//         <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-4"><button onClick={onExit} className="text-sm font-bold text-slate-400 hover:text-white">← Case library</button><div className="hidden text-center sm:block"><p className="text-sm font-bold">{caseData.code} · {caseData.title}</p><p className="text-[11px] text-slate-500">Simulation environment</p></div><div className="flex items-center gap-3"><Badge tone="emerald">Live</Badge><span className="font-mono text-sm text-slate-300">{clock}</span></div></div>
-//       </header>
-
-//       <div className="mx-auto grid max-w-[1500px] gap-4 p-4 xl:grid-cols-[300px_minmax(0,1fr)_320px]">
-//         <aside className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4 xl:min-h-[calc(100vh-90px)]">
-//           <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Investigation</p>
-//           <h1 className="mt-3 text-xl font-black">{caseData.title}</h1><p className="mt-2 text-sm leading-6 text-slate-400">{caseData.briefing}</p>
-//           <div className="my-5 h-px bg-slate-800" />
-//           <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Missions</p>
-//           <div className="space-y-2">{caseData.missions.map((item, index) => <button key={item.id} onClick={() => { setMissionIndex(index); setRun(null); setTab("events"); }} className={cx("flex w-full gap-3 rounded-xl border p-3 text-left transition", index === missionIndex ? "border-violet-500/50 bg-violet-500/10" : "border-transparent hover:bg-slate-800/60")}><span className={cx("grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-bold", completed[item.id] ? "bg-emerald-500 text-slate-950" : index === missionIndex ? "bg-violet-500" : "bg-slate-800 text-slate-500")}>{completed[item.id] ? "✓" : index + 1}</span><span><b className="block text-sm">{item.title}</b><small className="text-slate-500">{item.points} points</small></span></button>)}</div>
-//           <div className="mt-6 rounded-xl bg-slate-950/70 p-4"><div className="flex justify-between text-xs"><span className="text-slate-500">Case progress</span><b>{Object.keys(completed).length}/{caseData.missions.length}</b></div><div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-800"><div className="h-full bg-gradient-to-r from-violet-500 to-cyan-400 transition-all" style={{ width: `${(Object.keys(completed).length / caseData.missions.length) * 100}%` }} /></div></div>
-//         </aside>
-
-//         <section className="min-w-0 space-y-4">
-//           <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
-//             <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-wider text-violet-300">Mission {missionIndex + 1}</p><h2 className="mt-1 text-lg font-bold">{mission.title}</h2></div><Badge tone={completed[mission.id] ? "emerald" : "amber"}>{completed[mission.id] ? "Passed" : `${mission.points} pts`}</Badge></div>
-//             <p className="mt-3 text-sm leading-6 text-slate-400">{mission.instruction}</p>
-//           </div>
-
-//           <div className="overflow-hidden rounded-2xl border border-slate-800 bg-[#0b101b] shadow-2xl">
-//             <div className="flex items-center justify-between border-b border-slate-800 bg-slate-900 px-4 py-3"><div className="flex gap-1.5"><i className="h-3 w-3 rounded-full bg-rose-500"/><i className="h-3 w-3 rounded-full bg-amber-400"/><i className="h-3 w-3 rounded-full bg-emerald-500"/></div><span className="font-mono text-xs text-slate-500">search & reporting</span><span className="text-xs text-emerald-400">● connected</span></div>
-//             <div className="p-4">
-//               <label className="mb-2 block text-[11px] font-bold uppercase tracking-wider text-slate-500">SPL search</label>
-//               <textarea value={query} onChange={(event) => setQuery(event.target.value)} spellCheck={false} className="h-32 w-full resize-none rounded-xl border border-slate-700 bg-slate-950 p-4 font-mono text-sm leading-6 text-cyan-200 outline-none transition focus:border-violet-500" placeholder="index=... | stats ..." />
-//               <div className="mt-3 flex flex-wrap items-center justify-between gap-3"><div className="text-xs text-slate-500">Time range: <b className="text-slate-300">Last 24 hours</b></div><button onClick={runSearch} className="rounded-lg bg-emerald-500 px-6 py-2.5 text-sm font-black text-slate-950 hover:bg-emerald-400">▶ Run search</button></div>
-//             </div>
-//             <div className="flex gap-1 border-y border-slate-800 px-4">{["events", "results"].map((item) => <button key={item} onClick={() => setTab(item)} className={cx("border-b-2 px-4 py-3 text-xs font-bold capitalize", tab === item ? "border-violet-400 text-white" : "border-transparent text-slate-500")}>{item} {item === "events" ? `(${caseData.events.length})` : run?.rows ? `(${run.rows.length})` : ""}</button>)}</div>
-//             <div className="min-h-[250px]">
-//               {tab === "events" ? <Table rows={caseData.events} /> : run ? <><div className={cx("m-4 rounded-xl border p-4 text-sm", run.passed ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-200" : "border-amber-500/30 bg-amber-500/10 text-amber-100")}><b>{run.message}</b>{run.missing?.length > 0 && <p className="mt-2 text-xs opacity-80">Still needed: {run.missing.join(", ")}</p>}{run.optimization?.length > 0 && <p className="mt-2 text-xs opacity-80">Optimization: add {run.optimization.join(", ")}</p>}</div><Table rows={run.rows} /></> : <p className="p-8 text-center text-sm text-slate-500">Run your SPL to view mission results.</p>}
-//             </div>
-//           </div>
-
-//           <div className="flex justify-between gap-3"><button disabled={missionIndex === 0} onClick={() => { setMissionIndex((v) => v - 1); setRun(null); }} className="rounded-xl border border-slate-700 px-5 py-3 text-sm font-bold disabled:opacity-30">Previous</button><button disabled={!completed[mission.id] || missionIndex === caseData.missions.length - 1} onClick={() => { setMissionIndex((v) => v + 1); setRun(null); setTab("events"); }} className="rounded-xl bg-violet-600 px-5 py-3 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-30">Next mission →</button></div>
-//         </section>
-
-//         <aside className="space-y-4">
-//           <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5"><div className="flex items-center justify-between"><h2 className="font-bold">Data source</h2><Badge>{caseData.events.length} events</Badge></div><dl className="mt-4 space-y-3 text-xs"><div className="flex justify-between"><dt className="text-slate-500">index</dt><dd className="font-mono text-cyan-300">{caseData.index}</dd></div><div className="flex justify-between"><dt className="text-slate-500">sourcetype</dt><dd className="font-mono text-cyan-300">{caseData.sourcetype}</dd></div></dl><div className="mt-4 flex flex-wrap gap-1.5">{caseData.fields.map((field) => <span key={field} className="rounded bg-slate-800 px-2 py-1 font-mono text-[10px] text-slate-400">{field}</span>)}</div></section>
-//           <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5"><div className="flex items-center justify-between"><h2 className="font-bold">Analyst notebook</h2><span className="text-xs text-slate-500">Evidence</span></div><div className="mt-4 space-y-4">{caseData.questions.map((item) => <label key={item.id} className="block text-xs text-slate-400">{item.label}<input value={findings[item.id] || ""} onChange={(event) => setFindings((value) => ({ ...value, [item.id]: event.target.value }))} placeholder={item.placeholder} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 font-mono text-xs text-white outline-none focus:border-violet-500" /></label>)}</div></section>
-//           <section className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-5"><div className="flex items-center justify-between"><h2 className="font-bold text-amber-200">Need a hint?</h2><span className="text-xs text-amber-400">−3 pts</span></div>{hints[mission.id] ? <p className="mt-3 text-sm leading-6 text-amber-100/80">{mission.hint}</p> : <button onClick={() => setHints((value) => ({ ...value, [mission.id]: true }))} className="mt-3 text-sm font-bold text-amber-300 hover:text-amber-200">Reveal mission hint</button>}</section>
-//           <button disabled={!canSubmit} onClick={submit} className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-4 font-black shadow-lg shadow-violet-950/40 disabled:cursor-not-allowed disabled:grayscale disabled:opacity-40">Submit investigation</button>
-//           {!canSubmit && <p className="text-center text-xs leading-5 text-slate-500">Complete every mission and fill in the evidence notebook to submit.</p>}
-//         </aside>
-//       </div>
-//     </main>
-//   );
-// }
-
-// export default function SplunkLab() {
-//   const [selected, setSelected] = useState(null);
-//   const [history, setHistory] = useState(() => {
-//     try { return JSON.parse(localStorage.getItem("toSplunkLabHistory") || "{}"); } catch { return {}; }
-//   });
-
-//   const complete = (result) => {
-//     setHistory((value) => {
-//       const next = { ...value, [result.caseId]: result };
-//       localStorage.setItem("toSplunkLabHistory", JSON.stringify(next));
-//       return next;
-//     });
-//   };
-
-//   return (
-//     <AnimatePresence mode="wait">
-//       {selected === null ? <motion.div key="picker" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><CasePicker onSelect={setSelected} history={history} /></motion.div> : <motion.div key={CASES[selected].id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><LabWorkspace caseData={CASES[selected]} onExit={() => setSelected(null)} onComplete={complete} /></motion.div>}
-//     </AnimatePresence>
-//   );
-// }

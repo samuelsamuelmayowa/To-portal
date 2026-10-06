@@ -1,0 +1,21 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Material+Symbols+Outlined:wght@400&display=swap");
+
+.splunk-lab { color-scheme: dark; min-height: 100vh; }
+.splunk-lab [id] { scroll-margin-top: 5rem; }
+.splunk-lab .material-symbols-outlined {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+}
+.splunk-lab button:focus-visible, .splunk-lab a:focus-visible, .splunk-lab select:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 4px;
+}
+.splunk-lab button:disabled { cursor: default; }
