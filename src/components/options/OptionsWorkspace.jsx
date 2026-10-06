@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { RefreshCw, ShieldCheck, Search } from 'lucide-react';
 import StockChart from '../trading/StockChart';
@@ -8,6 +8,7 @@ import { OptionsAccountSummary, OptionsPositions, OptionsHistory } from './Optio
 import { OptionsGreeks, QueryStatus } from './OptionsPrimitives';
 import { useOptionsData, useOptionsSearch } from './useOptionsData';
 import { money, getOptionMark, calculateBreakeven, calculateContractCost, calculateDTE, getMoneyness, isStale, canBuyOptionsOrder } from '../../lib/optionsCalculations';
+import { logOptionsDiagnostic } from './optionsDiagnostics';
 import './OptionsWorkspace.css';
 
 export default function OptionsWorkspace({ active = true }) {
@@ -21,17 +22,49 @@ export default function OptionsWorkspace({ active = true }) {
   const [explored, setExplored] = useState(false);
   const [notice, setNotice] = useState('');
   const [resetConfirm, setResetConfirm] = useState(false);
+  const selectedContractRef = useRef(selectedContract);
+  selectedContractRef.current = selectedContract;
   const data = useOptionsData(asset.symbol, expiration, type, active);
   const results = useOptionsSearch(search, active);
   const { quote, expirations, chain, account, positions, history, order, reset } = data;
   const dates = expirations.data?.expirations || [];
   useEffect(() => {
+    logOptionsDiagnostic('TO_OPTIONS_BUILD', {
+      buildId: import.meta.env.VITE_OPTIONS_BUILD_ID || 'unversioned',
+      assets: performance.getEntriesByType('resource')
+        .map(resource => resource.name)
+        .filter(name => name.includes('/assets/') && name.endsWith('.js')),
+    });
+    return () => {
+      if (selectedContractRef.current) {
+        logOptionsDiagnostic('CLEAR_SELECTED_CONTRACT', {
+          reason: 'component unmounted',
+          contract: selectedContractRef.current,
+        });
+      }
+    };
+  }, []);
+  useEffect(() => {
     if (expirations.data && !expirations.data.expirations.includes(expiration)) {
+      if (selectedContract) {
+        logOptionsDiagnostic('CLEAR_SELECTED_CONTRACT', { reason: 'expiration changed', contract: selectedContract });
+      }
       setSelectedContract(null);
       setExplored(false);
       setExpiration(expirations.data.expirations[0] || '');
     }
-  }, [expirations.data, expiration]);
+  }, [expirations.data, expiration, selectedContract]);
+  useEffect(() => {
+    if (!selectedContract) return;
+    const contractInChain = chain.data?.contracts.some(c => c.symbol === selectedContract.symbol);
+    if (chain.isError || (chain.data && !contractInChain)) {
+      logOptionsDiagnostic('SELECTED_CONTRACT_NOT_IN_CHAIN', {
+        reason: 'chain reload',
+        symbol: selectedContract.symbol,
+        chainError: chain.isError,
+      });
+    }
+  }, [chain.data, chain.isError, selectedContract]);
   const contract = !chain.isError && selectedContract?.underlyingSymbol === asset.symbol && selectedContract?.expiration === expiration && selectedContract?.type === type
     ? chain.data?.contracts.find(c => c.symbol === selectedContract.symbol) || null
     : null;
@@ -63,8 +96,11 @@ export default function OptionsWorkspace({ active = true }) {
                 ? 'Order processing'
                 : '';
   const milestones = [Boolean(contract), explored, history.data?.history.some(f => f.action === 'buy'), history.data?.history.some(f => f.action === 'sell')];
-  function clearSelection() { setSelectedContract(null); setExplored(false); setNotice(''); order.reset(); }
-  function chooseAsset(next) { clearSelection(); setAsset(next); setExpiration(''); setSearch(''); }
+  function clearSelection(reason) {
+    if (selectedContract) logOptionsDiagnostic('CLEAR_SELECTED_CONTRACT', { reason, contract: selectedContract });
+    setSelectedContract(null); setExplored(false); setNotice(''); order.reset();
+  }
+  function chooseAsset(next) { clearSelection('symbol changed'); setAsset(next); setExpiration(''); setSearch(''); }
   async function submit(symbol, qty, action) {
     setNotice('');
     try { const result = await order.mutateAsync({ symbol, quantity: qty, action, requestId: crypto.randomUUID() }); setNotice(`${action === 'buy' ? 'Buy to Open' : 'Sell to Close'} filled${result.fill ? ` at ${money(result.fill.premium)} per share` : ''}. Options virtual funds updated.`); } catch { /* Mutation error is displayed below. */ }
@@ -84,10 +120,10 @@ export default function OptionsWorkspace({ active = true }) {
       <section className="op-panel"><div className="op-underlying"><div className="op-search"><label htmlFor="options-search"><Search size={16} /> Find an underlying</label><input id="options-search" placeholder="Search symbol or company" value={search} onChange={e => setSearch(e.target.value)} autoComplete="off" />{search && <div className="op-search-results">{results.isFetching && <p role="status">Searching…</p>}{results.isError && <p role="alert">{results.error.message}</p>}{results.data?.map(row => <button key={row.symbol} onClick={() => chooseAsset(row)}><strong>{row.symbol}</strong> {row.name}</button>)}{results.isSuccess && !results.data.length && <p>No matching stocks.</p>}</div>}</div><div><h3>{asset.symbol} <span className="op-muted">{asset.name}</span></h3><strong className="op-spot-price">{money(underlyingQuote?.marketPrice)}</strong><p className="op-note">Bid {money(underlyingQuote?.bid)} / Ask {money(underlyingQuote?.ask)} · {underlyingQuote?.timestamp ? new Date(underlyingQuote.timestamp).toLocaleString() : 'Timestamp unavailable'}</p></div></div><QueryStatus query={quote}>underlying quote</QueryStatus></section>
       <section className="op-panel op-chart-panel"><div className="op-heading"><h3>Underlying chart</h3><span className="op-tag">{asset.symbol}</span></div><StockChart symbol={asset.symbol} active={active} /></section>
       <section className="op-panel"><div className="op-heading"><h3>Options Chain</h3><div className="op-toggle">{[false, true].map(value => <button key={String(value)} aria-pressed={advanced === value} onClick={() => setAdvanced(value)}>{value ? 'Greeks & IV' : 'Basic'}</button>)}</div></div>
-        <div className="op-filters"><label>Expiration<select value={expiration} disabled={!dates.length} onChange={e => { clearSelection(); setExpiration(e.target.value); }}>{!dates.length && <option value="">No expirations</option>}{dates.map(date => <option key={date} value={date}>{date} · {calculateDTE(date)} DTE</option>)}</select></label><div className="op-toggle">{['call', 'put'].map(value => <button key={value} aria-pressed={type === value} onClick={() => { clearSelection(); setType(value); }}>{value === 'call' ? 'CALLS' : 'PUTS'}</button>)}</div></div>
+        <div className="op-filters"><label>Expiration<select value={expiration} disabled={!dates.length} onChange={e => { clearSelection('expiration changed'); setExpiration(e.target.value); }}>{!dates.length && <option value="">No expirations</option>}{dates.map(date => <option key={date} value={date}>{date} · {calculateDTE(date)} DTE</option>)}</select></label><div className="op-toggle">{['call', 'put'].map(value => <button key={value} aria-pressed={type === value} onClick={() => { clearSelection('option type changed'); setType(value); }}>{value === 'call' ? 'CALLS' : 'PUTS'}</button>)}</div></div>
         <QueryStatus query={expirations} empty={!dates.length && 'No Options expirations are available for this symbol.'}>expiration dates</QueryStatus>
         {expirations.data?.hasMore && <p className="op-warning">The provider returned a partial expiration list.</p>}
-        {expiration && <OptionsChain query={chain} spot={underlyingQuote?.marketPrice} selectedContract={contract} onSelectContract={c => { setSelectedContract(c); setExplored(false); setNotice(''); order.reset(); }} advanced={advanced} />}
+        {expiration && <OptionsChain query={chain} spot={underlyingQuote?.marketPrice} selectedContract={contract} onSelectContract={c => { logOptionsDiagnostic('SET_SELECTED_CONTRACT', c); setSelectedContract(c); setExplored(false); setNotice(''); order.reset(); }} advanced={advanced} />}
       </section>
     </div><aside className="op-aside">
       <section className="op-panel"><span className="op-eyebrow">Selected contract</span><h3>{contract ? `${asset.symbol} ${money(contract.strike)} ${type.toUpperCase()}` : 'Choose a strike'}</h3>{contract ? <><p className="op-note">{contract.symbol} · {contract.expiration} · {calculateDTE(contract.expiration)} DTE</p><div className="op-heading"><strong className="op-spot-price">{money(premium)}</strong><span className="op-tag">{getMoneyness(type, contract.strike, underlyingQuote?.marketPrice, chain.data?.contracts.map(c => c.strike))}</span></div><p className="op-note">Estimated premium / share · Bid {money(contract.bid)} · Ask {money(contract.ask)} · Last {money(contract.last)}</p><OptionsGreeks contract={contract} /><p className="op-note">Quote: {contract.quoteTimestamp ? new Date(contract.quoteTimestamp).toLocaleString() : 'Unavailable'}<br />Premium timestamp: {contract.timestamp ? new Date(contract.timestamp).toLocaleString() : 'Unavailable'}</p>{stale && <p className="op-warning">Stale or unavailable timestamp. Practice trading is disabled until fresh market data is available.</p>}{premium == null && <p className="op-warning">This contract has no usable quote or latest trade.</p>}</> : <p className="op-empty">Select a contract from the chain to see its data and plan a trade.</p>}</section>

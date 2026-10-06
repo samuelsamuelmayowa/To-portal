@@ -2,6 +2,7 @@ import { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { money, decimal, percent, getOptionMark, getMoneyness, calculateBreakeven, calculateContractCost } from '../../lib/optionsCalculations';
 import { GreekLabel, QueryStatus } from './OptionsPrimitives';
+import { logOptionsDiagnostic } from './optionsDiagnostics';
 export default function OptionsChain({ query, spot, selectedContract, onSelectContract, advanced }) {
   const contracts = query.data?.contracts || [];
   const strikes = contracts.map(c => c.strike);
@@ -16,7 +17,10 @@ export default function OptionsChain({ query, spot, selectedContract, onSelectCo
         tabIndex={0}
         aria-pressed={isSelected}
         aria-label={`Select ${c.symbol}, ${c.type} ${money(c.strike)} expiring ${c.expiration}`}
-        onClick={() => onSelectContract(c)}
+        onClick={() => {
+          logOptionsDiagnostic('ROW_CLICK', { symbol: c.symbol, strike: c.strike, expiration: c.expiration, type: c.type });
+          onSelectContract(c);
+        }}
         onKeyDown={event => {
           if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();

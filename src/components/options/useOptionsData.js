@@ -30,7 +30,7 @@ export function useOptionsData(symbol, expiration, type, active) {
   const positions = useQuery(privateQuery('positions'));
   const history = useQuery({ ...privateQuery('history'), refetchInterval: false });
   const refreshAccount = () => client.invalidateQueries({ queryKey: ['options-private', userId] });
-  const order = useMutation({ mutationFn: body => optionsRequest('orders', { body, authenticated: true }), onSuccess: refreshAccount, retry: false });
+  const order = useMutation({ mutationFn: body => optionsRequest('orders', { body, authenticated: true }), onSuccess: () => { void refreshAccount(); }, retry: false });
   const reset = useMutation({ mutationFn: () => optionsRequest('reset', { body: {}, authenticated: true }), onSuccess: refreshAccount, retry: false });
   return { quote, expirations, chain, account, positions, history, order, reset, authError, session, refresh: () => { quote.refetch(); expirations.refetch(); if (expiration) chain.refetch(); refreshAccount(); } };
 }

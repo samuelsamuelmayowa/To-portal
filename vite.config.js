@@ -1,8 +1,14 @@
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
+import process from "node:process";
 import path from "path";
 import jobsHandler from "./api/jobs.js";
 import { createOptionsHandler } from "./api/options-chain.js";
+
+const optionsBuildId = process.env.VERCEL_GIT_COMMIT_SHA
+  || process.env.GITHUB_SHA
+  || process.env.VITE_OPTIONS_BUILD_ID
+  || new Date().toISOString();
 
 function optionsApi() {
   let handler;
@@ -37,6 +43,9 @@ function careersApi() {
 }
 
 export default defineConfig({
+  define: {
+    "import.meta.env.VITE_OPTIONS_BUILD_ID": JSON.stringify(optionsBuildId),
+  },
   plugins: [react(), careersApi(), optionsApi()],
   resolve: {
     alias: {
