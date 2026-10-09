@@ -2,8 +2,11 @@ import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import process from "node:process";
 import path from "path";
+import { fileURLToPath } from "node:url";
 import jobsHandler from "./api/jobs.js";
 import { createOptionsHandler } from "./api/options-chain.js";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const optionsBuildId = process.env.VERCEL_GIT_COMMIT_SHA
   || process.env.GITHUB_SHA
@@ -28,6 +31,7 @@ function optionsApi() {
 }
 
 function careersApi() {
+  let backendUrl;
   const configure = (server) => {
     server.middlewares.use("/api/jobs", (request, response, next) => {
       if (request.url.split("?")[0] !== "/") return next();
@@ -36,10 +40,18 @@ function careersApi() {
         response.setHeader("Content-Type", "application/json");
         response.end(JSON.stringify(payload));
       };
-      jobsHandler(request, response).catch(next);
+      jobsHandler(request, response, { backendUrl }).catch(next);
     });
   };
-  return { name: "careers-api", configureServer: configure, configurePreviewServer: configure };
+  return {
+    name: "careers-api",
+    configResolved(config) {
+      const env = loadEnv(config.mode, config.envDir, "BACKEND_");
+      backendUrl = env.BACKEND_API_URL || process.env.BACKEND_API_URL;
+    },
+    configureServer: configure,
+    configurePreviewServer: configure,
+  };
 }
 
 export default defineConfig({

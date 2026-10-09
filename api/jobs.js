@@ -1,69 +1,43 @@
-﻿const sources = [
-  { name: 'Remotive', url: 'https://remotive.com/api/remote-jobs', field: 'jobs' },
-  { name: 'Arbeitnow', url: 'https://www.arbeitnow.com/api/job-board-api', field: 'data' },
-];
-const cache = new Map();
-const ALLOWED_COUNTRY_PATTERNS = [
-  /\b(?:us|u\.?s\.?|usa|u\.?s\.?a\.?|united states(?: of america)?|america)\b/i,
-  /\b(?:uk|u\.?k\.?|united kingdom|great britain|england|scotland|wales|northern ireland)\b/i,
-  /\bcanada\b/i,
-  /\bgermany\b/i,
-];
+const DEFAULT_BACKEND_URL = "https://to-backendapi-v1-kctb.onrender.com";
+const serverEnv = globalThis.process ? globalThis.process.env : {};
 
-function isAllowedLocation(location) {
-  return ALLOWED_COUNTRY_PATTERNS.some(pattern => pattern.test(location));
-}
+export default async function handler(request, response, options = {}) {
+  if (request.method !== "GET") {
+    response.setHeader("Allow", "GET");
+    return response.status(405).json({ error: "Method not allowed." });
+  }
 
-function normalize(job, source) {
-  if (!job || typeof job.title !== 'string' || !job.title.trim()) return null;
-  try { if (!['http:', 'https:'].includes(new URL(job.url).protocol)) return null; } catch { return null; }
-  const date = source === 'Remotive' ? new Date(job.publication_date) : new Date(Number(job.created_at) * 1000);
-  const remote = source === 'Remotive' || job.remote === true;
-  return {
-    id: source + '-' + (job.id || job.slug || job.url), title: job.title,
-    company: job.company_name || 'Company not listed',
-    location: job.candidate_required_location || job.location || 'Location not listed',
-    description: typeof job.description === 'string' ? job.description : '',
-    date_posted: Number.isNaN(date.getTime()) ? '' : date.toISOString(),
-    url: job.url, source, remote, ai_work_arrangement: remote ? 'Remote' : '',
-  };
-}
-async function load(source) {
-  const entry = cache.get(source.name) || {};
-  if (entry.expires > Date.now()) return entry.jobs;
-  if (entry.pending) return entry.pending;
-  entry.pending = (async () => {
-    try {
-      const response = await fetch(source.url, { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(15000) });
-      if (!response.ok) throw new Error('Provider unavailable');
-      const data = await response.json();
-      if (!Array.isArray(data[source.field])) throw new Error('Invalid provider response');
-      entry.jobs = data[source.field].map(job => normalize(job, source.name)).filter(Boolean);
-      entry.expires = Date.now() + 21600000;
-      return entry.jobs;
-    } finally { entry.pending = null; }
-  })();
-  cache.set(source.name, entry);
-  return entry.pending;
-}
-export default async function handler(request, response) {
-  if (request.method !== 'GET') {
-    response.setHeader('Allow', 'GET');
-    return response.status(405).json({ error: 'Method not allowed.' });
+  const backendUrl = String(
+    options.backendUrl ||
+      serverEnv.BACKEND_API_URL ||
+      serverEnv.VITE_BACKEND_API ||
+      serverEnv.VITE_API_URL ||
+      DEFAULT_BACKEND_URL,
+  ).trim().replace(/\/+$/, "");
+  let search;
+  try {
+    search = new URL(request.url, "http://localhost").search;
+  } catch {
+    return response.status(400).json({ error: "Invalid jobs request." });
   }
-  const results = await Promise.allSettled(sources.map(load));
-  if (results.every(result => result.status === 'rejected')) {
-    response.setHeader('Cache-Control', 'no-store');
-    return response.status(502).json({ error: 'Job sources are temporarily unavailable. Please try again shortly.' });
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 13_000);
+  try {
+    const upstream = await fetch(`${backendUrl}/api/jobs${search}`, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+      signal: controller.signal,
+    });
+    const payload = await upstream.json();
+    const cacheControl = upstream.headers.get("cache-control");
+    if (cacheControl) response.setHeader("Cache-Control", cacheControl);
+    return response.status(upstream.status).json(payload);
+  } catch {
+    return response
+      .status(502)
+      .json({ error: "Live job search is temporarily unavailable. Please try again later." });
+  } finally {
+    clearTimeout(timeout);
   }
-  const seen = new Set();
-  const jobs = results.flatMap(result => result.status === 'fulfilled' ? result.value : []).filter(job => {
-    if (seen.has(job.url)) return false;
-    seen.add(job.url);
-    return true;
-  }).filter(job => isAllowedLocation(job.location))
-    .sort((a, b) => (Date.parse(b.date_posted) || 0) - (Date.parse(a.date_posted) || 0));
-  const partial = results.some(result => result.status === 'rejected');
-  response.setHeader('Cache-Control', partial ? 'public, s-maxage=60' : 'public, s-maxage=21600, stale-while-revalidate=3600');
-  return response.status(200).json({ jobs, count: jobs.length, partial });
 }

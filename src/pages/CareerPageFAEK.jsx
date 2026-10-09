@@ -1,18 +1,17 @@
 import React, { useEffect, useMemo, useState } from "react";
+import PropTypes from "prop-types";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   ArrowUpRight,
   Briefcase,
   Building2,
-  ChevronLeft,
-  ChevronRight,
   Clock,
   ExternalLink,
   Filter,
   Flame,
   Globe2,
   Layers3,
-  LoaderCircle,
   MapPin,
   Search,
   ShieldCheck,
@@ -22,6 +21,27 @@ import {
   X,
 } from "lucide-react";
 import { fetchCareerJobs } from "../services/jobsApi";
+
+const CAREER_CATEGORIES = [
+  "Splunk Analyst",
+  "Splunk Administrator",
+  "Splunk Engineer",
+  "SOC Analyst",
+  "Cybersecurity Analyst",
+  "Information Security",
+  "Linux Administrator",
+  "System Administrator",
+  "Cloud Engineer",
+  "DevOps Engineer",
+  "Software Engineer",
+  "Backend Developer",
+  "Frontend Developer",
+  "Data Analyst",
+  "AI Engineer",
+  "Machine Learning Engineer",
+  "IT Support",
+  "Network Engineer",
+];
 
 /* ---------- Category Mapping ---------- */
 const CATEGORY_RULES = [
@@ -39,6 +59,8 @@ const CATEGORY_RULES = [
     match: [
       "cybersecurity",
       "cyber security",
+      "information security",
+      "infosec",
       "security analyst",
       "security engineer",
       "soc analyst",
@@ -158,9 +180,9 @@ function safeText(value, fallback = "") {
 
 function getJobDate(job) {
   return (
+    job.datePosted ||
     job.date_posted ||
     job.postedAt ||
-    job.datePosted ||
     job.date_created ||
     job.createdAt ||
     job.updatedAt ||
@@ -193,7 +215,7 @@ function getPostedLabel(job) {
   }
 
   const posted = new Date(date);
-  if (Number.isNaN(posted.getTime())) return "Recently added";
+  if (Number.isNaN(posted.getTime())) return "Date not listed";
 
   const now = new Date();
   const diffDays = Math.floor((now - posted) / (1000 * 60 * 60 * 24));
@@ -207,39 +229,58 @@ function getPostedLabel(job) {
 
 function normalizeJob(job, index) {
   const company = safeText(
-    job.organization || job.company,
-    "Company not listed",
+    job.company || job.organization,
+    "Employer not listed",
   );
-  const location = safeText(
-    job.locations_derived?.join(", ") ||
-      job.location ||
-      job.location_type ||
-      job.ai_work_arrangement,
-    "Location not listed",
-  );
+  const location = safeText(job.location, "Location not listed");
   const description = safeText(
-    job.description_text ||
-      job.description ||
-      job.ai_requirements_summary ||
-      job.ai_core_responsibilities,
-    "Open the job listing to view the complete requirements and apply.",
+    job.description,
+    "Description not provided by the employer.",
   );
   const combinedText = `${job.title || ""} ${description} ${company}`;
 
   return {
     ...job,
-    id: job.id || job.linkedin_id || `${job.title}-${company}-${index}`,
+    id: job.id || `${job.title}-${company}-${index}`,
     title: safeText(job.title, "Untitled Role"),
     company,
     location,
     description,
-    url: safeText(job.url, "#"),
+    url: safeText(job.applyUrl || job.url, ""),
     postedAt: getJobDate(job),
-    category: getCategory(job.title) !== "Other" ? getCategory(job.title) : getCategory(combinedText),
+    category:
+      getCategory(job.title) !== "Other"
+        ? getCategory(job.title)
+        : getCategory(combinedText),
     isNew: isRecentJob(job, index),
     postedLabel: getPostedLabel(job, index),
-    workArrangement: safeText(job.ai_work_arrangement, ""),
+    workArrangement: job.remote ? "Remote" : safeText(job.workArrangement, ""),
+    salaryLabel: formatSalary(job.salary),
   };
+}
+
+function formatSalary(salary) {
+  if (!salary || (salary.min === undefined && salary.max === undefined)) {
+    return "Salary not disclosed.";
+  }
+  const currency = salary.currency;
+  const period = salary.period ? ` / ${salary.period.toLowerCase()}` : "";
+  const formatAmount = (amount) => {
+    if (!currency) return Number(amount).toLocaleString("en-US");
+    try {
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency,
+        maximumFractionDigits: 0,
+      }).format(amount);
+    } catch {
+      return `${currency} ${Number(amount).toLocaleString("en-US")}`;
+    }
+  };
+  if (salary.min !== undefined && salary.max !== undefined) {
+    return `${formatAmount(salary.min)} – ${formatAmount(salary.max)}${period}`;
+  }
+  return `${formatAmount(salary.min ?? salary.max)}${period}`;
 }
 function categoryStyle(category) {
   const map = {
@@ -259,88 +300,128 @@ function categoryStyle(category) {
 
 export default function CareerPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [locationTerm, setLocationTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [workplace, setWorkplace] = useState("");
+  const [employmentType, setEmploymentType] = useState("");
+  const [seniority, setSeniority] = useState("");
+  const [datePosted, setDatePosted] = useState("");
+  const [companyTerm, setCompanyTerm] = useState("");
   const [sortBy, setSortBy] = useState("newest");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [apiJobs, setApiJobs] = useState([]);
-  const [loadingJobs, setLoadingJobs] = useState(true);
-  const [jobsError, setJobsError] = useState("");
-  const [reloadKey, setReloadKey] = useState(0);
-
-  const jobsPerPage = 12;
+  const [selectedJob, setSelectedJob] = useState(null);
 
   useEffect(() => {
-    const controller = new AbortController();
+    const timeout = window.setTimeout(() => setDebouncedSearch(searchTerm.trim()), 450);
+    return () => window.clearTimeout(timeout);
+  }, [searchTerm]);
 
-    async function loadJobs() {
-      setLoadingJobs(true);
-      setJobsError("");
-
-      try {
-        const result = await fetchCareerJobs({
-          signal: controller.signal,
-        });
-
-        setApiJobs(result);
-      } catch (error) {
-        if (error?.name !== "AbortError") {
-          setJobsError(error?.message || "Unable to load jobs right now.");
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setLoadingJobs(false);
-        }
+  const apiCategory = CAREER_CATEGORIES.includes(selectedCategory)
+    ? selectedCategory
+    : "";
+  const apiWorkplace = workplace === "remote" || selectedCategory === "Remote"
+    ? "remote"
+    : "";
+  const apiDatePosted = datePosted || (selectedCategory === "New" ? "week" : "");
+  const jobsQuery = useInfiniteQuery({
+    queryKey: [
+      "careerJobs",
+      {
+        query: debouncedSearch,
+        category: apiCategory,
+        location: locationTerm.trim(),
+        workplace: apiWorkplace,
+        employmentType,
+        seniority,
+        datePosted: apiDatePosted,
+      },
+    ],
+    queryFn: ({ pageParam, signal }) =>
+      fetchCareerJobs({
+        query: debouncedSearch,
+        category: apiCategory,
+        location: locationTerm.trim(),
+        workplace: apiWorkplace,
+        employmentType,
+        seniority,
+        datePosted: apiDatePosted,
+        page: pageParam.page,
+        cursor: pageParam.cursor,
+        signal,
+      }),
+    initialPageParam: { page: 1 },
+    getNextPageParam: (lastPage) => {
+      if (lastPage.pagination?.nextCursor) {
+        return {
+          page: lastPage.pagination.page + 1,
+          cursor: lastPage.pagination.nextCursor,
+        };
       }
-    }
-
-    void loadJobs();
-    return () => controller.abort();
-  }, [reloadKey]);
+      if (lastPage.pagination?.hasMore && lastPage.pagination?.nextPage) {
+        return { page: lastPage.pagination.nextPage };
+      }
+      return undefined;
+    },
+    staleTime: 45 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
+    retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
 
   const jobs = useMemo(() => {
-    return apiJobs.map((job, index) => normalizeJob(job, index));
-  }, [apiJobs]);
+    const seen = new Set();
+    return (jobsQuery.data?.pages || [])
+      .flatMap((page) => page.jobs)
+      .filter((job) => {
+        const key = job.applyUrl || job.id;
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .map((job, index) => normalizeJob(job, index));
+  }, [jobsQuery.data]);
 
   const categories = [
     "All",
     "New",
-    "Splunk",
-    "Linux",
-    "Software",
-    "Cybersecurity",
-    "Cloud & DevOps",
-    "Data & AI",
-    "Mobile",
-    "IT Support",
-    "Finance",
-    "Other",
     "Remote",
+    ...CAREER_CATEGORIES,
   ];
 
   const newJobs = useMemo(() => {
     return jobs.filter((job) => job.isNew);
   }, [jobs]);
 
-  const featuredJobs = useMemo(() => newJobs.slice(0, 3), [newJobs]);
+  const featuredJobs = useMemo(
+    () =>
+      jobs
+        .filter((job) => job.category === "Splunk" || job.category === "Cybersecurity")
+        .slice(0, 3),
+    [jobs],
+  );
 
   const filteredJobs = useMemo(() => {
-    const search = searchTerm.toLowerCase();
+    const companySearch = companyTerm.trim().toLowerCase();
 
     let list = jobs.filter((job) => {
-      const matchesSearch =
-        job.title.toLowerCase().includes(search) ||
-        job.company.toLowerCase().includes(search) ||
-        job.location.toLowerCase().includes(search) ||
-        job.category.toLowerCase().includes(search) ||
-        job.description.toLowerCase().includes(search);
-
-      const matchesCategory =
-        selectedCategory === "All" ||
-        (selectedCategory === "New" && job.isNew) ||
-        (selectedCategory === "Remote" && job.remote) ||
-        job.category === selectedCategory;
-
-      return matchesSearch && matchesCategory;
+      const arrangement = `${job.workArrangement} ${job.description}`.toLowerCase();
+      const matchesCompany = !companySearch || job.company.toLowerCase().includes(companySearch);
+      const matchesWorkplace =
+        workplace === "remote" || selectedCategory === "Remote"
+          ? job.remote
+          : workplace === "hybrid"
+            ? arrangement.includes("hybrid")
+            : workplace === "onsite"
+              ? arrangement.includes("on-site") || arrangement.includes("onsite")
+              : true;
+      const matchesSeniority =
+        seniority !== "mid"
+          ? true
+          : /(^|\b)mid(?:[- ]level)?\b|intermediate/i.test(
+              `${job.seniority || ""} ${job.title} ${job.description}`,
+            );
+      return matchesCompany && matchesWorkplace && matchesSeniority;
     });
 
     if (sortBy === "newest") {
@@ -356,32 +437,30 @@ export default function CareerPage() {
     }
 
     return list;
-  }, [jobs, searchTerm, selectedCategory, sortBy]);
-
-  const totalPages = Math.ceil(filteredJobs.length / jobsPerPage);
-  const startIdx = (currentPage - 1) * jobsPerPage;
-  const paginatedJobs = filteredJobs.slice(startIdx, startIdx + jobsPerPage);
+  }, [jobs, companyTerm, workplace, selectedCategory, seniority, sortBy]);
 
   const splunkCount = jobs.filter((job) => job.category === "Splunk").length;
-
-
   const cybersecurityCount = jobs.filter(
     (job) => job.category === "Cybersecurity",
   ).length;
-
-  const remoteCount = jobs.filter(
-    (job) =>
-      job.location.toLowerCase().includes("remote") ||
-      job.workArrangement.toLowerCase().includes("remote"),
-  ).length;
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, selectedCategory, sortBy]);
+  const remoteCount = jobs.filter((job) => job.remote).length;
+  const availableCategoryCount = new Set(
+    jobs.map((job) => job.category).filter((category) => category !== "Other"),
+  ).size;
+  const loadedAt =
+    jobsQuery.data?.pages?.[jobsQuery.data.pages.length - 1]?.refreshedAt;
+  const hasStaleData = jobsQuery.data?.pages?.some((page) => page.stale);
 
   function clearFilters() {
     setSearchTerm("");
+    setDebouncedSearch("");
+    setLocationTerm("");
     setSelectedCategory("All");
+    setWorkplace("");
+    setEmploymentType("");
+    setSeniority("");
+    setDatePosted("");
+    setCompanyTerm("");
     setSortBy("newest");
   }
 
@@ -416,13 +495,13 @@ export default function CareerPage() {
               </div>
 
               <h1 className="mt-6 max-w-5xl text-5xl font-black leading-[1.03] tracking-tight md:text-7xl">
-                Explore Technology, Finance and Remote Jobs.
+                Find your next opportunity in technology.
               </h1>
 
               <p className="mt-6 max-w-3xl text-base font-medium leading-8 text-white/60 md:text-lg">
-                Browse current roles pulled from a live jobs API. Every card
-                opens the specific job listing, so applicants can review the
-                position and continue directly to its application flow.
+                Explore currently advertised U.S. roles from OpenWeb Ninja JSearch.
+                Search by title, location, and career category, then apply through
+                the original job listing.
               </p>
 
               <div className="mt-7 flex flex-wrap gap-3">
@@ -449,7 +528,7 @@ export default function CareerPage() {
            <StatCard
   icon={<Briefcase />}
   value={jobs.length}
-  label="Available Jobs"
+  label="Jobs Loaded"
 />
 
 <StatCard
@@ -478,10 +557,10 @@ export default function CareerPage() {
           <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="text-sm font-black uppercase tracking-[0.3em] text-cyan-200">
-                New Opportunities
+                Featured Roles
               </p>
               <h2 className="mt-3 text-3xl font-black md:text-4xl">
-                Jobs to show students first
+                Splunk & Cybersecurity Opportunities
               </h2>
             </div>
 
@@ -489,16 +568,58 @@ export default function CareerPage() {
               onClick={() => setSelectedCategory("New")}
               className="inline-flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-5 py-3 font-black text-white transition hover:-translate-y-1 hover:bg-white hover:text-purple-700"
             >
-              See All New Jobs
+              Browse Recent Jobs
               <ArrowUpRight size={18} />
             </button>
           </div>
 
           <div className="grid gap-5 lg:grid-cols-3">
-            {featuredJobs.map((job, index) => (
-              <FeaturedJobCard key={job.id} job={job} index={index} />
+            {featuredJobs.map((job) => (
+              <FeaturedJobCard
+                key={job.id}
+                job={job}
+                onDetails={() => setSelectedJob(job)}
+              />
             ))}
           </div>
+        </motion.section>
+
+        <motion.section
+          variants={fadeUp}
+          className="mb-8 rounded-[2.3rem] border border-white/10 bg-white/5 p-6"
+        >
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-black uppercase tracking-[0.3em] text-cyan-200">
+                Remote Jobs
+              </p>
+              <h2 className="mt-2 text-2xl font-black">Work from anywhere</h2>
+              <p className="mt-2 text-sm text-white/50">
+                Remote searches use provider search terms and work-arrangement data
+                (best effort). Regional restrictions may apply.
+              </p>
+            </div>
+            <button
+              onClick={() => setSelectedCategory("Remote")}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 font-black text-purple-700"
+            >
+              Explore remote jobs <ArrowUpRight size={18} />
+            </button>
+          </div>
+          {jobs.some((job) => job.remote) && (
+            <div className="mt-5 grid gap-4 md:grid-cols-3">
+              {jobs.filter((job) => job.remote).slice(0, 3).map((job) => (
+                <button
+                  key={job.id}
+                  onClick={() => setSelectedJob(job)}
+                  className="rounded-2xl border border-white/10 bg-black/20 p-4 text-left transition hover:bg-white/10"
+                >
+                  <span className="block font-black text-white">{job.title}</span>
+                  <span className="mt-1 block text-sm text-white/55">{job.company}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </motion.section>
 
         {/* ================= FILTERS ================= */}
@@ -507,17 +628,92 @@ export default function CareerPage() {
           variants={fadeUp}
           className="mb-8 rounded-[2.3rem] border border-white/10 bg-white/10 p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl md:p-6"
         >
-          <div className="grid gap-4 xl:grid-cols-[1fr_220px_140px]">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             <div className="flex h-14 items-center gap-4 rounded-2xl border border-white/10 bg-black/25 px-5 transition focus-within:border-cyan-300/40">
               <Search className="text-white/35" size={20} />
               <input
                 type="text"
-                placeholder="Search by title, company, location, skill..."
+                placeholder="Search job titles or keywords"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                aria-label="Search job keywords"
                 className="h-full w-full bg-transparent text-sm font-semibold text-white outline-none placeholder:text-white/30 md:text-base"
               />
             </div>
+
+            <div className="flex h-14 items-center gap-4 rounded-2xl border border-white/10 bg-black/25 px-5 transition focus-within:border-cyan-300/40">
+              <MapPin className="text-white/35" size={20} />
+              <input
+                type="text"
+                placeholder="City, state, or region"
+                value={locationTerm}
+                onChange={(e) => setLocationTerm(e.target.value)}
+                aria-label="Search job location"
+                className="h-full w-full bg-transparent text-sm font-semibold text-white outline-none placeholder:text-white/30"
+              />
+            </div>
+
+            <input
+              type="search"
+              placeholder="Company (best effort)"
+              value={companyTerm}
+              onChange={(e) => setCompanyTerm(e.target.value)}
+              aria-label="Filter by company"
+              className="h-14 rounded-2xl border border-white/10 bg-black/25 px-5 text-sm font-semibold text-white outline-none placeholder:text-white/30"
+            />
+
+            <select
+              value={workplace}
+              onChange={(e) => {
+                setWorkplace(e.target.value);
+                if (selectedCategory === "Remote") setSelectedCategory("All");
+              }}
+              aria-label="Filter by workplace"
+              className="h-14 rounded-2xl border border-white/10 bg-black/25 px-5 text-sm font-black text-white outline-none"
+            >
+              <option className="bg-slate-950" value="">Any workplace</option>
+              <option className="bg-slate-950" value="remote">Remote (best effort)</option>
+              <option className="bg-slate-950" value="hybrid">Hybrid (best effort)</option>
+              <option className="bg-slate-950" value="onsite">On-site (best effort)</option>
+            </select>
+
+            <select
+              value={employmentType}
+              onChange={(e) => setEmploymentType(e.target.value)}
+              aria-label="Filter by employment type"
+              className="h-14 rounded-2xl border border-white/10 bg-black/25 px-5 text-sm font-black text-white outline-none"
+            >
+              <option className="bg-slate-950" value="">Any employment type</option>
+              <option className="bg-slate-950" value="full_time">Full-time (provider filter)</option>
+              <option className="bg-slate-950" value="part_time">Part-time (provider filter)</option>
+              <option className="bg-slate-950" value="contract">Contract (provider filter)</option>
+              <option className="bg-slate-950" value="internship">Internship (provider filter)</option>
+            </select>
+
+            <select
+              value={seniority}
+              onChange={(e) => setSeniority(e.target.value)}
+              aria-label="Filter by experience level"
+              className="h-14 rounded-2xl border border-white/10 bg-black/25 px-5 text-sm font-black text-white outline-none"
+            >
+              <option className="bg-slate-950" value="">Any experience level</option>
+              <option className="bg-slate-950" value="entry">Entry-level (experience filter)</option>
+              <option className="bg-slate-950" value="mid">Mid-level (best effort)</option>
+              <option className="bg-slate-950" value="senior">Senior (experience filter)</option>
+            </select>
+
+            <select
+              value={datePosted}
+              onChange={(e) => setDatePosted(e.target.value)}
+              aria-label="Filter by posting date"
+              className="h-14 rounded-2xl border border-white/10 bg-black/25 px-5 text-sm font-black text-white outline-none"
+            >
+              <option className="bg-slate-950" value="">Any posting date</option>
+              <option className="bg-slate-950" value="today">Today (provider filter)</option>
+              <option className="bg-slate-950" value="three_days">Last 3 days (provider filter)</option>
+              <option className="bg-slate-950" value="week">Last week (provider filter)</option>
+              <option className="bg-slate-950" value="month">Last month (provider filter)</option>
+            </select>
 
             <select
               value={sortBy}
@@ -560,31 +756,19 @@ export default function CareerPage() {
             ))}
           </div>
 
+          <p className="mt-3 text-xs leading-6 text-white/45">
+            Category, keyword, location, and remote terms use relevance-based provider
+            search. Employment type and posting date use provider filters. Experience
+            level is based on provider experience requirements; company, remote,
+            hybrid/on-site, and mid-level matching are best-effort on loaded results.
+          </p>
+
           <div className="mt-5 grid gap-4 md:grid-cols-4">
-  <MiniStat
-    icon={<Filter />}
-    label="Showing"
-    value={filteredJobs.length}
-  />
-
-  <MiniStat
-    icon={<Layers3 />}
-    label="Categories"
-    value={categories.length - 3}
-  />
-
-  <MiniStat
-    icon={<TrendingUp />}
-    label="Cybersecurity"
-    value={cybersecurityCount}
-  />
-
-  <MiniStat
-    icon={<Users />}
-    label="Page"
-    value={`${currentPage}/${totalPages || 1}`}
-  />
-</div>
+            <MiniStat icon={<Filter />} label="Matching loaded" value={filteredJobs.length} />
+            <MiniStat icon={<Layers3 />} label="Categories in results" value={availableCategoryCount} />
+            <MiniStat icon={<TrendingUp />} label="Cybersecurity loaded" value={cybersecurityCount} />
+            <MiniStat icon={<Users />} label="Splunk loaded" value={splunkCount} />
+          </div>
         </motion.section>
 
         {/* ================= JOB GRID ================= */}
@@ -593,78 +777,58 @@ export default function CareerPage() {
             <div>
               <h2 className="text-2xl font-black md:text-3xl">
                 {selectedCategory === "All"
-                  ? "All Career Opportunities"
+                  ? "Latest Opportunities"
                   : selectedCategory === "New"
-                    ? "New Job Opportunities"
-                    : `${selectedCategory} Jobs`}
+                    ? "Recently Posted Opportunities"
+                    : selectedCategory === "Remote"
+                      ? "Remote Opportunities"
+                      : `${selectedCategory} Jobs`}
               </h2>
               <p className="mt-2 text-sm font-medium text-white/45">
-                Showing {paginatedJobs.length} of {filteredJobs.length} matching
-                jobs.
+                Showing {filteredJobs.length} matching jobs from the records currently
+                loaded for this search; this is not a total vacancy count.
               </p>
             </div>
+            {loadedAt && (
+              <p className="text-xs text-white/45">
+                {hasStaleData ? "Showing cached results; " : ""}
+                Refreshed {new Date(loadedAt).toLocaleString()}
+              </p>
+            )}
           </div>
 
-          {loadingJobs ? (
+          {jobsQuery.isPending ? (
             <LoadingState />
-          ) : jobsError ? (
+          ) : jobsQuery.isError ? (
             <ErrorState
-              message={jobsError}
-              onRetry={() => setReloadKey((value) => value + 1)}
+              message={jobsQuery.error?.message || "Unable to load jobs right now."}
+              onRetry={() => jobsQuery.refetch()}
             />
-          ) : paginatedJobs.length > 0 ? (
+          ) : filteredJobs.length > 0 ? (
             <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-              {paginatedJobs.map((job, index) => (
-                <JobCard key={`${job.id}-${index}`} job={job} index={index} />
+              {filteredJobs.map((job) => (
+                <JobCard
+                  key={job.id}
+                  job={job}
+                  onDetails={() => setSelectedJob(job)}
+                />
               ))}
             </div>
           ) : (
             <EmptyState clearFilters={clearFilters} />
           )}
-        </motion.section>
-
-        {/* ================= PAGINATION ================= */}
-        {totalPages > 1 && (
-          <motion.div
-            variants={fadeUp}
-            className="mt-10 flex flex-col items-center justify-between gap-5 rounded-[2rem] border border-white/10 bg-white/10 p-5 backdrop-blur-2xl md:flex-row"
-          >
-            <p className="text-sm font-semibold text-white/50">
-              Showing {startIdx + 1} to{" "}
-              {Math.min(startIdx + jobsPerPage, filteredJobs.length)} of{" "}
-              <span className="font-black text-cyan-200">
-                {filteredJobs.length}
-              </span>{" "}
-              jobs
-            </p>
-
-            <div className="flex items-center gap-3">
+          {jobsQuery.hasNextPage && (
+            <div className="mt-8 text-center">
               <button
-                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
-                className="flex h-12 items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 text-sm font-black text-white transition hover:bg-white hover:text-purple-700 disabled:cursor-not-allowed disabled:opacity-40"
+                onClick={() => jobsQuery.fetchNextPage()}
+                disabled={jobsQuery.isFetchingNextPage}
+                className="rounded-2xl bg-white px-7 py-4 font-black text-purple-700 transition hover:-translate-y-1 disabled:opacity-50"
               >
-                <ChevronLeft size={18} />
-                Prev
-              </button>
-
-              <span className="rounded-2xl bg-white px-5 py-3 text-sm font-black text-purple-700">
-                {currentPage} / {totalPages}
-              </span>
-
-              <button
-                onClick={() =>
-                  setCurrentPage(Math.min(totalPages, currentPage + 1))
-                }
-                disabled={currentPage === totalPages}
-                className="flex h-12 items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 text-sm font-black text-white transition hover:bg-white hover:text-purple-700 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                Next
-                <ChevronRight size={18} />
+                {jobsQuery.isFetchingNextPage ? "Loading more jobs…" : "Load more jobs"}
               </button>
             </div>
-          </motion.div>
-        )}
+          )}
+        </motion.section>
 
         {/* ================= FOOTER NOTE ================= */}
         <motion.div
@@ -672,11 +836,15 @@ export default function CareerPage() {
           className="mt-10 rounded-[2rem] border border-white/10 bg-white/5 p-6 text-center backdrop-blur-xl"
         >
           <p className="text-sm font-medium leading-7 text-white/45">
-            Jobs provided by Remotive and Arbeitnow. Remotive listings are delayed by 24 hours; Arbeitnow focuses on European roles. Remote roles may have location restrictions. Each Apply Now button
-            opens the exact source listing. Availability and application methods
-            are controlled by the employer or job platform.
+            Job details and application links are supplied by OpenWeb Ninja JSearch.
+            Missing salary or posting-date details are not estimated. Each Apply Now
+            link opens the original listing; availability and application methods
+            are controlled by the employer.
           </p>
         </motion.div>
+        {selectedJob && (
+          <JobDetailsModal job={selectedJob} onClose={() => setSelectedJob(null)} />
+        )}
       </div>
     </motion.main>
   );
@@ -685,12 +853,9 @@ export default function CareerPage() {
 /* ===============================
    FEATURED JOB CARD
 =============================== */
-function FeaturedJobCard({ job }) {
+function FeaturedJobCard({ job, onDetails }) {
   return (
-    <motion.a
-      href={job.url}
-      target="_blank"
-      rel="noopener noreferrer"
+    <motion.article
       whileHover={{ y: -8 }}
       className="group relative overflow-hidden rounded-[2.2rem] border border-white/10 bg-white/10 p-6 shadow-2xl shadow-black/20 backdrop-blur-2xl transition hover:bg-white/[0.14]"
     >
@@ -700,7 +865,7 @@ function FeaturedJobCard({ job }) {
         <div className="mb-5 flex items-center justify-between gap-3">
           <span className="inline-flex items-center gap-2 rounded-full bg-orange-500/15 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-orange-200">
             <Flame size={14} />
-            New
+            Featured
           </span>
 
           <span
@@ -712,11 +877,21 @@ function FeaturedJobCard({ job }) {
           </span>
         </div>
 
-        <h3 className="line-clamp-2 text-2xl font-black leading-tight text-white group-hover:text-cyan-200">
-          {job.title}
-        </h3>
+        <button onClick={onDetails} className="text-left">
+          <h3 className="line-clamp-2 text-2xl font-black leading-tight text-white group-hover:text-cyan-200">
+            {job.title}
+          </h3>
+        </button>
 
         <div className="mt-5 space-y-3">
+          {job.companyLogo && (
+            <img
+              src={job.companyLogo}
+              alt={`${job.company} logo`}
+              loading="lazy"
+              className="h-10 max-w-36 rounded-lg bg-white object-contain p-1"
+            />
+          )}
           <p className="flex items-center gap-3 text-sm font-bold text-white/60">
             <Building2 size={17} />
             {job.company}
@@ -731,29 +906,51 @@ function FeaturedJobCard({ job }) {
             <Clock size={17} />
             {job.postedLabel}
           </p>
-          <p className="text-xs text-cyan-200">Source: {job.source}</p>
+          <p className="text-sm font-bold text-cyan-100">{job.salaryLabel}</p>
+          <p className="text-xs text-cyan-200">Source: {job.source || "Not listed"}</p>
         </div>
 
         <div className="mt-6 flex items-center justify-between border-t border-white/10 pt-5">
-          <span className="font-black text-cyan-200">Apply Now</span>
-          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-purple-700 transition group-hover:translate-x-1">
-            <ArrowUpRight size={18} />
-          </span>
+          <button
+            onClick={onDetails}
+            className="font-black text-white/70 transition hover:text-white"
+          >
+            View details
+          </button>
+          <a
+            href={job.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 font-black text-cyan-200"
+          >
+            Apply Now <ArrowUpRight size={18} />
+          </a>
         </div>
       </div>
-    </motion.a>
+    </motion.article>
   );
 }
+FeaturedJobCard.propTypes = {
+  job: PropTypes.shape({
+    category: PropTypes.string,
+    title: PropTypes.string.isRequired,
+    company: PropTypes.string,
+    companyLogo: PropTypes.string,
+    location: PropTypes.string,
+    postedLabel: PropTypes.string,
+    salaryLabel: PropTypes.string,
+    source: PropTypes.string,
+    url: PropTypes.string.isRequired,
+  }).isRequired,
+  onDetails: PropTypes.func.isRequired,
+};
 
 /* ===============================
    JOB CARD
 =============================== */
-function JobCard({ job }) {
+function JobCard({ job, onDetails }) {
   return (
-    <motion.a
-      href={job.url}
-      target="_blank"
-      rel="noopener noreferrer"
+    <motion.article
       whileHover={{ y: -8 }}
       transition={{ duration: 0.25 }}
       className="group relative flex min-h-[310px] flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-white/10 p-5 shadow-2xl shadow-black/20 backdrop-blur-xl transition hover:bg-white/[0.14]"
@@ -762,9 +959,18 @@ function JobCard({ job }) {
 
       <div className="relative z-10 flex flex-1 flex-col">
         <div className="mb-5 flex items-start justify-between gap-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-purple-700">
-            <Briefcase size={21} />
-          </div>
+          {job.companyLogo ? (
+            <img
+              src={job.companyLogo}
+              alt={`${job.company} logo`}
+              loading="lazy"
+              className="h-12 w-12 shrink-0 rounded-2xl bg-white object-contain p-1"
+            />
+          ) : (
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-purple-700">
+              <Building2 size={21} />
+            </div>
+          )}
 
           <div className="flex flex-wrap justify-end gap-2">
             {job.isNew && (
@@ -783,9 +989,11 @@ function JobCard({ job }) {
           </div>
         </div>
 
-        <h2 className="line-clamp-2 text-xl font-black leading-tight text-white transition group-hover:text-cyan-200">
-          {job.title}
-        </h2>
+        <button onClick={onDetails} className="text-left">
+          <h2 className="line-clamp-2 text-xl font-black leading-tight text-white transition group-hover:text-cyan-200">
+            {job.title}
+          </h2>
+        </button>
 
         <p className="mt-4 flex items-center gap-3 text-sm font-bold text-white/55">
           <Building2 size={16} />
@@ -801,25 +1009,69 @@ function JobCard({ job }) {
           <Clock size={16} />
           {job.postedLabel}
         </p>
-        <p className="mt-3 text-xs text-cyan-200">Source: {job.source}</p>
+        <p className="mt-3 text-xs text-cyan-200">Source: {job.source || "Not listed"}</p>
+        <p className="mt-3 text-sm font-bold text-cyan-100">{job.salaryLabel}</p>
+        <p className="mt-2 text-xs font-semibold text-white/50">
+          {job.workArrangement || "Work arrangement not listed"}
+          {job.employmentType ? ` · ${employmentLabel(job.employmentType)}` : ""}
+        </p>
 
         <p className="mt-4 line-clamp-3 text-sm font-medium leading-7 text-white/45">
           {job.description}
         </p>
 
-        <div className="mt-auto flex items-center justify-between border-t border-white/10 pt-5">
-          <span className="inline-flex items-center gap-2 text-sm font-black text-cyan-200">
-            <ExternalLink size={16} />
-            Apply Now
-          </span>
-
-          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition group-hover:bg-white group-hover:text-purple-700">
-            <ArrowUpRight size={18} />
-          </span>
+        <div className="mt-auto flex items-center justify-between gap-3 border-t border-white/10 pt-5">
+          <button
+            onClick={onDetails}
+            className="text-sm font-black text-white/70 transition hover:text-white"
+          >
+            View details
+          </button>
+          <a
+            href={job.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-sm font-black text-cyan-200"
+          >
+            <ExternalLink size={16} /> Apply Now
+          </a>
         </div>
       </div>
-    </motion.a>
+    </motion.article>
   );
+}
+JobCard.propTypes = {
+  job: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    companyLogo: PropTypes.string,
+    company: PropTypes.string,
+    isNew: PropTypes.bool,
+    category: PropTypes.string,
+    title: PropTypes.string.isRequired,
+    location: PropTypes.string,
+    postedLabel: PropTypes.string,
+    source: PropTypes.string,
+    salaryLabel: PropTypes.string,
+    workArrangement: PropTypes.string,
+    employmentType: PropTypes.string,
+    description: PropTypes.string,
+    url: PropTypes.string.isRequired,
+  }).isRequired,
+  onDetails: PropTypes.func.isRequired,
+};
+
+function employmentLabel(type) {
+  const labels = {
+    FULLTIME: "Full-time",
+    "full-time": "Full-time",
+    PARTTIME: "Part-time",
+    "part-time": "Part-time",
+    CONTRACTOR: "Contract",
+    contractor: "Contract",
+    INTERN: "Internship",
+    internship: "Internship",
+  };
+  return labels[type] || type;
 }
 
 /* ===============================
@@ -840,6 +1092,11 @@ function StatCard({ icon, value, label }) {
     </div>
   );
 }
+StatCard.propTypes = {
+  icon: PropTypes.element.isRequired,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  label: PropTypes.string.isRequired,
+};
 
 function MiniStat({ icon, value, label }) {
   return (
@@ -856,6 +1113,11 @@ function MiniStat({ icon, value, label }) {
     </div>
   );
 }
+MiniStat.propTypes = {
+  icon: PropTypes.element.isRequired,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  label: PropTypes.string.isRequired,
+};
 
 /* ===============================
    EMPTY STATE
@@ -882,15 +1144,23 @@ function EmptyState({ clearFilters }) {
     </div>
   );
 }
+EmptyState.propTypes = { clearFilters: PropTypes.func.isRequired };
 
 function LoadingState() {
   return (
-    <div className="rounded-[2.3rem] border border-white/10 bg-white/10 p-12 text-center shadow-2xl shadow-black/20 backdrop-blur-2xl">
-      <LoaderCircle className="mx-auto animate-spin text-cyan-200" size={34} />
-      <h3 className="mt-5 text-2xl font-black text-white">Loading live jobs</h3>
-      <p className="mt-2 text-sm font-medium text-white/50">
-        Finding opportunities from Remotive and Arbeitnow.
-      </p>
+    <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3" aria-label="Loading jobs">
+      {Array.from({ length: 6 }, (_, index) => (
+        <div
+          key={index}
+          className="min-h-[300px] animate-pulse rounded-[2rem] border border-white/10 bg-white/5 p-6"
+        >
+          <div className="h-12 w-12 rounded-2xl bg-white/10" />
+          <div className="mt-7 h-5 w-3/4 rounded bg-white/10" />
+          <div className="mt-4 h-4 w-1/2 rounded bg-white/10" />
+          <div className="mt-3 h-4 w-2/3 rounded bg-white/10" />
+          <div className="mt-8 h-16 rounded bg-white/10" />
+        </div>
+      ))}
     </div>
   );
 }
@@ -913,6 +1183,80 @@ function ErrorState({ message, onRetry }) {
     </div>
   );
 }
+ErrorState.propTypes = {
+  message: PropTypes.string.isRequired,
+  onRetry: PropTypes.func.isRequired,
+};
+
+function JobDetailsModal({ job, onClose }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="job-details-title"
+        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[2rem] border border-white/10 bg-[#0b1225] p-6 shadow-2xl sm:p-8"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-bold text-cyan-200">
+              {job.company || "Employer not listed"}
+            </p>
+            <h2 id="job-details-title" className="mt-2 text-2xl font-black text-white">
+              {job.title}
+            </h2>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Close job details"
+            className="rounded-xl border border-white/10 p-2 text-white/70 hover:bg-white/10"
+          >
+            <X size={20} />
+          </button>
+        </div>
+        <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-white/60">
+          <span>{job.location}</span>
+          <span>{job.workArrangement || "Work arrangement not listed"}</span>
+          <span>{job.employmentType ? employmentLabel(job.employmentType) : "Employment type not listed"}</span>
+          <span>{job.postedLabel}</span>
+        </div>
+        <p className="mt-4 font-bold text-cyan-100">{job.salaryLabel}</p>
+        <p className="mt-2 text-xs text-white/45">Source: {job.source || "Not listed"}</p>
+        <div className="mt-6 whitespace-pre-line text-sm leading-7 text-white/75">
+          {job.description}
+        </div>
+        <a
+          href={job.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-white px-6 py-4 font-black text-purple-700 transition hover:-translate-y-1"
+        >
+          Apply Now <ExternalLink size={17} />
+        </a>
+      </section>
+    </div>
+  );
+}
+JobDetailsModal.propTypes = {
+  job: PropTypes.shape({
+    company: PropTypes.string,
+    title: PropTypes.string.isRequired,
+    location: PropTypes.string,
+    workArrangement: PropTypes.string,
+    employmentType: PropTypes.string,
+    postedLabel: PropTypes.string,
+    salaryLabel: PropTypes.string,
+    source: PropTypes.string,
+    description: PropTypes.string,
+    url: PropTypes.string.isRequired,
+  }).isRequired,
+  onClose: PropTypes.func.isRequired,
+};
 
 // import React, { useEffect, useMemo, useState } from "react";
 // import { motion } from "framer-motion";
