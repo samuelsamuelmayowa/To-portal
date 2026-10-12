@@ -12,7 +12,7 @@ test('long call and put payoffs include premium and the 100-share multiplier', (
 });
 test('buy, average, partial sell, and full close conserve practice cash', () => {
   let wallet = placeOptionOrder(emptyWallet(), contract, 2, 'buy');
-  assert.equal(wallet.cash, 9000);
+  assert.equal(wallet.cash, 99000);
   wallet = placeOptionOrder(wallet, { ...contract, premium: 8 }, 1, 'buy');
   assert.equal(wallet.positions[0].average, 6);
   wallet = placeOptionOrder(wallet, { ...contract, premium: 9 }, 1, 'sell');
@@ -20,11 +20,11 @@ test('buy, average, partial sell, and full close conserve practice cash', () => 
   assert.equal(wallet.positions[0].quantity, 2);
   wallet = placeOptionOrder(wallet, { ...contract, premium: 9 }, 2, 'sell');
   assert.equal(wallet.positions.length, 0);
-  assert.equal(wallet.cash, 10900);
+  assert.equal(wallet.cash, 100900);
 });
 test('invalid quantities, overspending, naked sells, and expiration are blocked', () => {
   for (const quantity of [0, -1, 1.5, NaN, Infinity]) assert.throws(() => placeOptionOrder(emptyWallet(), contract, quantity, 'buy'));
-  assert.throws(() => placeOptionOrder(emptyWallet(), contract, 21, 'buy'), /cash/);
+  assert.throws(() => placeOptionOrder(emptyWallet(), contract, 201, 'buy'), /cash/);
   assert.throws(() => placeOptionOrder(emptyWallet(), contract, 1, 'sell'), /own/);
   assert.throws(() => placeOptionOrder(emptyWallet(), { ...contract, expiration: '2000-01-01' }, 1, 'buy'), /expiration/);
   assert.throws(() => placeOptionOrder(emptyWallet(), { ...contract, premium: NaN }, 1, 'buy'));

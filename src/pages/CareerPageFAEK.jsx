@@ -400,6 +400,7 @@ export default function CareerPage() {
         .slice(0, 3),
     [jobs],
   );
+  const spotlightJobs = featuredJobs.length ? featuredJobs : jobs.slice(0, 3);
 
   const filteredJobs = useMemo(() => {
     const companySearch = companyTerm.trim().toLowerCase();
@@ -469,7 +470,7 @@ export default function CareerPage() {
       variants={pageMotion}
       initial="hidden"
       animate="visible"
-      className="relative min-h-screen overflow-hidden bg-[#050816] px-4 py-10 text-white sm:px-8 lg:px-16"
+      className="relative min-h-screen overflow-hidden bg-[#060b18] px-4 py-8 text-white sm:px-6 lg:px-8"
     >
       {/* Background */}
       <div className="absolute left-[-180px] top-[-180px] h-[460px] w-[460px] rounded-full bg-purple-500/30 blur-[140px]" />
@@ -477,104 +478,132 @@ export default function CareerPage() {
       <div className="absolute left-1/2 top-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan-400/10 blur-[160px]" />
       <div className="absolute inset-0 opacity-[0.06] [background-image:linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] [background-size:64px_64px]" />
 
-      <div className="relative z-10 mx-auto max-w-[1600px] pt-16">
+      <div className="relative z-10 mx-auto max-w-7xl pt-8 sm:pt-12">
         {/* ================= HERO ================= */}
         <motion.section
           variants={fadeUp}
-          className="mb-8 overflow-hidden rounded-[2.7rem] border border-white/10 bg-white/10 p-6 shadow-2xl shadow-black/30 backdrop-blur-2xl md:p-9"
+          className="mb-8 overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-[#111a31] via-[#10162b] to-[#101f30] p-6 shadow-2xl shadow-black/30 backdrop-blur-2xl md:p-10"
         >
-          <div className="grid gap-10 xl:grid-cols-[1fr_560px] xl:items-center">
+          <div className="grid gap-10 xl:grid-cols-[1.15fr_0.85fr] xl:items-center">
             <div>
-              <div className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/10 px-4 py-2 backdrop-blur-xl">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-purple-700">
-                  <Briefcase size={16} />
+              <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/15 bg-cyan-300/[0.08] px-4 py-2">
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-cyan-200 text-slate-950">
+                  <Briefcase size={15} />
                 </span>
-                <span className="text-xs font-black uppercase tracking-[0.25em] text-white/70">
-                  Career Opportunities Hub
+                <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-cyan-100/80">
+                  Technology careers · United States
                 </span>
               </div>
 
-              <h1 className="mt-6 max-w-5xl text-5xl font-black leading-[1.03] tracking-tight md:text-7xl">
-                Find your next opportunity in technology.
+              <h1 className="mt-6 max-w-3xl text-4xl font-black leading-[1.06] tracking-tight sm:text-5xl lg:text-6xl">
+                Find work that moves your career <span className="text-cyan-200">forward.</span>
               </h1>
 
-              <p className="mt-6 max-w-3xl text-base font-medium leading-8 text-white/60 md:text-lg">
-                Explore currently advertised U.S. roles from OpenWeb Ninja JSearch.
-                Search by title, location, and career category, then apply through
-                the original job listing.
+              <p className="mt-5 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
+                Search live U.S. technology listings by role, location, and career
+                category. Apply directly through each employer’s original listing.
               </p>
 
               <div className="mt-7 flex flex-wrap gap-3">
                 <a
                   href="#new-jobs"
-                  className="inline-flex items-center gap-3 rounded-2xl bg-white px-6 py-4 font-black text-purple-700 transition hover:-translate-y-1 hover:bg-slate-100"
+                  className="inline-flex items-center gap-2 rounded-xl bg-cyan-200 px-5 py-3.5 text-sm font-extrabold text-slate-950 transition hover:-translate-y-0.5 hover:bg-cyan-100"
                 >
-                  View New Jobs
+                  Explore opportunities
                   <ArrowUpRight size={18} />
                 </a>
 
                 <a
                   href="#job-board"
-                  className="inline-flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-6 py-4 font-black text-white transition hover:-translate-y-1 hover:bg-white hover:text-purple-700"
+                  className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] px-5 py-3.5 text-sm font-bold text-white transition hover:border-white/30 hover:bg-white/10"
                 >
-                  Browse All Jobs
-                  <ExternalLink size={18} />
+                  Browse all jobs
+                  <ArrowUpRight size={17} />
                 </a>
               </div>
+              <p className="mt-5 flex items-center gap-2 text-xs text-slate-400">
+                <ShieldCheck size={15} className="text-emerald-300" />
+                Listings link to the original employer or job board.
+              </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-            
-           <StatCard
-  icon={<Briefcase />}
-  value={jobs.length}
-  label="Jobs Loaded"
-/>
-
-<StatCard
-  icon={<Sparkles />}
-  value={newJobs.length}
-  label="New Jobs"
-/>
-
-<StatCard
-  icon={<ShieldCheck />}
-  value={splunkCount}
-  label="Splunk Roles"
-/>
-
-<StatCard
-  icon={<Globe2 />}
-  value={remoteCount}
-  label="Remote Roles"
-/>
+            <div className="rounded-2xl border border-white/10 bg-slate-950/30 p-5 sm:p-6">
+              <div className="mb-5 flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
+                    Search snapshot
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-white">
+                    {jobsQuery.isPending
+                      ? "Finding current openings"
+                      : jobsQuery.isError
+                        ? "Search is temporarily unavailable"
+                        : "Opportunities loaded"}
+                  </p>
+                </div>
+                <span
+                  className={`h-2.5 w-2.5 rounded-full ${
+                    jobsQuery.isError
+                      ? "bg-rose-400"
+                      : jobsQuery.isPending
+                        ? "animate-pulse bg-amber-300"
+                        : "bg-emerald-300"
+                  }`}
+                  aria-hidden="true"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <StatCard
+                  icon={<Briefcase />}
+                  value={jobsQuery.isPending ? "—" : jobsQuery.isError ? "—" : jobs.length}
+                  label="Loaded jobs"
+                />
+                <StatCard
+                  icon={<Sparkles />}
+                  value={jobsQuery.isPending ? "—" : jobsQuery.isError ? "—" : newJobs.length}
+                  label="Posted recently"
+                />
+                <StatCard
+                  icon={<ShieldCheck />}
+                  value={jobsQuery.isPending ? "—" : jobsQuery.isError ? "—" : splunkCount}
+                  label="Splunk roles"
+                />
+                <StatCard
+                  icon={<Globe2 />}
+                  value={jobsQuery.isPending ? "—" : jobsQuery.isError ? "—" : remoteCount}
+                  label="Remote roles"
+                />
+              </div>
             </div>
           </div>
         </motion.section>
 
         {/* ================= NEW JOBS SPOTLIGHT ================= */}
+        {!jobsQuery.isPending && !jobsQuery.isError && spotlightJobs.length > 0 && (
         <motion.section id="new-jobs" variants={fadeUp} className="mb-8">
           <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="text-sm font-black uppercase tracking-[0.3em] text-cyan-200">
-                Featured Roles
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-200">
+                {featuredJobs.length ? "Featured roles" : "Spotlight"}
               </p>
-              <h2 className="mt-3 text-3xl font-black md:text-4xl">
-                Splunk & Cybersecurity Opportunities
+              <h2 className="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">
+                {featuredJobs.length
+                  ? "Splunk & Cybersecurity Opportunities"
+                  : "A few roles to get you started"}
               </h2>
             </div>
 
             <button
               onClick={() => setSelectedCategory("New")}
-              className="inline-flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-5 py-3 font-black text-white transition hover:-translate-y-1 hover:bg-white hover:text-purple-700"
+              className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-bold text-white transition hover:border-white/20 hover:bg-white/10"
             >
-              Browse Recent Jobs
+              Browse recent jobs
               <ArrowUpRight size={18} />
             </button>
           </div>
 
-          <div className="grid gap-5 lg:grid-cols-3">
-            {featuredJobs.map((job) => (
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {spotlightJobs.map((job) => (
               <FeaturedJobCard
                 key={job.id}
                 job={job}
@@ -583,25 +612,26 @@ export default function CareerPage() {
             ))}
           </div>
         </motion.section>
+        )}
 
         <motion.section
           variants={fadeUp}
-          className="mb-8 rounded-[2.3rem] border border-white/10 bg-white/5 p-6"
+          className="mb-8 rounded-[1.75rem] border border-white/10 bg-white/[0.035] p-5 sm:p-6"
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-black uppercase tracking-[0.3em] text-cyan-200">
-                Remote Jobs
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-200">
+                Flexible work
               </p>
-              <h2 className="mt-2 text-2xl font-black">Work from anywhere</h2>
-              <p className="mt-2 text-sm text-white/50">
+              <h2 className="mt-2 text-2xl font-extrabold tracking-tight">Explore remote roles</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
                 Remote searches use provider search terms and work-arrangement data
                 (best effort). Regional restrictions may apply.
               </p>
             </div>
             <button
               onClick={() => setSelectedCategory("Remote")}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 font-black text-purple-700"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-cyan-200 px-4 py-3 text-sm font-extrabold text-slate-950 transition hover:bg-cyan-100"
             >
               Explore remote jobs <ArrowUpRight size={18} />
             </button>
@@ -612,7 +642,7 @@ export default function CareerPage() {
                 <button
                   key={job.id}
                   onClick={() => setSelectedJob(job)}
-                  className="rounded-2xl border border-white/10 bg-black/20 p-4 text-left transition hover:bg-white/10"
+                  className="rounded-xl border border-white/10 bg-slate-950/30 p-4 text-left transition hover:border-cyan-200/30 hover:bg-white/[0.06]"
                 >
                   <span className="block font-black text-white">{job.title}</span>
                   <span className="mt-1 block text-sm text-white/55">{job.company}</span>
@@ -626,10 +656,21 @@ export default function CareerPage() {
         <motion.section
           id="job-board"
           variants={fadeUp}
-          className="mb-8 rounded-[2.3rem] border border-white/10 bg-white/10 p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl md:p-6"
+          className="mb-8 rounded-[1.75rem] border border-white/10 bg-[#0d1424]/90 p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl sm:p-6"
         >
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <div className="flex h-14 items-center gap-4 rounded-2xl border border-white/10 bg-black/25 px-5 transition focus-within:border-cyan-300/40">
+          <div className="mb-5 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-200">
+                Job board
+              </p>
+              <h2 className="mt-1 text-xl font-bold text-white">Find your next role</h2>
+            </div>
+            <p className="text-sm text-slate-400">
+              {jobsQuery.isPending ? "Searching live listings…" : `${filteredJobs.length} matching loaded`}
+            </p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="flex h-12 items-center gap-3 rounded-xl border border-white/10 bg-slate-950/60 px-4 transition focus-within:border-cyan-300/50 focus-within:ring-2 focus-within:ring-cyan-300/10">
               <Search className="text-white/35" size={20} />
               <input
                 type="text"
@@ -637,11 +678,11 @@ export default function CareerPage() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 aria-label="Search job keywords"
-                className="h-full w-full bg-transparent text-sm font-semibold text-white outline-none placeholder:text-white/30 md:text-base"
+                className="h-full w-full bg-transparent text-sm font-medium text-white outline-none placeholder:text-slate-500"
               />
             </div>
 
-            <div className="flex h-14 items-center gap-4 rounded-2xl border border-white/10 bg-black/25 px-5 transition focus-within:border-cyan-300/40">
+            <div className="flex h-12 items-center gap-3 rounded-xl border border-white/10 bg-slate-950/60 px-4 transition focus-within:border-cyan-300/50 focus-within:ring-2 focus-within:ring-cyan-300/10">
               <MapPin className="text-white/35" size={20} />
               <input
                 type="text"
@@ -649,7 +690,7 @@ export default function CareerPage() {
                 value={locationTerm}
                 onChange={(e) => setLocationTerm(e.target.value)}
                 aria-label="Search job location"
-                className="h-full w-full bg-transparent text-sm font-semibold text-white outline-none placeholder:text-white/30"
+                className="h-full w-full bg-transparent text-sm font-medium text-white outline-none placeholder:text-slate-500"
               />
             </div>
 
@@ -659,7 +700,7 @@ export default function CareerPage() {
               value={companyTerm}
               onChange={(e) => setCompanyTerm(e.target.value)}
               aria-label="Filter by company"
-              className="h-14 rounded-2xl border border-white/10 bg-black/25 px-5 text-sm font-semibold text-white outline-none placeholder:text-white/30"
+              className="h-12 rounded-xl border border-white/10 bg-slate-950/60 px-4 text-sm font-medium text-white outline-none placeholder:text-slate-500 focus:border-cyan-300/50 focus:ring-2 focus:ring-cyan-300/10"
             />
 
             <select
@@ -669,7 +710,7 @@ export default function CareerPage() {
                 if (selectedCategory === "Remote") setSelectedCategory("All");
               }}
               aria-label="Filter by workplace"
-              className="h-14 rounded-2xl border border-white/10 bg-black/25 px-5 text-sm font-black text-white outline-none"
+              className="h-12 rounded-xl border border-white/10 bg-slate-950/60 px-4 text-sm font-semibold text-white outline-none focus:border-cyan-300/50"
             >
               <option className="bg-slate-950" value="">Any workplace</option>
               <option className="bg-slate-950" value="remote">Remote (best effort)</option>
@@ -681,7 +722,7 @@ export default function CareerPage() {
               value={employmentType}
               onChange={(e) => setEmploymentType(e.target.value)}
               aria-label="Filter by employment type"
-              className="h-14 rounded-2xl border border-white/10 bg-black/25 px-5 text-sm font-black text-white outline-none"
+              className="h-12 rounded-xl border border-white/10 bg-slate-950/60 px-4 text-sm font-semibold text-white outline-none focus:border-cyan-300/50"
             >
               <option className="bg-slate-950" value="">Any employment type</option>
               <option className="bg-slate-950" value="full_time">Full-time (provider filter)</option>
@@ -694,7 +735,7 @@ export default function CareerPage() {
               value={seniority}
               onChange={(e) => setSeniority(e.target.value)}
               aria-label="Filter by experience level"
-              className="h-14 rounded-2xl border border-white/10 bg-black/25 px-5 text-sm font-black text-white outline-none"
+              className="h-12 rounded-xl border border-white/10 bg-slate-950/60 px-4 text-sm font-semibold text-white outline-none focus:border-cyan-300/50"
             >
               <option className="bg-slate-950" value="">Any experience level</option>
               <option className="bg-slate-950" value="entry">Entry-level (experience filter)</option>
@@ -706,7 +747,7 @@ export default function CareerPage() {
               value={datePosted}
               onChange={(e) => setDatePosted(e.target.value)}
               aria-label="Filter by posting date"
-              className="h-14 rounded-2xl border border-white/10 bg-black/25 px-5 text-sm font-black text-white outline-none"
+              className="h-12 rounded-xl border border-white/10 bg-slate-950/60 px-4 text-sm font-semibold text-white outline-none focus:border-cyan-300/50"
             >
               <option className="bg-slate-950" value="">Any posting date</option>
               <option className="bg-slate-950" value="today">Today (provider filter)</option>
@@ -718,7 +759,7 @@ export default function CareerPage() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="h-14 rounded-2xl border border-white/10 bg-black/25 px-5 text-sm font-black text-white outline-none"
+              className="h-12 rounded-xl border border-white/10 bg-slate-950/60 px-4 text-sm font-semibold text-white outline-none focus:border-cyan-300/50"
             >
               <option className="bg-slate-950" value="newest">
                 Sort: Newest
@@ -733,37 +774,38 @@ export default function CareerPage() {
 
             <button
               onClick={clearFilters}
-              className="inline-flex h-14 items-center justify-center gap-2 rounded-2xl bg-white px-5 text-sm font-black text-purple-700 transition hover:-translate-y-1"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.06] px-4 text-sm font-bold text-white transition hover:bg-white/10"
             >
               <X size={16} />
               Reset
             </button>
           </div>
 
-          <div className="mt-5 flex gap-3 overflow-x-auto pb-2">
+          <div className="mt-5 flex gap-2 overflow-x-auto pb-2">
             {categories.map((category) => (
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
+                aria-pressed={selectedCategory === category}
                 className={`shrink-0 rounded-full px-5 py-3 text-sm font-black transition ${
                   selectedCategory === category
-                    ? "bg-white text-purple-700 shadow-xl"
-                    : "border border-white/10 bg-white/5 text-white/60 hover:bg-white hover:text-purple-700"
+                    ? "bg-cyan-200 text-slate-950 shadow-lg shadow-cyan-950/20"
+                      : "border border-white/10 bg-white/[0.035] text-slate-300 hover:border-white/20 hover:bg-white/[0.08]"
                 }`}
               >
-                {category === "New" ? "🔥 New Jobs" : category}
+                {category === "New" ? "New jobs" : category}
               </button>
             ))}
           </div>
 
-          <p className="mt-3 text-xs leading-6 text-white/45">
+          <p className="mt-2 text-xs leading-5 text-slate-500">
             Category, keyword, location, and remote terms use relevance-based provider
             search. Employment type and posting date use provider filters. Experience
             level is based on provider experience requirements; company, remote,
             hybrid/on-site, and mid-level matching are best-effort on loaded results.
           </p>
 
-          <div className="mt-5 grid gap-4 md:grid-cols-4">
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <MiniStat icon={<Filter />} label="Matching loaded" value={filteredJobs.length} />
             <MiniStat icon={<Layers3 />} label="Categories in results" value={availableCategoryCount} />
             <MiniStat icon={<TrendingUp />} label="Cybersecurity loaded" value={cybersecurityCount} />
@@ -773,9 +815,12 @@ export default function CareerPage() {
 
         {/* ================= JOB GRID ================= */}
         <motion.section variants={fadeUp}>
-          <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div>
-              <h2 className="text-2xl font-black md:text-3xl">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-200">
+                {selectedCategory === "All" ? "The latest" : "Filtered results"}
+              </p>
+              <h2 className="mt-1 text-2xl font-extrabold tracking-tight md:text-3xl">
                 {selectedCategory === "All"
                   ? "Latest Opportunities"
                   : selectedCategory === "New"
@@ -784,13 +829,13 @@ export default function CareerPage() {
                       ? "Remote Opportunities"
                       : `${selectedCategory} Jobs`}
               </h2>
-              <p className="mt-2 text-sm font-medium text-white/45">
+              <p className="mt-2 text-sm text-slate-400">
                 Showing {filteredJobs.length} matching jobs from the records currently
                 loaded for this search; this is not a total vacancy count.
               </p>
             </div>
             {loadedAt && (
-              <p className="text-xs text-white/45">
+              <p className="text-xs text-slate-500">
                 {hasStaleData ? "Showing cached results; " : ""}
                 Refreshed {new Date(loadedAt).toLocaleString()}
               </p>
@@ -805,7 +850,7 @@ export default function CareerPage() {
               onRetry={() => jobsQuery.refetch()}
             />
           ) : filteredJobs.length > 0 ? (
-            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {filteredJobs.map((job) => (
                 <JobCard
                   key={job.id}
@@ -822,7 +867,7 @@ export default function CareerPage() {
               <button
                 onClick={() => jobsQuery.fetchNextPage()}
                 disabled={jobsQuery.isFetchingNextPage}
-                className="rounded-2xl bg-white px-7 py-4 font-black text-purple-700 transition hover:-translate-y-1 disabled:opacity-50"
+                className="rounded-xl bg-cyan-200 px-6 py-3.5 text-sm font-extrabold text-slate-950 transition hover:-translate-y-0.5 hover:bg-cyan-100 disabled:opacity-50"
               >
                 {jobsQuery.isFetchingNextPage ? "Loading more jobs…" : "Load more jobs"}
               </button>
@@ -833,9 +878,9 @@ export default function CareerPage() {
         {/* ================= FOOTER NOTE ================= */}
         <motion.div
           variants={fadeUp}
-          className="mt-10 rounded-[2rem] border border-white/10 bg-white/5 p-6 text-center backdrop-blur-xl"
+          className="mt-10 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-center"
         >
-          <p className="text-sm font-medium leading-7 text-white/45">
+          <p className="text-xs leading-6 text-slate-500 sm:text-sm">
             Job details and application links are supplied by OpenWeb Ninja JSearch.
             Missing salary or posting-date details are not estimated. Each Apply Now
             link opens the original listing; availability and application methods
@@ -856,20 +901,20 @@ export default function CareerPage() {
 function FeaturedJobCard({ job, onDetails }) {
   return (
     <motion.article
-      whileHover={{ y: -8 }}
-      className="group relative overflow-hidden rounded-[2.2rem] border border-white/10 bg-white/10 p-6 shadow-2xl shadow-black/20 backdrop-blur-2xl transition hover:bg-white/[0.14]"
+      whileHover={{ y: -4 }}
+      className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.075] to-white/[0.025] p-5 shadow-xl shadow-black/15 transition hover:border-cyan-200/20 hover:from-white/[0.1]"
     >
-      <div className="absolute right-[-40px] top-[-40px] h-32 w-32 rounded-full bg-purple-500/20 blur-3xl" />
+      <div className="absolute right-[-40px] top-[-40px] h-32 w-32 rounded-full bg-cyan-400/10 blur-3xl" />
 
       <div className="relative z-10">
-        <div className="mb-5 flex items-center justify-between gap-3">
-          <span className="inline-flex items-center gap-2 rounded-full bg-orange-500/15 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-orange-200">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-400/10 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-orange-200">
             <Flame size={14} />
-            Featured
+            Spotlight
           </span>
 
           <span
-            className={`rounded-full border px-4 py-2 text-xs font-black ${categoryStyle(
+            className={`rounded-full border px-3 py-1.5 text-[11px] font-bold ${categoryStyle(
               job.category,
             )}`}
           >
@@ -878,12 +923,12 @@ function FeaturedJobCard({ job, onDetails }) {
         </div>
 
         <button onClick={onDetails} className="text-left">
-          <h3 className="line-clamp-2 text-2xl font-black leading-tight text-white group-hover:text-cyan-200">
+          <h3 className="line-clamp-2 text-xl font-extrabold leading-snug text-white transition group-hover:text-cyan-200">
             {job.title}
           </h3>
         </button>
 
-        <div className="mt-5 space-y-3">
+        <div className="mt-4 space-y-2.5">
           {job.companyLogo && (
             <img
               src={job.companyLogo}
@@ -892,28 +937,28 @@ function FeaturedJobCard({ job, onDetails }) {
               className="h-10 max-w-36 rounded-lg bg-white object-contain p-1"
             />
           )}
-          <p className="flex items-center gap-3 text-sm font-bold text-white/60">
-            <Building2 size={17} />
+          <p className="flex items-center gap-2.5 text-sm font-medium text-slate-300">
+            <Building2 size={16} className="shrink-0 text-slate-500" />
             {job.company}
           </p>
 
-          <p className="flex items-center gap-3 text-sm font-bold text-white/60">
-            <MapPin size={17} />
+          <p className="flex items-center gap-2.5 text-sm font-medium text-slate-300">
+            <MapPin size={16} className="shrink-0 text-slate-500" />
             {job.location}
           </p>
 
-          <p className="flex items-center gap-3 text-sm font-bold text-white/60">
-            <Clock size={17} />
+          <p className="flex items-center gap-2.5 text-sm font-medium text-slate-400">
+            <Clock size={16} className="shrink-0 text-slate-500" />
             {job.postedLabel}
           </p>
           <p className="text-sm font-bold text-cyan-100">{job.salaryLabel}</p>
-          <p className="text-xs text-cyan-200">Source: {job.source || "Not listed"}</p>
+          <p className="text-xs text-slate-500">Source: {job.source || "Not listed"}</p>
         </div>
 
-        <div className="mt-6 flex items-center justify-between border-t border-white/10 pt-5">
+        <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4">
           <button
             onClick={onDetails}
-            className="font-black text-white/70 transition hover:text-white"
+            className="text-sm font-bold text-slate-300 transition hover:text-white"
           >
             View details
           </button>
@@ -921,7 +966,7 @@ function FeaturedJobCard({ job, onDetails }) {
             href={job.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 font-black text-cyan-200"
+            className="inline-flex items-center gap-1.5 text-sm font-bold text-cyan-200 transition hover:text-cyan-100"
           >
             Apply Now <ArrowUpRight size={18} />
           </a>
@@ -951,9 +996,9 @@ FeaturedJobCard.propTypes = {
 function JobCard({ job, onDetails }) {
   return (
     <motion.article
-      whileHover={{ y: -8 }}
+      whileHover={{ y: -4 }}
       transition={{ duration: 0.25 }}
-      className="group relative flex min-h-[310px] flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-white/10 p-5 shadow-2xl shadow-black/20 backdrop-blur-xl transition hover:bg-white/[0.14]"
+      className="group relative flex min-h-[300px] flex-col overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.065] to-white/[0.02] p-5 shadow-xl shadow-black/15 transition hover:border-cyan-200/20 hover:from-white/[0.09]"
     >
       <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-blue-500/10 opacity-0 transition group-hover:opacity-100" />
 
@@ -967,20 +1012,20 @@ function JobCard({ job, onDetails }) {
               className="h-12 w-12 shrink-0 rounded-2xl bg-white object-contain p-1"
             />
           ) : (
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-purple-700">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-slate-800 text-cyan-200">
               <Building2 size={21} />
             </div>
           )}
 
           <div className="flex flex-wrap justify-end gap-2">
             {job.isNew && (
-              <span className="rounded-full bg-orange-500/15 px-3 py-1 text-xs font-black text-orange-200">
+              <span className="rounded-full bg-orange-400/10 px-3 py-1 text-[11px] font-bold text-orange-200">
                 New
               </span>
             )}
 
             <span
-              className={`rounded-full border px-3 py-1 text-xs font-black ${categoryStyle(
+              className={`rounded-full border px-3 py-1 text-[11px] font-bold ${categoryStyle(
                 job.category,
               )}`}
             >
@@ -990,40 +1035,40 @@ function JobCard({ job, onDetails }) {
         </div>
 
         <button onClick={onDetails} className="text-left">
-          <h2 className="line-clamp-2 text-xl font-black leading-tight text-white transition group-hover:text-cyan-200">
+          <h2 className="line-clamp-2 text-lg font-extrabold leading-snug text-white transition group-hover:text-cyan-200">
             {job.title}
           </h2>
         </button>
 
-        <p className="mt-4 flex items-center gap-3 text-sm font-bold text-white/55">
-          <Building2 size={16} />
+        <p className="mt-4 flex items-center gap-2.5 text-sm font-medium text-slate-300">
+          <Building2 size={15} className="shrink-0 text-slate-500" />
           <span className="line-clamp-1">{job.company}</span>
         </p>
 
-        <p className="mt-3 flex items-center gap-3 text-sm font-bold text-white/55">
-          <MapPin size={16} />
+        <p className="mt-2.5 flex items-center gap-2.5 text-sm font-medium text-slate-300">
+          <MapPin size={15} className="shrink-0 text-slate-500" />
           <span className="line-clamp-1">{job.location}</span>
         </p>
 
-        <p className="mt-3 flex items-center gap-3 text-sm font-bold text-white/45">
-          <Clock size={16} />
+        <p className="mt-2.5 flex items-center gap-2.5 text-sm text-slate-400">
+          <Clock size={15} className="shrink-0 text-slate-500" />
           {job.postedLabel}
         </p>
-        <p className="mt-3 text-xs text-cyan-200">Source: {job.source || "Not listed"}</p>
-        <p className="mt-3 text-sm font-bold text-cyan-100">{job.salaryLabel}</p>
-        <p className="mt-2 text-xs font-semibold text-white/50">
+        <p className="mt-3 text-xs text-slate-500">Source: {job.source || "Not listed"}</p>
+        <p className="mt-2.5 text-sm font-bold text-cyan-100">{job.salaryLabel}</p>
+        <p className="mt-1.5 text-xs font-medium text-slate-400">
           {job.workArrangement || "Work arrangement not listed"}
           {job.employmentType ? ` · ${employmentLabel(job.employmentType)}` : ""}
         </p>
 
-        <p className="mt-4 line-clamp-3 text-sm font-medium leading-7 text-white/45">
+        <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-400">
           {job.description}
         </p>
 
-        <div className="mt-auto flex items-center justify-between gap-3 border-t border-white/10 pt-5">
+        <div className="mt-auto flex items-center justify-between gap-3 border-t border-white/10 pt-4">
           <button
             onClick={onDetails}
-            className="text-sm font-black text-white/70 transition hover:text-white"
+            className="text-sm font-bold text-slate-300 transition hover:text-white"
           >
             View details
           </button>
@@ -1031,7 +1076,7 @@ function JobCard({ job, onDetails }) {
             href={job.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-sm font-black text-cyan-200"
+            className="inline-flex items-center gap-1.5 text-sm font-bold text-cyan-200 transition hover:text-cyan-100"
           >
             <ExternalLink size={16} /> Apply Now
           </a>
@@ -1079,14 +1124,14 @@ function employmentLabel(type) {
 =============================== */
 function StatCard({ icon, value, label }) {
   return (
-    <div className="rounded-3xl border border-white/10 bg-white/5 p-5 transition hover:-translate-y-1 hover:bg-white/10">
-      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-purple-700">
-        {React.cloneElement(icon, { size: 21 })}
+    <div className="rounded-xl border border-white/[0.08] bg-white/[0.035] p-3.5 transition hover:border-white/15 hover:bg-white/[0.06] sm:p-4">
+      <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-cyan-200/10 text-cyan-200">
+        {React.cloneElement(icon, { size: 18 })}
       </div>
 
-      <h3 className="truncate text-3xl font-black text-white">{value}</h3>
+      <h3 className="truncate text-2xl font-extrabold tracking-tight text-white sm:text-3xl">{value}</h3>
 
-      <p className="mt-1 text-xs font-bold uppercase tracking-widest text-white/40">
+      <p className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 sm:text-[11px]">
         {label}
       </p>
     </div>
@@ -1100,16 +1145,15 @@ StatCard.propTypes = {
 
 function MiniStat({ icon, value, label }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-      <div className="mb-3 text-cyan-200">
-        {React.cloneElement(icon, { size: 18 })}
+    <div className="flex items-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.025] p-3.5">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-cyan-200/[0.08] text-cyan-200">
+        {React.cloneElement(icon, { size: 17 })}
       </div>
 
-      <p className="text-2xl font-black text-white">{value}</p>
-
-      <p className="mt-1 text-xs font-bold uppercase tracking-widest text-white/35">
-        {label}
-      </p>
+      <div className="min-w-0">
+        <p className="text-xl font-extrabold text-white">{value}</p>
+        <p className="truncate text-[10px] font-semibold uppercase tracking-wider text-slate-500">{label}</p>
+      </div>
     </div>
   );
 }
@@ -1124,20 +1168,20 @@ MiniStat.propTypes = {
 =============================== */
 function EmptyState({ clearFilters }) {
   return (
-    <div className="rounded-[2.3rem] border border-white/10 bg-white/10 p-10 text-center shadow-2xl shadow-black/20 backdrop-blur-2xl">
-      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-purple-700">
+    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-8 text-center shadow-xl shadow-black/20 sm:p-10">
+      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-cyan-200/10 text-cyan-200">
         <Search size={24} />
       </div>
 
-      <h3 className="mt-6 text-3xl font-black text-white">No jobs found</h3>
+      <h3 className="mt-5 text-2xl font-extrabold text-white">No jobs found</h3>
 
-      <p className="mx-auto mt-3 max-w-md text-sm font-medium leading-7 text-white/50">
+      <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-400">
         Try another keyword, change your category filter, or reset the search.
       </p>
 
       <button
         onClick={clearFilters}
-        className="mt-7 rounded-2xl bg-white px-7 py-4 font-black text-purple-700 transition hover:-translate-y-1"
+        className="mt-6 rounded-xl bg-cyan-200 px-6 py-3.5 text-sm font-extrabold text-slate-950 transition hover:-translate-y-0.5 hover:bg-cyan-100"
       >
         Reset Filters
       </button>
@@ -1152,7 +1196,7 @@ function LoadingState() {
       {Array.from({ length: 6 }, (_, index) => (
         <div
           key={index}
-          className="min-h-[300px] animate-pulse rounded-[2rem] border border-white/10 bg-white/5 p-6"
+          className="min-h-[300px] animate-pulse rounded-2xl border border-white/10 bg-white/[0.035] p-5"
         >
           <div className="h-12 w-12 rounded-2xl bg-white/10" />
           <div className="mt-7 h-5 w-3/4 rounded bg-white/10" />
@@ -1167,16 +1211,19 @@ function LoadingState() {
 
 function ErrorState({ message, onRetry }) {
   return (
-    <div className="rounded-[2.3rem] border border-red-400/20 bg-red-500/10 p-10 text-center shadow-2xl shadow-black/20 backdrop-blur-2xl">
-      <h3 className="text-2xl font-black text-white">
+    <div className="rounded-2xl border border-rose-400/20 bg-rose-400/[0.06] p-8 text-center shadow-xl shadow-black/20 sm:p-10">
+      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-rose-400/10 text-rose-200">
+        <Briefcase size={21} />
+      </div>
+      <h3 className="mt-4 text-2xl font-extrabold text-white">
         Jobs could not be loaded
       </h3>
-      <p className="mx-auto mt-3 max-w-xl text-sm font-medium leading-7 text-white/60">
+      <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-300">
         {message}
       </p>
       <button
         onClick={onRetry}
-        className="mt-6 rounded-2xl bg-white px-7 py-4 font-black text-purple-700 transition hover:-translate-y-1"
+        className="mt-6 rounded-xl bg-cyan-200 px-6 py-3.5 text-sm font-extrabold text-slate-950 transition hover:-translate-y-0.5 hover:bg-cyan-100"
       >
         Try Again
       </button>

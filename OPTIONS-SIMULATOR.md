@@ -31,7 +31,7 @@ Local Vite dev/preview loads the existing credentials from `.env.local`. Restart
 
 Reference: https://docs.alpaca.markets/us/reference/optionchain
 
-Options execution is local educational simulation, not the stock Edge Function. Each mode has a separate $10,000 browser-local wallet. These wallets are not user-account synced and are shared by people using the same browser profile. No automatic exercise, settlement, adjusted contracts, short options, commissions, or spread execution is implemented. Expired positions remain labeled for review. Open values use loaded premiums, falling back to entry cost when unavailable. Realized P/L summarizes the retained 100 trades.
+Options execution is local educational simulation, not the stock Edge Function. Each mode has a separate $100,000 browser-local wallet. These wallets are not user-account synced and are shared by people using the same browser profile. No automatic exercise, settlement, adjusted contracts, short options, commissions, or spread execution is implemented. Expired positions remain labeled for review. Open values use loaded premiums, falling back to entry cost when unavailable. Realized P/L summarizes the retained 100 trades.
 
 Run checks:
 

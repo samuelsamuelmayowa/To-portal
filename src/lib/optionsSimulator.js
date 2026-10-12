@@ -1,4 +1,4 @@
-export const STARTING_CASH = 10000;
+export const STARTING_CASH = 100000;
 export const emptyWallet = () => ({ cash: STARTING_CASH, positions: [], history: [] });
 const cents = (value) => Math.round(value * 100) / 100;
 
