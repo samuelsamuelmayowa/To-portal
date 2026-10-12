@@ -15,7 +15,7 @@ export const calculateBreakeven = (type, strike, premium) => isNumber(premium) &
 export function canBuyOptionsOrder({ selectedContract, contract, premium, quantity, buyingPower, hasSession, accountLoaded, marketAvailable, pending }) {
   const debit = calculateContractCost(premium, quantity);
   return Boolean(selectedContract && contract && isNumber(premium) && premium > 0
-    && Number.isSafeInteger(quantity) && quantity > 0 && quantity <= 100000
+    && Number.isSafeInteger(quantity) && quantity > 0 && quantity <= 10000
     && isNumber(buyingPower) && isNumber(debit) && debit <= buyingPower
     && hasSession && accountLoaded && marketAvailable && !pending);
 }
