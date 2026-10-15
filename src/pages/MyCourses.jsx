@@ -233,7 +233,7 @@ export default function MyCourses() {
       variants={pageMotion}
       initial="hidden"
       animate="visible"
-      className="relative min-h-screen overflow-hidden bg-[#050816] px-6 py-10 text-white md:px-10 lg:px-16"
+      className="relative min-h-screen overflow-hidden bg-[#050816]  py-10 text-white md:px-10 lg:px-16"
     >
       <div className="absolute left-[-180px] top-[-180px] h-[460px] w-[460px] rounded-full bg-BLUE/40 blur-[140px]" />
       <div className="absolute bottom-[-220px] right-[-160px] h-[520px] w-[520px] rounded-full bg-cyan-400/20 blur-[150px]" />
