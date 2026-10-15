@@ -63,11 +63,17 @@ const NAV_CLUSTERS = [
         label: "Trading Simulator",
         description: "Practice market decisions in a safe environment",
       },
-      {
-        to: "/toskillab/lab",
+
+       {
+        to: "/lab",
         label: "Splunk Lab",
         description: "Investigate realistic Splunk scenarios",
       },
+      // {
+      //   to: "/toskillab/lab",
+      //   label: "Splunk Lab",
+      //   description: "Investigate realistic Splunk scenarios",
+      // },
     ],
   },
   {

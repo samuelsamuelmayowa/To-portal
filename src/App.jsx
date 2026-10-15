@@ -334,6 +334,8 @@ element:<Apage/>
     path: "/OTP",
     element: <OTP_Verification />,
   },
+
+     { path: "/lab", element: <SplunkStudio /> },
   { path: "/splunk-studio", element: <SplunkStudio /> },
   {
     path: "/createNewPassword",
