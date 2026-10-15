@@ -38,7 +38,7 @@ function AuthLayout() {
         <>
             <NavBar />
             <div className="mt-24">
-                <DashboardSectionNav />
+                {/* <DashboardSectionNav /> */}
                 <Outlet />
             </div>
             <Messages />
