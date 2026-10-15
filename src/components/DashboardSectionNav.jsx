@@ -31,8 +31,6 @@ export default function DashboardSectionNav() {
   const isStock =
     pathname.startsWith("/dashboard/stock") || pathname === "/dashboard/overview";
   const isSplunk = [
-    "/dashboard",
-    "/dashboard/myCourses",
     "/dashboard/materials",
     "/dashboard/classmaterials",
     "/dashboard/check",
