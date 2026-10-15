@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
+import NavBar from "../components/NavBar";
 import StudioShell from "../components/splunk/StudioShell";
 import SearchLab from "../components/splunk/SearchLab";
 import SavedSearches from "../components/splunk/SavedSearches";
@@ -20,6 +22,9 @@ const load = (key, fallback) => {
 };
 
 export default function SplunkStudio() {
+  const { pathname } = useLocation();
+  // Dashboard routes already render the Navbar in AuthLayout.
+  const showNavBar = !pathname.startsWith("/dashboard/");
   const [active, setActive] = useState("lab");
 
   const [saved, setSaved] = useState(() => load(LS_SAVED, []));
@@ -90,6 +95,8 @@ export default function SplunkStudio() {
   return (
 
     <>
+       {showNavBar && <NavBar />}
+       <div className={showNavBar ? "pt-20 sm:pt-24" : undefined}>
        <div className="max-w-7xl mx-auto mb-6">
             <div className="dashboard-topbar bg-white dark:bg-gray-900 rounded-2xl p-6 shadow flex items-center justify-between">
               {/* LEFT SIDE - TITLE */}
@@ -165,6 +172,7 @@ export default function SplunkStudio() {
         />
       )}
     </StudioShell>
+    </div>
     </>
   );
 }

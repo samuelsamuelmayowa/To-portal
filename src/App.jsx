@@ -1,6 +1,6 @@
 import React from "react";
-import MobileEntry from './pages/MobileEntry';
-import './lib/mobileProgressBridge';
+import MobileEntry from "./pages/MobileEntry";
+import "./lib/mobileProgressBridge";
 import { CartItemProvider } from "./context/CartItemContext";
 import ErrorPage from "./components/errorPage";
 import AllCourses from "./components/AllCourses";
@@ -63,7 +63,7 @@ import Cancel from "./pages/Cancel";
 import StudentDashboard from "./components/CheckC";
 import StockDashboard from "./components/StockPage";
 import StockPortal from "./components/StockPortal";
-import  Apage from  "./components/AAAA.jsx"
+import Apage from "./components/AAAA.jsx";
 import Commands from "./components/Commands";
 import SplunkDictionary from "./components/Dictionary";
 import StockCard from "./StockPublic";
@@ -86,9 +86,7 @@ import AdminExpenses from "./components/AdminExpenses";
 import SplunkLab from "./pages/SplunkLab";
 import StockQuiz from "./components/StockQuiz.jsx";
 
-const LazyPaperTrading = React.lazy(
-  () => import("./pages/PaperTrading")
-);
+const LazyPaperTrading = React.lazy(() => import("./pages/PaperTrading"));
 // 🟣 GLOBAL THEME HELPER
 function applySavedTheme() {
   const saved = localStorage.getItem("theme") || "light";
@@ -111,90 +109,194 @@ const router = createBrowserRouter([
   {
     element: <AppRouteLayout />,
     children: [
-  { path: '/mobile-entry', element: <MobileEntry /> },
-  {
-    path: "/",
-    element: <HomeLayout />,
-    errorElement: <ErrorPage />,
-    children: [
+      { path: "/mobile-entry", element: <MobileEntry /> },
       {
-        index: true,
-        element: (
-          <React.Suspense fallback={<Loader />}>
-            <LazyHomePage />
-          </React.Suspense>
-        ),
-      },
-      {
-        path: "/cancel",
-        element: <Cancel />,
-      },
-
-      {
-        path: "/chat",
-        element: <ChatComponent />,
-      },
-
-      {
-        path: "stockmarkert",
-        element: <MarketOverviewAdvanced />,
-      },
-      {
-        path: "ad",
-        element: <MarketOverviewAdvanced />,
-      },
-      {
-        path: "/quote",
-        element: <QuotePage />,
-      },
-      {
-  path: "/trading-simulator",
-  element: (
-    <React.Suspense fallback={<Loader />}>
-      <LazyPaperTrading />
-    </React.Suspense>
-  ),
-},
-
-      {
-        path: "/courses",
-        element: (
-          <React.Suspense fallback={<Loader />}>
-            <LazyCourses />
-          </React.Suspense>
-        ),
-
+        path: "/",
+        element: <HomeLayout />,
+        errorElement: <ErrorPage />,
         children: [
           {
             index: true,
-            element: <AllCourses />,
-          },
-          {
-            path: ":course",
             element: (
               <React.Suspense fallback={<Loader />}>
-                <LazyCOURSE />
+                <LazyHomePage />
               </React.Suspense>
             ),
+          },
+          {
+            path: "/cancel",
+            element: <Cancel />,
+          },
+
+          {
+            path: "/chat",
+            element: <ChatComponent />,
+          },
+
+          {
+            path: "stockmarkert",
+            element: <MarketOverviewAdvanced />,
+          },
+          {
+            path: "ad",
+            element: <MarketOverviewAdvanced />,
+          },
+          {
+            path: "/quote",
+            element: <QuotePage />,
+          },
+          {
+            path: "/trading-simulator",
+            element: (
+              <React.Suspense fallback={<Loader />}>
+                <LazyPaperTrading />
+              </React.Suspense>
+            ),
+          },
+
+          {
+            path: "/courses",
+            element: (
+              <React.Suspense fallback={<Loader />}>
+                <LazyCourses />
+              </React.Suspense>
+            ),
+
+            children: [
+              {
+                index: true,
+                element: <AllCourses />,
+              },
+              {
+                path: ":course",
+                element: (
+                  <React.Suspense fallback={<Loader />}>
+                    <LazyCOURSE />
+                  </React.Suspense>
+                ),
+              },
+            ],
+          },
+
+          {
+            path: "/splunk-orientation",
+            element: (
+              <React.Suspense fallback={<Loader />}>
+                <LazySplunkOrientation />
+              </React.Suspense>
+            ),
+          },
+          {
+            path: "/about",
+            element: (
+              <React.Suspense fallback={<Loader />}>
+                <LazyAbout />
+              </React.Suspense>
+            ),
+          },
+
+          {
+            path: "/toskillab",
+            element: <Home />,
+          },
+
+          {
+            path: "/toskillab/lab",
+            element: <SplunkLab />,
+          },
+
+          {
+            path: "/mylab",
+            element: (
+              <React.Suspense fallback={<Loader />}>
+                <SplunkPracticeLab />
+              </React.Suspense>
+            ),
+          },
+
+          {
+            path: "/sessions",
+            element: <Session />,
+          },
+
+          {
+            path: "/career",
+            element: (
+              <React.Suspense fallback={<Loader />}>
+                <LazyCareer />
+              </React.Suspense>
+            ),
+          },
+          {
+            path: "/carrerpage",
+            element: (
+              <React.Suspense fallback={<Loader />}>
+                <LazyNextxCareer />
+              </React.Suspense>
+            ),
+          },
+          {
+            path: "/blog",
+            element: (
+              <React.Suspense fallback={<Loader />}>
+                <LazyBlogPage />
+              </React.Suspense>
+            ),
+          },
+
+          {
+            path: "/contact",
+            element: <ContactPage />,
+          },
+          {
+            path: "/checkout",
+            element: <CheckOut />,
+          },
+          {
+            path: "/mentorship",
+            element: (
+              <React.Suspense fallback={<Loader />}>
+                <LazyMentorship />
+              </React.Suspense>
+            ),
+          },
+          {
+            path: "/liveCourses",
+            element: <LiveCourses />,
+          },
+          { path: "/commands", element: <Commands /> },
+          { path: "/dictionary", element: <SplunkDictionary /> },
+          {
+            path: "/result",
+            element: <QuizResults />,
+          },
+          {
+            path: "/quiz",
+            element: <SplunkQuiz />,
+          },
+          {
+            path: "/myProfile",
+            element: <MyProfile />,
           },
         ],
       },
 
       {
-        path: "/splunk-orientation",
-        element: (
-          <React.Suspense fallback={<Loader />}>
-            <LazySplunkOrientation />
-          </React.Suspense>
-        ),
+        path: "/admininfo",
+        element: <AdminLoginForm />,
+      },
+
+      {
+        path: "/createAccount",
+        element: <CreateAccountForm />,
       },
       {
-        path: "/about",
-        element: (
-          <React.Suspense fallback={<Loader />}>
-            <LazyAbout />
-          </React.Suspense>
-        ),
+        path: "/login",
+        element: <MyLogin />,
+      },
+      {
+        path: "/aaaa",
+        element: <Apage />,
       },
 
       {
@@ -203,274 +305,173 @@ const router = createBrowserRouter([
       },
 
       {
-  path: "/toskillab/lab",
-  element: <SplunkLab />,
-},
+        path: "/labview",
+        element: <LabView />,
+      },
 
       {
-        path: "/mylab",
+        path: "/profile",
+        element: <Profile />,
+      },
+
+      {
+        path: "/loginskill",
+        element: <TSkillLabLogin />,
+      },
+
+      {
+        path: "/forgotPassword",
+        element: <ForgotPassword />,
+      },
+
+      {
+        path: "/reset-password/:token", // there was //
+        element: <ResetPassword />,
+      },
+      {
+        path: "/OTP",
+        element: <OTP_Verification />,
+      },
+
+      {
+        path: "/lab",
+        element: <SplunkStudio />,
+      },
+      { path: "/splunk-studio", element: <SplunkStudio /> },
+      {
+        path: "/createNewPassword",
+        element: <CreateNewPassword />,
+      },
+      {
+        path: "/confirmNewPassword",
+        element: <ConfirmNewPassword />,
+      },
+      {
+        path: "/partner",
+        element: <ConnectWithContractor />,
+      },
+
+      // DASHBOARD
+      {
+        path: "/dashboard",
         element: (
           <React.Suspense fallback={<Loader />}>
-            <SplunkPracticeLab />
+            <LazyAuthLayout />
           </React.Suspense>
         ),
-      },
-
-      {
-        path: "/sessions",
-        element: <Session />,
-      },
-
-      {
-        path: "/career",
-        element: (
-          <React.Suspense fallback={<Loader />}>
-            <LazyCareer />
-          </React.Suspense>
-        ),
-      },
-      {
-        path: "/carrerpage",
-        element: (
-          <React.Suspense fallback={<Loader />}>
-            <LazyNextxCareer />
-          </React.Suspense>
-        ),
-      },
-      {
-        path: "/blog",
-        element: (
-          <React.Suspense fallback={<Loader />}>
-            <LazyBlogPage />
-          </React.Suspense>
-        ),
-      },
-
-      {
-        path: "/contact",
-        element: <ContactPage />,
-      },
-      {
-        path: "/checkout",
-        element: <CheckOut />,
-      },
-      {
-        path: "/mentorship",
-        element: (
-          <React.Suspense fallback={<Loader />}>
-            <LazyMentorship />
-          </React.Suspense>
-        ),
-      },
-      {
-        path: "/liveCourses",
-        element: <LiveCourses />,
-      },
-      { path: "/commands", element: <Commands /> },
-      { path: "/dictionary", element: <SplunkDictionary /> },
-      {
-        path: "/result",
-        element: <QuizResults />,
-      },
-      {
-        path: "/quiz",
-        element: <SplunkQuiz />,
-      },
-      {
-        path: "/myProfile",
-        element: <MyProfile />,
-      },
-    ],
-  },
-
-  {
-    path: "/admininfo",
-    element: <AdminLoginForm />,
-  },
-
-  {
-    path: "/createAccount",
-    element: <CreateAccountForm />,
-  },
-  {
-    path: "/login",
-    element: <MyLogin />,
-  },
-  {
-path:"/aaaa",
-element:<Apage/>
-  },
-
-  {
-    path: "/toskillab",
-    element: <Home />,
-  },
-
-  {
-    path: "/labview",
-    element: <LabView />,
-  },
-
-  {
-    path: "/profile",
-    element: <Profile />,
-  },
-
-  {
-    path: "/loginskill",
-    element: <TSkillLabLogin />,
-  },
-
-  {
-    path: "/forgotPassword",
-    element: <ForgotPassword />,
-  },
-
-  {
-    path: "/reset-password/:token", // there was //
-    element: <ResetPassword />,
-  },
-  {
-    path: "/OTP",
-    element: <OTP_Verification />,
-  },
-
-     { path: "/lab", element: <SplunkStudio /> },
-  { path: "/splunk-studio", element: <SplunkStudio /> },
-  {
-    path: "/createNewPassword",
-    element: <CreateNewPassword />,
-  },
-  {
-    path: "/confirmNewPassword",
-    element: <ConfirmNewPassword />,
-  },
-  {
-    path: "/partner",
-    element: <ConnectWithContractor />,
-  },
-
-  // DASHBOARD
-  {
-    path: "/dashboard",
-    element: (
-      <React.Suspense fallback={<Loader />}>
-        <LazyAuthLayout />
-      </React.Suspense>
-    ),
-    children: [
-      { index: true, element: <MyCourses /> },
-      { path: "checkout", element: <CheckOut /> },
-      { path: "quiz", element: <SplunkQuiz /> },
-      { path: "dictionary", element: <SplunkDictionary /> },
-      { path: "classmaterials", element: <ClassM /> },
-      { path: "myCourses", element: <MyCourses /> },
-      { path: "mentorship", element: <Mentorship /> },
-      { path: "comment", element: <StudentCommentPage /> },
-      { path: "links", element: <Links /> },
-      { path: "commands", element: <Commands /> },
-      { path: "materials", element: <Materials /> },
-      { path: "stockside", element: <StockDashboard /> },
-      { path: "result", element: <QuizResults /> },
-      { path: "stockportal", element: <StockPortal /> },
-      {
-  path: "stock-quiz",
-  element: <StockQuiz />,
-},
-
-      {
-        path: "stockmarkert",
-        element: <MarketOverviewAdvanced />,
-      },
-      {
-        path: "stock",
-        // Temporarily hide the Massive Stock Dashboard page.
-        element: null,
-      },
-      {
-        path: "map",
-        element: <SplunkCareerRoadmap />,
-      },
-      { path: "takequiz", element: <MainQuiz /> },
-      { path: "check", element: <StudentDashboard /> },
-      { path: "makePayment", element: <PaymentPage /> },
-      { path: "overview", element: <MarketOverview /> },
-      { path: "splunk-studio", element: <SplunkStudio /> },
-      { path: "lab", element: <SplunkStudio /> },
-
-      { path: "/dashboard/post", element: <Dashboard /> },
-    ],
-  },
-
-  // ADMIN DASHBOARD
-  {
-    path: "/ADMIN-DASHBOARD",
-    element: <AdminLayout />,
-    children: [
-      {
-        index: true,
-        element: <AdminDashboard />,
-      },
-
-      {
-        path: "viewcourses",
-        element: <AdminViewCourses />,
         children: [
+          { index: true, element: <MyCourses /> },
+          { path: "checkout", element: <CheckOut /> },
+          { path: "quiz", element: <SplunkQuiz /> },
+          { path: "dictionary", element: <SplunkDictionary /> },
+          { path: "classmaterials", element: <ClassM /> },
+          { path: "myCourses", element: <MyCourses /> },
+          { path: "mentorship", element: <Mentorship /> },
+          { path: "comment", element: <StudentCommentPage /> },
+          { path: "links", element: <Links /> },
+          { path: "commands", element: <Commands /> },
+          { path: "materials", element: <Materials /> },
+          { path: "stockside", element: <StockDashboard /> },
+          { path: "result", element: <QuizResults /> },
+          { path: "stockportal", element: <StockPortal /> },
           {
-            index: true,
-            element: <CourseTabContent status="all" />,
+            path: "stock-quiz",
+            element: <StockQuiz />,
+          },
+
+          {
+            path: "stockmarkert",
+            element: <MarketOverviewAdvanced />,
           },
           {
-            path: "published",
-            element: <CourseTabContent status="published" />,
+            path: "stock",
+            // Temporarily hide the Massive Stock Dashboard page.
+            element: null,
           },
           {
-            path: "draft",
-            element: <CourseTabContent status="draft" />,
+            path: "map",
+            element: <SplunkCareerRoadmap />,
           },
+          { path: "takequiz", element: <MainQuiz /> },
+          { path: "check", element: <StudentDashboard /> },
+          { path: "makePayment", element: <PaymentPage /> },
+          { path: "overview", element: <MarketOverview /> },
+          { path: "splunk-studio", element: <SplunkStudio /> },
+          { path: "lab", element: <SplunkStudio /> },
+
+          { path: "/dashboard/post", element: <Dashboard /> },
         ],
       },
 
+      // ADMIN DASHBOARD
       {
-        path: "allStudents",
-        element: <AllStudents />,
-      },
+        path: "/ADMIN-DASHBOARD",
+        element: <AdminLayout />,
+        children: [
+          {
+            index: true,
+            element: <AdminDashboard />,
+          },
 
-      {
-        path: "expenses",
-        element: <AdminExpenses />,
-      },
+          {
+            path: "viewcourses",
+            element: <AdminViewCourses />,
+            children: [
+              {
+                index: true,
+                element: <CourseTabContent status="all" />,
+              },
+              {
+                path: "published",
+                element: <CourseTabContent status="published" />,
+              },
+              {
+                path: "draft",
+                element: <CourseTabContent status="draft" />,
+              },
+            ],
+          },
 
-      {
-        path: "student-access",
-        element: <StudentAccess />,
+          {
+            path: "allStudents",
+            element: <AllStudents />,
+          },
+
+          {
+            path: "expenses",
+            element: <AdminExpenses />,
+          },
+
+          {
+            path: "student-access",
+            element: <StudentAccess />,
+          },
+          {
+            path: "contacts",
+            element: <Contacts />,
+          },
+          {
+            path: "studentresults",
+            element: <SeeQuiz />,
+          },
+          {
+            path: "contractors",
+            element: <Contractors />,
+          },
+          {
+            path: "send-links",
+            element: <SendLinks />,
+          },
+          {
+            path: "send-pdf",
+            element: <SendPdf />,
+          },
+          {
+            path: "send-messages",
+            element: <SendMessages />,
+          },
+        ],
       },
-      {
-        path: "contacts",
-        element: <Contacts />,
-      },
-      {
-        path: "studentresults",
-        element: <SeeQuiz />,
-      },
-      {
-        path: "contractors",
-        element: <Contractors />,
-      },
-      {
-        path: "send-links",
-        element: <SendLinks />,
-      },
-      {
-        path: "send-pdf",
-        element: <SendPdf />,
-      },
-      {
-        path: "send-messages",
-        element: <SendMessages />,
-      },
-    ],
-  },
     ],
   },
 ]);

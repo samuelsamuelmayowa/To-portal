@@ -69,6 +69,9 @@ const NAV_CLUSTERS = [
         label: "Splunk Lab",
         description: "Investigate realistic Splunk scenarios",
       },
+
+
+      
       // {
       //   to: "/toskillab/lab",
       //   label: "Splunk Lab",
