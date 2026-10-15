@@ -250,7 +250,7 @@ export default function MyCourses() {
             <div>
               <div className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/10 px-4 py-2 backdrop-blur-xl">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-BLUE">
-                  <FaUserShield />
+                  {/* <FaUserShield /> */}
                 </span>
                 <span className="text-xs font-black uppercase tracking-[0.25em] text-white/70">
                   Student Learning Dashboard
