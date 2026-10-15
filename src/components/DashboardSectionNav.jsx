@@ -8,7 +8,7 @@ const splunkPages = [
   { label: "Classes & Docs", to: "/dashboard/classmaterials" },
   { label: "Calendar", to: "/dashboard/check" },
   { label: "Quiz Center", to: "/dashboard/takequiz" },
-  { label: "Splunk Quiz", to: "/dashboard/quiz" },
+  // { label: "Splunk Quiz", to: "/dashboard/quiz" },
   { label: "Results", to: "/dashboard/result" },
   { label: "Splunk Lab", to: "/dashboard/lab" },
   { label: "Career Roadmap", to: "/dashboard/map" },

@@ -70,7 +70,11 @@ const roadmap = [
       "Apps vs Add-ons (TA)",
       "Data onboarding basics",
     ],
-    skills: ["Architecture basics", "Data onboarding", "Troubleshooting mindset"],
+    skills: [
+      "Architecture basics",
+      "Data onboarding",
+      "Troubleshooting mindset",
+    ],
     tools: ["Splunk Enterprise", "Forwarder", "Monitoring Console"],
     jobs: ["Junior Splunk User", "SOC Intern (Splunk)", "IT Analyst"],
     project:
@@ -114,9 +118,18 @@ const roadmap = [
       "Drilldowns",
       "Dashboard best practices (clarity, speed, intent)",
     ],
-    skills: ["Data storytelling", "KPI design", "Token logic", "Performance habits"],
+    skills: [
+      "Data storytelling",
+      "KPI design",
+      "Token logic",
+      "Performance habits",
+    ],
     tools: ["Dashboard Studio", "Classic Dashboards", "Tokens"],
-    jobs: ["Dashboard Engineer", "SOC Analyst (dashboards)", "Observability Analyst"],
+    jobs: [
+      "Dashboard Engineer",
+      "SOC Analyst (dashboards)",
+      "Observability Analyst",
+    ],
     project:
       "Create a SOC Overview dashboard: Auth failures trend, top users, top IPs, suspicious spikes, drilldown to raw events.",
     certs: ["Splunk Power User (prep)"],
@@ -169,9 +182,17 @@ const roadmap = [
       "Macros",
       "Field extractions (props/transforms concept)",
     ],
-    skills: ["Reusable engineering", "Standardization", "Scale & maintainability"],
+    skills: [
+      "Reusable engineering",
+      "Standardization",
+      "Scale & maintainability",
+    ],
     tools: ["Lookups", "KV Store", "Macros", "Knowledge Manager"],
-    jobs: ["Splunk Engineer", "Splunk Admin (junior)", "Detection Engineer (junior)"],
+    jobs: [
+      "Splunk Engineer",
+      "Splunk Admin (junior)",
+      "Detection Engineer (junior)",
+    ],
     project:
       "Create a lookup for approved admin IPs, a macro for login failures, and a reusable event type for suspicious auth.",
     certs: ["Splunk Admin (prep)"],
@@ -191,7 +212,12 @@ const roadmap = [
       "Persistence patterns",
       "Hunt workflow (hypothesis → query → evidence → report)",
     ],
-    skills: ["Investigation", "Threat hunting", "Evidence building", "Reporting"],
+    skills: [
+      "Investigation",
+      "Threat hunting",
+      "Evidence building",
+      "Reporting",
+    ],
     tools: ["Correlation ideas", "Notables mindset", "Dashboards + Alerts"],
     jobs: ["SOC Analyst", "Threat Hunter (junior)", "Security Analyst"],
     project:
@@ -221,19 +247,18 @@ function clamp(n, min, max) {
 
 export default function SplunkCareerRoadmapMap() {
   const [darkMode, setDarkMode] = useState(false);
-    const [userEmail, setUserEmail] = useState("");
+  const [userEmail, setUserEmail] = useState("");
   const [active, setActive] = useState(null); // index of open card
   const [path, setPath] = useState("all"); // selected path key
-   useEffect(() => {
-        document.documentElement.classList.toggle("dark", darkMode);
-      }, [darkMode]);
   useEffect(() => {
-      const e = localStorage.getItem("user") || "";
-      setUserEmail(e);
-  
-      // Check permission
-    
-   }, []);
+    document.documentElement.classList.toggle("dark", darkMode);
+  }, [darkMode]);
+  useEffect(() => {
+    const e = localStorage.getItem("user") || "";
+    setUserEmail(e);
+
+    // Check permission
+  }, []);
   const [progress, setProgress] = useState({
     all: 0,
     soc: 0,
@@ -264,7 +289,9 @@ export default function SplunkCareerRoadmapMap() {
 
   const filtered = useMemo(() => {
     // Show everything for "all", otherwise show shared fundamentals + selected path items
-    return roadmap.filter((x) => x.paths.includes("all") || x.paths.includes(path));
+    return roadmap.filter(
+      (x) => x.paths.includes("all") || x.paths.includes(path),
+    );
   }, [path]);
 
   // completion is "highest completed level" in the chosen path
@@ -274,9 +301,11 @@ export default function SplunkCareerRoadmapMap() {
   const completedCount = clamp(
     filtered.filter((x) => x.level <= completedLevel).length,
     0,
-    totalLevels
+    totalLevels,
   );
-  const percent = totalLevels ? Math.round((completedCount / totalLevels) * 100) : 0;
+  const percent = totalLevels
+    ? Math.round((completedCount / totalLevels) * 100)
+    : 0;
 
   const PathIcon = careerPaths[path]?.icon || Layers;
 
@@ -294,16 +323,15 @@ export default function SplunkCareerRoadmapMap() {
 
   return (
     <div className="max-w-6xl mx-auto py-14 px-4 text-white">
-       <div className="max-w-7xl mx-auto mb-6">
-            
-            </div>
+      <div className="max-w-7xl mx-auto mb-6"></div>
       {/* Header */}
       <div className="text-center">
         <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">
-          Your  Splunk Career Roadmap
+          Your Splunk Career Roadmap
         </h2>
         <p className="mt-3 text-gray-400">
-          Choose a path, follow the levels, complete projects, build your portfolio.
+          Choose a path, follow the levels, complete projects, build your
+          portfolio.
         </p>
       </div>
 
@@ -341,7 +369,9 @@ export default function SplunkCareerRoadmapMap() {
                     <span className="block font-semibold text-sm md:text-base">
                       {p.label}
                     </span>
-                    <span className="block text-xs text-gray-400">{p.subtitle}</span>
+                    <span className="block text-xs text-gray-400">
+                      {p.subtitle}
+                    </span>
                   </span>
                 </div>
               </button>
@@ -476,7 +506,9 @@ export default function SplunkCareerRoadmapMap() {
                     >
                       {/* Topics */}
                       <div className="rounded-xl bg-white/5 border border-white/10 p-4">
-                        <p className="text-sm font-semibold mb-2">What you learn</p>
+                        <p className="text-sm font-semibold mb-2">
+                          What you learn
+                        </p>
                         <ul className="space-y-2 text-sm text-gray-300">
                           {box.items.map((item, i) => (
                             <li key={i}>• {item}</li>
@@ -487,7 +519,9 @@ export default function SplunkCareerRoadmapMap() {
                       {/* Skills/Tools/Roles */}
                       <div className="mt-4 grid gap-3 md:grid-cols-2">
                         <div className="rounded-xl bg-white/5 border border-white/10 p-4">
-                          <p className="text-sm font-semibold mb-2">Career mapping</p>
+                          <p className="text-sm font-semibold mb-2">
+                            Career mapping
+                          </p>
                           <p className="text-xs text-gray-400">
                             🧠 Skills:{" "}
                             <span className="text-gray-200">
@@ -509,7 +543,9 @@ export default function SplunkCareerRoadmapMap() {
                         </div>
 
                         <div className="rounded-xl bg-white/5 border border-white/10 p-4">
-                          <p className="text-sm font-semibold mb-2">Cert + Portfolio</p>
+                          <p className="text-sm font-semibold mb-2">
+                            Cert + Portfolio
+                          </p>
                           <p className="text-xs text-gray-400">
                             🎓 Certs:{" "}
                             <span className="text-gray-200">
@@ -527,10 +563,13 @@ export default function SplunkCareerRoadmapMap() {
 
                       {/* Project */}
                       <div className="mt-4 rounded-xl bg-white/5 border border-white/10 p-4">
-                        <p className="text-sm font-semibold mb-2">🛠 Project (do this)</p>
+                        <p className="text-sm font-semibold mb-2">
+                          🛠 Project (do this)
+                        </p>
                         <p className="text-sm text-gray-300">{box.project}</p>
                         <p className="mt-2 text-xs text-gray-400">
-                          💡 Tip: Practice in Splunk Search immediately after learning.
+                          💡 Tip: Practice in Splunk Search immediately after
+                          learning.
                         </p>
                       </div>
 
@@ -585,12 +624,12 @@ export default function SplunkCareerRoadmapMap() {
 
       {/* Footer note */}
       <div className="mt-12 text-center text-sm text-gray-400">
-        Build your portfolio from each level — dashboards, alert rules, SPL libraries, and incident reports.
+        Build your portfolio from each level — dashboards, alert rules, SPL
+        libraries, and incident reports.
       </div>
     </div>
   );
 }
-
 
 // import { useState } from "react";
 // import { motion, AnimatePresence } from "framer-motion";
@@ -702,7 +741,6 @@ export default function SplunkCareerRoadmapMap() {
 //   },
 // ];
 
-
 // export default function SplunkCareerRoadmapMap() {
 //   const [active, setActive] = useState(null);
 
@@ -770,8 +808,6 @@ export default function SplunkCareerRoadmapMap() {
 //     </div>
 //   );
 // }
-
-
 
 // // import { useState } from "react";
 // // import { motion, AnimatePresence } from "framer-motion";
@@ -911,7 +947,7 @@ export default function SplunkCareerRoadmapMap() {
 // //         </div>
 // //       </div>
 // //     </div>
-// //   ); 
+// //   );
 // // }
 
 // // // import { useState } from "react";
