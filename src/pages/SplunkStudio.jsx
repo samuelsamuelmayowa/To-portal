@@ -32,9 +32,18 @@ export default function SplunkStudio() {
   const [alerts, setAlerts] = useState(() => load(LS_ALERTS, []));
 
   // persist
-  useEffect(() => localStorage.setItem(LS_SAVED, JSON.stringify(saved)), [saved]);
-  useEffect(() => localStorage.setItem(LS_DASH, JSON.stringify(dashboards)), [dashboards]);
-  useEffect(() => localStorage.setItem(LS_ALERTS, JSON.stringify(alerts)), [alerts]);
+  useEffect(
+    () => localStorage.setItem(LS_SAVED, JSON.stringify(saved)),
+    [saved],
+  );
+  useEffect(
+    () => localStorage.setItem(LS_DASH, JSON.stringify(dashboards)),
+    [dashboards],
+  );
+  useEffect(
+    () => localStorage.setItem(LS_ALERTS, JSON.stringify(alerts)),
+    [alerts],
+  );
 
   const addSaved = ({ name, spl }) => {
     setSaved((p) => [
@@ -68,13 +77,14 @@ export default function SplunkStudio() {
       ...p,
     ]);
   };
-    const [userEmail, setUserEmail] = useState("");
-    const [darkMode, setDarkMode] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
+  const [darkMode, setDarkMode] = useState(false);
 
-    useEffect(() => {
-      document.documentElement.classList.toggle("dark", darkMode);
-    }, [darkMode]);
-  const deleteDashboard = (id) => setDashboards((p) => p.filter((x) => x.id !== id));
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", darkMode);
+  }, [darkMode]);
+  const deleteDashboard = (id) =>
+    setDashboards((p) => p.filter((x) => x.id !== id));
 
   const addAlert = ({ name, spl, operator, threshold }) => {
     setAlerts((p) => [
@@ -93,47 +103,46 @@ export default function SplunkStudio() {
   const deleteAlert = (id) => setAlerts((p) => p.filter((x) => x.id !== id));
 
   return (
-
     <>
-       {showNavBar && <NavBar />}
-       <div className={showNavBar ? "pt-20 sm:pt-24" : undefined}>
-       
-    <StudioShell active={active} setActive={setActive}>
+      {showNavBar && <NavBar />}
+      <div className={showNavBar ? "pt-20 sm:pt-24" : undefined}>
+        <StudioShell active={active} setActive={setActive}>
+          {active === "lab" && (
+            <SearchLab
+              onSaveSearch={(spl) =>
+                addSaved({ name: `Saved: ${spl.slice(0, 24)}...`, spl })
+              }
+            />
+          )}
 
-      {active === "lab" && (
-        <SearchLab
-          onSaveSearch={(spl) => addSaved({ name: `Saved: ${spl.slice(0, 24)}...`, spl })}
-        />
-      )}
+          {active === "saved" && (
+            <SavedSearches
+              saved={saved}
+              onAdd={addSaved}
+              onRun={runSavedIntoLab}
+              onDelete={deleteSaved}
+            />
+          )}
 
-      {active === "saved" && (
-        <SavedSearches
-          saved={saved}
-          onAdd={addSaved}
-          onRun={runSavedIntoLab}
-          onDelete={deleteSaved}
-        />
-      )}
+          {active === "dash" && (
+            <DashboardBuilder
+              saved={saved}
+              dashboards={dashboards}
+              onAddDashboard={addDashboard}
+              onDeleteDashboard={deleteDashboard}
+            />
+          )}
 
-      {active === "dash" && (
-        <DashboardBuilder
-          saved={saved}
-          dashboards={dashboards}
-          onAddDashboard={addDashboard}
-          onDeleteDashboard={deleteDashboard}
-        />
-      )}
-
-      {active === "alerts" && (
-        <AlertBuilder
-          saved={saved}
-          alerts={alerts}
-          onAddAlert={addAlert}
-          onDeleteAlert={deleteAlert}
-        />
-      )}
-    </StudioShell>
-    </div>
+          {active === "alerts" && (
+            <AlertBuilder
+              saved={saved}
+              alerts={alerts}
+              onAddAlert={addAlert}
+              onDeleteAlert={deleteAlert}
+            />
+          )}
+        </StudioShell>
+      </div>
     </>
   );
 }

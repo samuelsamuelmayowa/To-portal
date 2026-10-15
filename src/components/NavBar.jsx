@@ -53,11 +53,15 @@ const NAV_CLUSTERS = [
     label: "Practice",
     description: "Hands-on tools and preparation",
     items: [
-      // {
-      //   to: "/toskillab",
-      //   label: "Interview Prep",
-      //   description: "Prepare with practical career exercises",
-      // },
+      {
+        to: "/toskillab",
+        label: "Interview Prep",
+        description: "Prepare with practical career exercises",
+      },
+
+
+
+
       {
         to: "/trading-simulator",
         label: "Trading Simulator",
@@ -71,7 +75,7 @@ const NAV_CLUSTERS = [
       },
 
 
-      
+
       // {
       //   to: "/toskillab/lab",
       //   label: "Splunk Lab",
