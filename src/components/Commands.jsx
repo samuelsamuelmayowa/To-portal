@@ -437,7 +437,7 @@ export default function Commands() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 p-6 mt-1">
       {/* HEADER */}
-      <div className="max-w-7xl mx-auto mb-6">
+      {/* <div className="max-w-7xl mx-auto mb-6">
         <div className="dashboard-topbar bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
@@ -467,7 +467,7 @@ export default function Commands() {
             </button>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* TITLE */}
       <div className="max-w-7xl mx-auto">
