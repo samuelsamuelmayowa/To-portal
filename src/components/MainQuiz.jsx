@@ -327,8 +327,8 @@ export default function MainQuiz() {
               <FiBookOpen size={20} />
             </div>
             <div>
-              <div className="text-[15px] font-extrabold leading-tight tracking-tight">T.O Analytics</div>
-              <div className="text-xs text-slate-500 dark:text-slate-400">Student learning portal</div>
+              {/* <div className="text-[15px] font-extrabold leading-tight tracking-tight">T.O Analytics</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400">Student learning portal</div> */}
             </div>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
