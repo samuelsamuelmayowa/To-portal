@@ -209,36 +209,9 @@ const MainQuiz = () => {
             className="p-3 w-full border border-gray-300 dark:border-gray-700 rounded-xl text-gray-700 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none transition"
           >
             <option value="">-- Choose a Quiz --</option>
-            <option value="T.O Analytics Splunk Class 1 Quiz">
-              Splunk Class 1 Quiz
-            </option>
-            <option value="T.O Analytics Splunk Class 2 Quiz">
-              Splunk Class 2 Quiz
-            </option>
-            <option value="T.O Analytics Splunk Class 3 Quiz">
-              Splunk Class 3 Quiz
-            </option>
-            <option value="T.O Analytics Splunk Class 4 Quiz">
-              Splunk Class 4 Quiz
-            </option>
-            <option value="T.O. Analytics – Splunk Class 5 Quiz">
-              Splunk Class 5 Quiz
-            </option>
-            <option value="T.O Analytics – Splunk Class 6 Quiz">
-              Splunk Class 6 Quiz
-            </option>
-
-            <option value="T.O Analytics Splunk Class 7 Quiz">
-              Splunk Class 7 Quiz
-            </option>
-            <option value="T.O Analytics  Splunk Class 9 Quiz">
-              Splunk Class 9 Quiz
-            </option>
-
-            <option value="T.O Analytics Splunk Class  12 Quiz">
-              {" "}
-              T.O Analytics Splunk Class 12 Quiz
-            </option>
+            
+            
+          
             {isBoss && (
               <option value="T.O Analytics –- SPLK-2002 Practice Quiz">
                 T.O Analytics – SPLK-2002 Practice Quiz
