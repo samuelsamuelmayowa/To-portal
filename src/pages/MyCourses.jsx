@@ -112,6 +112,7 @@ export default function MyCourses() {
           "emanfrimpong@gmail.com",
           "dipeoluolatunji@gmail.com",
           "yinkalola51@gmail.com",
+          "spheremessage@gmail.com"
         ].map((email) => email.toLowerCase()),
       ),
     [],
