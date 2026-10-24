@@ -96,7 +96,7 @@ export default function MyCourses() {
           "fadeleolutola@gmail.com",
           "ooolajuyigbe@gmail.com",
           "jahdek76@gmail.com",
-          "samuelsamuelmayowa@gmail.com",
+          // "samuelsamuelmayowa@gmail.com",
           "oluwaferanmiolulana@gmail.com",
           "tomideolulana@gmail.com",
           "toanalyticsllc@gmail.com",
