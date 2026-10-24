@@ -124,6 +124,7 @@ export default function MyCourses() {
     () => new Set([
       "samuelsamuelmayowa@gmail.com", // test student; has access to both cards
       // "anotherstudent@example.com",
+    "spheremessage@gmail.com"  
     ]),
     [],
   );
