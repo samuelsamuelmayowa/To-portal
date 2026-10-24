@@ -41,6 +41,7 @@ const NEW_COHORT_ID = "splunk-2026-oct";
 // This is only a temporary UI gate for an EMPTY curriculum, NOT secure authorization.
 const OCTOBER_2026_EMAILS = new Set([
   "samuelsamuelmayowa@gmail.com", // test account (can also access previous intake)
+  "spheremessage@gmail.com"
   // "anotherstudent@example.com",
 ]);
 const LEGACY_COHORT_ID = "legacy";
