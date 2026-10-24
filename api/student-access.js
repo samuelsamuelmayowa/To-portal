@@ -1,7 +1,12 @@
 import { createClient } from "@supabase/supabase-js";
 
 const VALID_STATUSES = new Set(["active", "suspended", "revoked"]);
-const VALID_COURSE_IDS = new Set(["splunk", "stock-options"]);
+// const VALID_COURSE_IDS = new Set(["splunk", "stock-options"]);
+const VALID_COURSE_IDS = new Set([
+  "splunk",
+  "splunk-2026",
+  "stock-options",
+]);
 
 function jsonResponse(body, status = 200) {
   return Response.json(body, {
