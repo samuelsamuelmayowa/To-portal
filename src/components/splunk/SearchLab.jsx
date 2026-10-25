@@ -1,330 +1,214 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Search, CheckCircle2, AlertTriangle } from "lucide-react";
-import { LOGS } from "../../data/logs";
+import {
+  BookOpen, CheckCircle2, ChevronDown, ChevronRight, CircleHelp,
+  Command, Database, GraduationCap, Lightbulb, Play,
+  Save, Search, Sparkles, Terminal, XCircle,
+} from "lucide-react";
+import { getLabLogs } from "../../data/splAdminState";
+import { LOOKUP_CATALOG } from "../../data/splLookups";
+import { SPL_COMMANDS, SPL_LESSONS } from "../../data/splLessons";
 import { runSPL } from "../../utils/splEngine";
 import { GlassCard, PrimaryButton, SoftButton } from "./Glass";
-
+import { PrettyTable } from "./Viz";
 import ChartSelector from "./charts/ChartSelector";
 import ChartRenderer from "./charts/ChartRenderer";
-import  recommendChart  from "./charts/chartRegistry";
+import recommendChart from "./charts/chartRegistry";
 
-
-// import ChartSelector from "@/components/splunk/charts/ChartSelector";
-// import ChartRenderer from "@/components/splunk/charts/ChartRenderer";
-// import { recommendChart } from "@/components/splunk/charts/chartRegistry";
-
-import { MiniBarChart, PrettyTable } from "./Viz";
-
-const SUGGESTIONS = [
-  "index=_internal",
-  "index=_internal ERROR",
-  "index=_internal | stats count by sourcetype",
-  "index=_internal | timechart span=15m count",
-  "index=web_logs status=200 | stats count by url",
-  "index=web_logs | top url limit=10",
-  "index=_internal | timechart span=15m count",
+const PROGRESS_KEY = "to_splunk_lesson_progress_v2";
+const inputClass = "w-full rounded-xl border border-white/10 bg-[#080f22] px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-cyan-400/70";
+const initialIndex = "training_web";
+const initialQuery = `index=${initialIndex}`;
+const EXAMPLES = [
+  { label: "Find 404 errors", query: "index=training_web status=404 | table _time endpoint status" },
+  { label: "Average latency", query: "index=training_web | stats avg(response_time) as avg_ms by endpoint | sort -avg_ms" },
+  { label: "HTTP statuses", query: "index=training_web | stats count by status | sort -count" },
+  { label: "Traffic trends", query: "index=training_web | timechart span=1h count" },
+  { label: "Login failures", query: "index=training_security action=failure | stats count by user | sort -count" },
+  { label: "Application errors", query: "index=training_apps level=ERROR | stats count by service" },
+  { label: "Revenue by product", query: "index=training_sales payment_status=paid | stats sum(revenue) as revenue by product | sort -revenue" },
+  { label: "Extract severity (rex)", query: 'index=training_apps | rex field=_raw "(?<severity>ERROR|WARN|INFO)" | stats count by severity' },
+  { label: "Enrich login audits", query: "index=training_security | lookup user_directory.csv user OUTPUT department role | stats count by department" },
+  { label: "Connect sessions", query: "index=training_sessions | transaction session_id maxspan=30m | table session_id user eventcount duration" },
 ];
-
-const LABS = [
-  {
-    id: "lab-1",
-    title: "Basic Search",
-    goal: "Run a search on internal logs",
-    hint: "Start with index=_internal",
-    starter: "index=_internal",
-    expected: (q, res) => q.includes("index=_internal") && res?.count > 0,
-  },
-  {
-    id: "lab-2",
-    title: "Build a Report (stats)",
-    goal: "Create a report by sourcetype",
-    hint: "Use: | stats count by sourcetype",
-    starter: "index=_internal | stats count by sourcetype",
-    expected: (q, res) => res?.mode === "table",
-  },
-  {
-    id: "lab-3",
-    title: "Visualize (timechart)",
-    goal: "Create a time-based visualization",
-    hint: "Use: | timechart span=15m count",
-    starter: "index=_internal | timechart span=15m count",
-    expected: (q, res) => res?.mode === "timechart",
-  },
-];
+const LEVELS = ["Beginner", "Intermediate", "Advanced", "Investigations"];
+function safelyLoadProgress() {
+  try { return JSON.parse(localStorage.getItem(PROGRESS_KEY) || "[]"); }
+  catch { return []; }
+}
+const classNames = (...parts) => parts.filter(Boolean).join(" ");
+function getChartKeys(rows, mode) {
+  if (!rows.length) return null;
+  const keys = Object.keys(rows[0]);
+  const xKey = mode === "timechart" ? "_time" : keys.find((x) => x !== "count" && x !== "percent") || keys[0];
+  const yKey = keys.find((k) => k !== xKey && rows.some((r) => typeof r[k] === "number" && Number.isFinite(r[k])));
+  return xKey && yKey ? { xKey, yKey } : null;
+}
 
 export default function SearchLab({ onSaveSearch }) {
-  
-
-  const [query, setQuery] = useState("index=_internal");
-  const [res, setRes] = useState(null);
+  const [query, setQuery] = useState(initialQuery);
+  const [result, setResult] = useState(null);
   const [error, setError] = useState("");
-  const [tab, setTab] = useState("events");
-  const [showHints, setShowHints] = useState(false);
+  const [resultTab, setResultTab] = useState("events");
+  const [activeView, setActiveView] = useState("lessons");
+  const [level, setLevel] = useState("Beginner");
+  const [lessonId, setLessonId] = useState(SPL_LESSONS[0].id);
+  const [lessonMessage, setLessonMessage] = useState(null);
+  const [showHint, setShowHint] = useState(false);
+  const [commandQuery, setCommandQuery] = useState("");
+  const [lookupChoice, setLookupChoice] = useState("user_directory.csv");
+  const [completed, setCompleted] = useState(safelyLoadProgress);
+  const [chartType, setChartType] = useState("bar");
 
-  const recommendedChart = recommendChart(res);
-const [chartType, setChartType] = useState(recommendedChart);
-useEffect(() => {
-  setChartType(recommendChart(res));
-}, [res]);
+  const labLogs = getLabLogs();
+  const availableIndexes = Object.keys(labLogs);
+  const isLookupSearch = /^\|?\s*inputlookup\s+/i.test(query);
+  const currentIndex = (query.match(/\bindex=([\w-]+)/i) || [])[1] || (isLookupSearch ? "" : initialIndex);
+  const currentLesson = SPL_LESSONS.find((l) => l.id === lessonId) || SPL_LESSONS[0];
+  const visibleLessons = SPL_LESSONS.filter((l) => l.level === level);
+  const completionRate = Math.round(completed.length / SPL_LESSONS.length * 100);
+  const rows = result?.results || [];
+  const chartKeys = useMemo(() => getChartKeys(rows, result?.mode), [rows, result?.mode]);
+  const selectedLookup = LOOKUP_CATALOG.find((x) => x.name === lookupChoice) || LOOKUP_CATALOG[0];
+  const filteredCommands = useMemo(() => SPL_COMMANDS.filter((c) =>
+    `${c.name} ${c.description} ${c.category}`.toLowerCase().includes(commandQuery.toLowerCase()),
+  ), [commandQuery]);
 
   useEffect(() => {
-  const runOnce = sessionStorage.getItem("to_splunk_run_once");
-  if (runOnce) {
-    setQuery(runOnce);
-    sessionStorage.removeItem("to_splunk_run_once");
-  }
-}, []);
-  const [activeLabId, setActiveLabId] = useState(LABS[0].id);
-  const [labOk, setLabOk] = useState(null);
+    const handoff = sessionStorage.getItem("to_splunk_run_once");
+    if (handoff) { setQuery(handoff); sessionStorage.removeItem("to_splunk_run_once"); }
+  }, []);
+  useEffect(() => { localStorage.setItem(PROGRESS_KEY, JSON.stringify(completed)); }, [completed]);
+  useEffect(() => {
+    if (result) setChartType(recommendChart(result) || "bar");
+  }, [result]);
 
-  const activeLab = useMemo(() => LABS.find((l) => l.id === activeLabId), [activeLabId]);
-
-  const suggestions = useMemo(() => {
-    const q = query.toLowerCase();
-    return SUGGESTIONS.filter((s) => s.toLowerCase().includes(q)).slice(0, 6);
-  }, [query]);
-
+  const loadQuery = (next) => {
+    setQuery(next); setError(""); setResult(null); setLessonMessage(null);
+  };
+  const selectDataset = (index) => {
+    loadQuery(query.match(/\bindex=[\w-]+/i) ? query.replace(/\bindex=[\w-]+/i, `index=${index}`) : `index=${index}`);
+  };
+  const startLesson = (lesson) => {
+    setLessonId(lesson.id); setLevel(lesson.level);
+    setShowHint(false); loadQuery(lesson.starter);
+  };
   const runSearch = () => {
-    const out = runSPL(query, LOGS);
-    if (out?.error) {
-      setError(out.error);
-      setRes(null);
-      return;
-    }
-    setError("");
-    setRes(out);
-
-    const nextTab = out.mode === "timechart" ? "chart" : out.mode === "table" ? "table" : "events";
-    setTab(nextTab);
-
-    setLabOk(activeLab?.expected?.(query, out) ?? null);
+    const out = runSPL(query, labLogs);
+    if (out.error) { setError(out.error); setResult(null); setLessonMessage(null); return; }
+    setResult(out); setError("");
+    setResultTab(out.mode === "timechart" ? "chart" : out.mode === "table" ? "table" : "events");
+    let succeeded = false;
+    try { succeeded = Boolean(currentLesson.check(query, out)); }
+    catch { succeeded = false; }
+    setLessonMessage(succeeded ? "Nice work! This exercise is complete." : "Search ran successfully. Use the exercise goal to complete this challenge.");
+    if (succeeded) setCompleted((previous) => previous.includes(currentLesson.id) ? previous : [...previous, currentLesson.id]);
   };
 
-  const rows = res?.results || [];
-
-  const chartConfig = useMemo(() => {
-    if (!res || !rows[0]) return null;
-    if (res.mode === "timechart") return { xKey: "_time", yKey: "count" };
-    if (res.mode === "table") {
-      const keys = Object.keys(rows[0]);
-      return { xKey: keys[0], yKey: keys.includes("count") ? "count" : keys[1] };
-    }
-    return null;
-  }, [res, rows]);
-
   return (
-    <div className="grid lg:grid-cols-[360px_1fr] gap-8">
-      {/* LEFT: learning */}
-      <GlassCard className="p-6">
-        <div className="mb-4">
-          <h3 className="text-lg font-semibold">Learning Path</h3>
-          <p className="text-xs text-gray-400 mt-1">
-            Complete steps to master Search & Reporting basics.
-          </p>
-        </div>
-
-        <div className="space-y-3">
-          {LABS.map((lab) => (
-            <button
-              key={lab.id}
-              onClick={() => {
-                setActiveLabId(lab.id);
-                setQuery(lab.starter);
-                setLabOk(null);
-              }}
-              className={[
-                "w-full text-left p-4 rounded-2xl border transition-all",
-                activeLabId === lab.id
-                  ? "bg-cyan-500/10 border-cyan-400/30"
-                  : "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20",
-              ].join(" ")}
-            >
-              <div className="font-medium">{lab.title}</div>
-              <div className="text-xs text-gray-400 mt-1">{lab.goal}</div>
-            </button>
-          ))}
-        </div>
-
-        <div className="mt-5 p-4 rounded-2xl bg-black/20 border border-white/10">
-          <div className="text-sm font-semibold">Current Step</div>
-          <div className="text-xs text-gray-400 mt-1">{activeLab.goal}</div>
-          <div className="text-xs text-cyan-200 mt-2">Hint: {activeLab.hint}</div>
-
-          {labOk !== null && (
-            <div
-              className={[
-                "mt-4 p-3 rounded-2xl border text-xs",
-                labOk
-                  ? "border-green-500/30 bg-green-500/10 text-green-200"
-                  : "border-yellow-500/30 bg-yellow-500/10 text-yellow-200",
-              ].join(" ")}
-            >
-              {labOk ? (
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 size={16} /> Step completed
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <AlertTriangle size={16} /> Try again (use the hint)
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </GlassCard>
-
-      {/* RIGHT: search + results */}
-      <div className="space-y-6">
-        <GlassCard className="p-5 relative">
-          <div className="flex items-center gap-3">
-            <Search className="text-gray-400" size={18} />
-            <input
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                setShowHints(true);
-              }}
-              onFocus={() => setShowHints(true)}
-              onBlur={() => setTimeout(() => setShowHints(false), 150)}
-              className="flex-1 bg-transparent outline-none font-mono text-sm text-cyan-100 placeholder:text-gray-500"
-              placeholder="index=_internal | stats count by sourcetype"
-            />
-            <PrimaryButton onClick={runSearch}>Run</PrimaryButton>
-            <SoftButton
-              onClick={() => onSaveSearch?.(query)}
-              title="Save this SPL (like Splunk saved search)"
-            >
-              Save
-            </SoftButton>
+    <div className="grid gap-5 xl:grid-cols-[335px_minmax(0,1fr)] xl:gap-6">
+      <aside className="min-w-0 space-y-4">
+        <GlassCard className="overflow-hidden p-5">
+          <div className="mb-4 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 font-semibold text-white"><GraduationCap size={19} className="text-cyan-300" /> Learning Center</div>
+            <span className="rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-2 py-1 text-xs text-cyan-200">{completed.length}/{SPL_LESSONS.length}</span>
           </div>
-
-          {showHints && suggestions.length > 0 && (
-            <div className="absolute left-5 right-5 top-[76px] bg-[#020617] border border-white/10 rounded-2xl overflow-hidden z-20">
-              {suggestions.map((s, i) => (
-                <button
-                  key={i}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => {
-                    setQuery(s);
-                    setShowHints(false);
-                  }}
-                  className="w-full text-left px-4 py-3 text-xs font-mono hover:bg-cyan-500/10"
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {error && (
-            <div className="mt-4 p-3 rounded-2xl border border-red-500/30 bg-red-500/10 text-sm text-red-200">
-              ❌ {error}
-            </div>
-          )}
-        </GlassCard>
-
-        <GlassCard className="p-5">
-          <div className="flex items-center justify-between gap-3 mb-4">
-            <div>
-              <div className="text-sm font-semibold">Results</div>
-              <div className="text-xs text-gray-400">
-                {res
-                  ? `Index: ${res.index} • Matched: ${res.count} • Mode: ${res.mode}`
-                  : "Run a search to see results"}
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-              {["events", "table", "chart"].map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setTab(t)}
-                  className={[
-                    "px-3 py-1.5 rounded-xl text-xs border transition",
-                    tab === t
-                      ? "bg-cyan-500/10 border-cyan-400/30 text-cyan-200"
-                      : "bg-white/5 border-white/10 hover:bg-white/10",
-                  ].join(" ")}
-                >
-                  {t === "events" ? "Events" : t === "table" ? "Table" : "Chart"}
-                </button>
-              ))}
-            </div>
+          <div className="mb-2 flex items-center justify-between text-xs text-slate-400"><span>Learning progress</span><span>{completionRate}%</span></div>
+          <div className="mb-5 h-1.5 overflow-hidden rounded-full bg-slate-800"><div className="h-full rounded-full bg-cyan-400 transition-all" style={{ width: `${completionRate}%` }} /></div>
+          <div className="mb-4 grid grid-cols-3 gap-1.5">
+            {[{ id: "lessons", label: "Guided Labs" }, { id: "commands", label: "Commands" }, { id: "lookups", label: "Lookup Tables" }].map((item) => (
+              <button key={item.id} type="button" onClick={() => setActiveView(item.id)} className={classNames("rounded-xl border px-3 py-2 text-sm transition", activeView === item.id ? "border-cyan-400/50 bg-cyan-500/15 text-cyan-100" : "border-white/10 bg-white/5 text-slate-300 hover:bg-white/10")}>{item.label}</button>
+            ))}
           </div>
-
-          {!res ? (
-            <div className="text-sm text-gray-400">
-              Tip: Use <span className="text-cyan-200 font-mono">stats</span> for reports and{" "}
-              <span className="text-cyan-200 font-mono">timechart</span> for visualizations.
-            </div>
-          ) : rows.length === 0 ? (
-            <div className="text-sm text-gray-400">No results</div>
-          ) : tab === "chart" && chartConfig ? (
-            // <MiniBarChart
-            //   rows={rows.slice(0, 18).map((r) => ({
-            //     ...r,
-            //     _time: r._time ? new Date(r._time).toLocaleTimeString() : r[chartConfig.xKey],
-            //   }))}
-            //   xKey={chartConfig.xKey === "_time" ? "_time" : chartConfig.xKey}
-            //   yKey={chartConfig.yKey}
-            // />
+          {activeView === "lessons" ? (
             <>
-  {/* Chart Controls */}
-  <div className="mb-4">
-    <div className="text-xs text-gray-400 mb-2">
-      Recommended chart:
-      <span className="text-cyan-300 ml-1">
-        {recommendedChart}
-      </span>
-    </div>
-
-    <ChartSelector
-      value={chartType}
-      onChange={setChartType}
-    />
-  </div>
-
-  {/* Chart Renderer */}
-  <ChartRenderer
-    type={chartType}
-    rows={rows}
-    xKey={chartConfig.xKey}
-    yKey={chartConfig.yKey}
-    res={res}
-  />
-
-  <div className="mt-4 text-xs text-gray-500">
-    💡 Same data, different visualization — this is how dashboards work.
-  </div>
-</>
-
+              <div className="mb-3 grid grid-cols-2 gap-1 rounded-xl bg-black/25 p-1">
+                {LEVELS.map((x) => <button key={x} type="button" onClick={() => setLevel(x)} className={classNames("rounded-lg px-1 py-2 text-[11px] transition", level === x ? "bg-slate-700 text-white" : "text-slate-400 hover:text-white")}>{x}</button>)}
+              </div>
+              <div className="max-h-[365px] space-y-2 overflow-y-auto pr-1">
+                {visibleLessons.map((lesson) => (
+                  <button key={lesson.id} type="button" onClick={() => startLesson(lesson)} className={classNames("flex w-full items-start gap-2 rounded-xl border p-3 text-left transition", lessonId === lesson.id ? "border-cyan-400/45 bg-cyan-500/10" : "border-white/10 bg-white/[0.035] hover:bg-white/10")}>
+                    {completed.includes(lesson.id) ? <CheckCircle2 size={17} className="mt-0.5 shrink-0 text-emerald-400" /> : <ChevronRight size={17} className="mt-0.5 shrink-0 text-slate-500" />}
+                    <div><p className="text-sm font-medium text-white">{lesson.title}</p><p className="mt-1 text-xs leading-relaxed text-slate-400">{lesson.goal}</p></div>
+                  </button>
+                ))}
+              </div>
+              <div className="mt-4 rounded-xl border border-white/10 bg-black/20 p-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-cyan-300">Current challenge</p>
+                <p className="mt-2 text-sm font-semibold text-white">{currentLesson.title}</p>
+                <p className="mt-1 text-xs leading-relaxed text-slate-300">{currentLesson.help}</p>
+                <button type="button" className="mt-3 flex items-center gap-1 text-xs text-cyan-300 hover:text-cyan-100" onClick={() => setShowHint((x) => !x)}><Lightbulb size={14} /> {showHint ? "Hide hint" : "Show hint"} <ChevronDown size={13} /></button>
+                {showHint && <p className="mt-2 rounded-lg bg-cyan-400/10 p-2 text-xs text-cyan-100">{currentLesson.hint}</p>}
+                {lessonMessage && <p aria-live="polite" className={classNames("mt-3 text-xs", lessonMessage.startsWith("Nice") ? "text-emerald-300" : "text-amber-300")}>{lessonMessage}</p>}
+              </div>
+            </>
+          ) : activeView === "commands" ? (
+            <>
+              <div className="relative mb-3"><Search size={15} className="pointer-events-none absolute left-3 top-3 text-slate-400" /><input aria-label="Search command library" className={classNames(inputClass, "pl-9")} value={commandQuery} onChange={(e) => setCommandQuery(e.target.value)} placeholder="Find stats, eval, where..." /></div>
+              <div className="max-h-[510px] space-y-2 overflow-y-auto pr-1">
+                {filteredCommands.length === 0 && <p className="text-xs text-slate-400">No matching commands in this simulator.</p>}
+                {filteredCommands.map((cmd) => <div key={cmd.name} className="rounded-xl border border-white/10 bg-white/[0.035] p-3">
+                  <div className="flex items-center justify-between gap-2"><code className="text-sm font-semibold text-cyan-200">{cmd.name}</code><span className="text-[10px] text-slate-500">{cmd.category}</span></div>
+                  <p className="mt-1 text-xs leading-relaxed text-slate-400">{cmd.description}</p>
+                  <button type="button" className="mt-2 rounded-lg bg-cyan-500/10 px-2.5 py-1.5 text-xs text-cyan-200 hover:bg-cyan-500/20" onClick={() => loadQuery(cmd.syntax)}>Try example <ChevronRight size={12} className="inline" /></button>
+                </div>)}
+              </div>
+            </>
           ) : (
-            <PrettyTable rows={rows} />
-          )}
-
-          <div className="mt-4 text-xs text-gray-400">
-            Quick examples:
-            <div className="mt-2 grid md:grid-cols-2 gap-2">
-              {[
-                "index=_internal",
-                "index=_internal ERROR",
-                "index=_internal | stats count by sourcetype",
-                "index=_internal | timechart span=15m count",
-                "index=web_logs | top url limit=10",
-                "index=web_logs | stats count by status",
-              ].map((ex) => (
-                <button
-                  key={ex}
-                  onClick={() => setQuery(ex)}
-                  className="text-left px-3 py-2 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 font-mono text-[11px] transition"
-                >
-                  {ex}
-                </button>
-              ))}
+            <div className="space-y-3">
+              <p className="text-xs leading-relaxed text-slate-400">Explore preloaded educational CSV-style tables. Lookup files are simulated, not read from your device or a server.</p>
+              <label className="block"><span className="mb-1 block text-xs text-slate-400">Choose reference table</span><select className={inputClass} value={lookupChoice} onChange={(e) => setLookupChoice(e.target.value)}>{LOOKUP_CATALOG.map((x) => <option value={x.name} key={x.name}>{x.name}</option>)}</select></label>
+              <div className="rounded-xl border border-white/10 bg-white/[0.035] p-3"><div className="flex items-center justify-between"><b className="text-sm text-white">{selectedLookup.name}</b><span className="text-xs text-slate-400">{selectedLookup.count} rows</span></div><p className="mt-2 text-xs text-slate-400">Fields: {selectedLookup.fields.join(", ")}</p><div className="mt-3 max-w-full overflow-x-auto"><table className="w-full text-left text-xs"><thead><tr>{selectedLookup.fields.slice(0, 3).map((f) => <th key={f} className="border-b border-white/10 px-2 py-2 text-cyan-200">{f}</th>)}</tr></thead><tbody>{selectedLookup.rows.slice(0, 4).map((r, i) => <tr key={i}>{selectedLookup.fields.slice(0, 3).map((f) => <td key={f} className="border-b border-white/5 px-2 py-2 text-slate-300">{String(r[f])}</td>)}</tr>)}</tbody></table></div></div>
+              <button type="button" className="w-full rounded-xl bg-cyan-600/20 p-3 text-sm font-semibold text-cyan-100 hover:bg-cyan-600/30" onClick={() => loadQuery(`| inputlookup ${selectedLookup.name}`)}>Load table in search console</button>
             </div>
-          </div>
+          )}
         </GlassCard>
-      </div>
+        <GlassCard className="p-4"><p className="flex items-center gap-2 text-sm font-semibold text-slate-100"><CircleHelp size={16} className="text-cyan-300" /> Training environment</p><p className="mt-1.5 text-xs leading-relaxed text-slate-400">These are simulated events, not live Splunk logs. Commands run locally. Open the Dictionary for additional terminology and examples.</p></GlassCard>
+      </aside>
+
+      <main className="min-w-0 space-y-5">
+        <GlassCard className="p-4 sm:p-5">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div><div className="flex items-center gap-2 text-base font-semibold text-white"><Terminal size={18} className="text-cyan-300" /> SPL Search Console</div><div className="mt-1 text-xs text-slate-400">Build a query, run it, and inspect each command's output.</div></div>
+            <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[11px] text-emerald-300">Local simulation</span>
+          </div>
+          <div className="mb-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+            <label className="block"><span className="mb-1.5 flex items-center gap-1.5 text-xs text-slate-400"><Database size={14} /> Data index</span>
+              <select className={inputClass} value={availableIndexes.includes(currentIndex) ? currentIndex : ""} onChange={(e) => selectDataset(e.target.value)}>
+                {!availableIndexes.includes(currentIndex) && <option value="">{isLookupSearch ? "CSV lookup (no index)" : "Choose an index"}</option>}
+                {availableIndexes.map((id) => <option key={id} value={id}>{id} ({labLogs[id].length.toLocaleString()} events)</option>)}
+              </select>
+            </label>
+            <span className="pb-2 text-xs text-slate-400">All training data is synthetic.</span>
+          </div>
+          <label htmlFor="spl-search-editor" className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400">Search Processing Language (SPL)</label>
+          <textarea id="spl-search-editor" rows={3} spellCheck={false} value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); runSearch(); } }} className={classNames(inputClass, "min-h-[94px] resize-y font-mono text-[13px] leading-relaxed text-cyan-100")} placeholder="index=training_web | stats count by status" />
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+            <span className="flex items-center gap-1.5 text-xs text-slate-400"><Command size={14} /> Ctrl + Enter to run</span>
+            <div className="flex gap-2"><SoftButton onClick={() => onSaveSearch?.(query)} title="Add this query to Saved Searches"><Save size={15} className="mr-1 inline" /> Save</SoftButton><PrimaryButton onClick={runSearch}><Play size={15} className="mr-1 inline" /> Run Search</PrimaryButton></div>
+          </div>
+          {error && <div role="alert" className="mt-4 flex items-start gap-2 rounded-xl border border-rose-400/30 bg-rose-400/10 p-3 text-sm text-rose-200"><XCircle size={18} className="shrink-0" /> {error}</div>}
+        </GlassCard>
+
+        <GlassCard className="p-4 sm:p-5">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><p className="flex items-center gap-2 text-sm font-semibold text-white"><Sparkles size={16} className="text-cyan-300" /> Ready-to-try searches</p><p className="text-xs text-slate-500">Click to load, then select Run</p></div>
+          <div className="flex flex-wrap gap-2">{EXAMPLES.map((ex) => <button type="button" key={ex.label} onClick={() => loadQuery(ex.query)} className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-200 transition hover:border-cyan-400/40 hover:bg-cyan-400/10">{ex.label}</button>)}</div>
+        </GlassCard>
+
+        <GlassCard className="overflow-hidden p-4 sm:p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
+            <div><p className="text-base font-semibold text-white">Search Results</p><p className="mt-1 text-xs text-slate-400">{result ? `Index: ${result.index} · ${result.count.toLocaleString()} matched events · ${result.totalRows.toLocaleString()} result rows · ${result.elapsedMs} ms` : "Run a query to inspect events and reports."}</p></div>
+            <div className="flex flex-wrap gap-1.5">{["events", "table", "chart"].map((item) => <button type="button" key={item} onClick={() => setResultTab(item)} className={classNames("rounded-lg border px-3 py-1.5 text-xs capitalize transition", resultTab === item ? "border-cyan-400/50 bg-cyan-500/10 text-cyan-100" : "border-white/10 bg-white/5 text-slate-300")}>{item}</button>)}</div>
+          </div>
+          {!result ? <div className="flex min-h-40 flex-col items-center justify-center gap-2 text-center text-slate-400"><Search size={24} className="text-slate-500" /><p className="text-sm">Your data will appear here when you run a search.</p></div> : rows.length === 0 ? <p className="py-12 text-center text-sm text-slate-400">No matching rows. Try broadening your search or checking the index.</p> : (
+            <div className="pt-4">
+              {resultTab === "chart" && chartKeys ? <><div className="mb-3 flex flex-wrap items-center justify-between gap-3"><p className="text-xs text-slate-400">Recommended visualization: <b className="text-cyan-200">{recommendChart(result)}</b></p><ChartSelector value={chartType} onChange={setChartType} /></div><ChartRenderer type={chartType} rows={rows} xKey={chartKeys.xKey} yKey={chartKeys.yKey} res={result} /></> : resultTab === "chart" ? <div className="py-12 text-center text-sm text-slate-400">Create an aggregation using stats or timechart to visualize numeric results.</div> : <div className="overflow-x-auto"><PrettyTable rows={rows} maxRows={100} /></div>}
+              {result.truncated && <p className="mt-2 text-xs text-amber-200">Preview limited to 500 rows. Matched row count is shown above.</p>}
+            </div>
+          )}
+        </GlassCard>
+
+        {result && <GlassCard className="p-4 sm:p-5"><div className="mb-3 flex items-center gap-2 text-sm font-semibold text-white"><BookOpen size={17} className="text-cyan-300" /> How Splunk processed this search</div><p className="mb-3 text-xs text-slate-400">Read the pipeline from top to bottom. Each command transforms the rows from the previous step.</p><div className="space-y-2">{result.trace.map((step, i) => <div key={`${step.command}-${i}`} className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.035] p-3"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-cyan-400/10 text-xs font-semibold text-cyan-200">{i + 1}</span><div className="min-w-0 flex-1"><code className="break-all text-xs text-cyan-200">{step.command}</code><p className="mt-1 text-xs leading-relaxed text-slate-400">{step.explanation}</p></div><span className="shrink-0 rounded-lg bg-white/5 px-2 py-1 text-[11px] text-slate-300">{step.outputRows} rows</span></div>)}</div></GlassCard>}
+      </main>
     </div>
   );
 }
