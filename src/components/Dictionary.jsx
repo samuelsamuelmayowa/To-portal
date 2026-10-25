@@ -389,7 +389,9 @@ export default function SplunkDictionary() {
             <div className="pointer-events-none absolute -bottom-32 right-1/3 h-64 w-64 rounded-full bg-cyan-500/10 blur-3xl" />
             <div className="relative flex flex-wrap items-start justify-between gap-4">
               <div className="max-w-3xl">
-                <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-fuchsia-500/25 bg-fuchsia-500/10 px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-fuchsia-700 dark:text-fuchsia-300"><Sparkles className="h-3.5 w-3.5" /> T.O Analytics · Advanced learning</div>
+                <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-fuchsia-500/25 bg-fuchsia-500/10 px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-fuchsia-700 dark:text-fuchsia-300">
+                {/* <Sparkles className="h-3.5 w-3.5" /> T.O Analytics · Advanced learning */}
+                </div>
                 <h1 className="text-3xl font-black tracking-tight sm:text-4xl lg:text-[44px]">Splunk <span className="bg-gradient-to-r from-fuchsia-500 to-cyan-500 bg-clip-text text-transparent">Command Academy</span></h1>
                 <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base">An advanced searchable Splunk dictionary for analysts, SOC engineers, administrators and learners. Learn the command, see working examples, understand the output and practice the problem it solves.</p>
                 <div className="mt-4 flex flex-wrap items-center gap-2"><Pill className="border-cyan-500/20 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300">SPL + SPL2</Pill><Pill className="border-fuchsia-500/20 bg-fuchsia-500/10 text-fuchsia-700 dark:text-fuchsia-300">2026 reference</Pill><Pill className="border-slate-300 text-slate-500 dark:border-slate-700 dark:text-slate-300">Student-friendly / expert depth</Pill></div>
