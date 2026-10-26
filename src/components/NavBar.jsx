@@ -19,7 +19,7 @@ import LOGO from "../assets/images/logo2.png";
 import { app } from "../../firebase.config";
 import CartItemContext from "../context/CartItemContext";
 import { useStateContext } from "../context/ContextProvider";
-import FetchAllStudents from "../hooks/FetchAllStudents";
+// import FetchAllStudents from "../hooks/FetchAllStudents";
 
 const HIDE_THRESHOLD = 150;
 
@@ -201,7 +201,7 @@ const DesktopCluster = ({ cluster, pathname, openCluster, setOpenCluster }) => {
 };
 
 const NavBar = () => {
-  const { data } = FetchAllStudents();
+  // const { data } = FetchAllStudents();
   const { cartItem } = useContext(CartItemContext);
   const { token, setToken, FullScreen } = useStateContext();
   const [showMenu, setShowMenu] = useState(false);
@@ -262,24 +262,44 @@ const NavBar = () => {
     setHidden(latest > previous && latest > HIDE_THRESHOLD);
   });
 
+  // const currentUser = useMemo(() => {
+  //   if (!data?.data?.response || !localUser) return null;
+
+  //   const user = data.data.response.find((item) => item.email === localUser);
+  //   if (!user) return null;
+
+  //   const fullname = user.name?.trim() || "User";
+
+  //   return {
+  //     fullname,
+  //     email: user.email,
+  //     initial: fullname
+  //       .split(/\s+/)
+  //       .map((word) => word[0]?.toUpperCase())
+  //       .join("")
+  //       .slice(0, 2),
+  //   };
+  // }, [data, localUser]);
+
   const currentUser = useMemo(() => {
-    if (!data?.data?.response || !localUser) return null;
+  if (!token) return null;
 
-    const user = data.data.response.find((item) => item.email === localUser);
-    if (!user) return null;
+  const email = (
+    localStorage.getItem("user") ||
+    localUser ||
+    ""
+  ).trim().toLowerCase();
 
-    const fullname = user.name?.trim() || "User";
+  if (!email) return null;
 
-    return {
-      fullname,
-      email: user.email,
-      initial: fullname
-        .split(/\s+/)
-        .map((word) => word[0]?.toUpperCase())
-        .join("")
-        .slice(0, 2),
-    };
-  }, [data, localUser]);
+  const fullname = email.split("@")[0];
+
+  return {
+    fullname,
+    email,
+    initial: fullname.slice(0, 2).toUpperCase(),
+  };
+}, [token, localUser]);
 
   const handleSignOut = async () => {
     try {
