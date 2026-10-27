@@ -75,6 +75,7 @@ import SplunkStudio from "./pages/SplunkStudio";
 import QuotePage from "./components/QuotePage";
 import MarketOverviewAdvanced from "./components/MarketOverviewAdvanced";
 import Home from "./pages/HomeSkill";
+import SkillLabWorkplace from "./pages/skillab/Workplace";
 import LabView from "./pages/skillab/LabView";
 import Profile from "./pages/skillab/Profile";
 // import TSkillLabLogin from "./pages/skillab/TSkillLabLogin";
@@ -200,6 +201,10 @@ const router = createBrowserRouter([
             element: <Home />,
           },
 
+          {
+            path: "/toskillab/workplace",
+            element: <SkillLabWorkplace />,
+          },
           {
             path: "/toskillab/lab",
             element: <SplunkLab />,
@@ -490,3 +495,497 @@ function App() {
 }
 
 export default App;
+
+
+// import React from "react";
+// import MobileEntry from "./pages/MobileEntry";
+// import "./lib/mobileProgressBridge";
+// import { CartItemProvider } from "./context/CartItemContext";
+// import ErrorPage from "./components/errorPage";
+// import AllCourses from "./components/AllCourses";
+// const LazyHomePage = React.lazy(() => import("./pages/HomePage"));
+// const LazyCourses = React.lazy(() => import("./pages/Courses"));
+// const LazyAbout = React.lazy(() => import("./pages/AboutPage"));
+// const LazyCareer = React.lazy(() => import("./pages/CareerPageFAEK.jsx"));
+// const LazyNextxCareer = React.lazy(() => import("./pages/NextxCareerPage"));
+// const LazyCOURSE = React.lazy(() => import("./pages/COURSE"));
+// const LazyBlogPage = React.lazy(() => import("./pages/BlogPage"));
+// const LazySplunkOrientation = React.lazy(
+//   () => import("./pages/SplunkOrientation"),
+// );
+// import ContactPage from "./pages/ContactPage";
+// import ConnectWithContractor from "./pages/ConnectWithContractor";
+// import MyCourses from "./pages/MyCourses";
+// import Mentorship from "./pages/Mentorship";
+// const LazyMentorship = React.lazy(() => import("./pages/Mentorship"));
+// import LiveCourses from "./pages/LiveCourses";
+// import CreateAccountForm from "./pages/CreateAccountForm";
+// import OTP_Verification from "./pages/OTP_Verification";
+// import ForgotPassword from "./pages/ForgotPassword";
+// import CreateNewPassword from "./pages/CreateNewPassword";
+// import ConfirmNewPassword from "./pages/ConfirmNewPassword";
+// // import LoginForm from "./pages/LoginForm";
+// // import AdminLoginForm from "./pages/AdminLoginForm";
+// import MyLogin from "./pages/mylogin";
+// import AdminLoginForm from "./pages/AdminLoginForm";
+// import CheckOut from "./pages/CheckOut";
+// import SendLinks from "./components/SendLinks";
+// import SendMessages from "./components/SendMessages";
+// import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom";
+// import RouteSeo from "./components/RouteSeo";
+
+// import HomeLayout from "./layoutAuth/HomeLayout";
+// import AdminLayout from "./layoutAuth/AdminLayout";
+// const LazyAuthLayout = React.lazy(() => import("./layoutAuth/AuthLayout"));
+// import Dashboard from "./dashboard/components/Dashboard";
+// import AdminDashboard from "./components/AdminDashboard";
+// import AdminViewCourses from "./components/AdminViewCourses";
+// import AllStudents from "./components/AllStudents";
+// import Contacts from "./components/Contacts";
+// import Contractors from "./components/Contractors";
+// import StudentCommentPage from "./components/StudentCommentPage";
+// import MyProfile from "./pages/MyProfile";
+// import PaymentPage from "./pages/PaymentPage";
+// import Loader from "./components/Loader";
+// import Links from "./components/Links";
+// import { AnimatePresence } from "framer-motion";
+// import SendPdf from "./components/SendPdf";
+// import ClassM from "./components/ClassM";
+// import Session from "./components/Session";
+// import Materials from "./components/Materials";
+// import ResetPassword from "./pages/ResetPassword";
+// import SplunkQuiz from "./components/Quiz";
+// import QuizResults from "./components/QuizResults";
+// import MainQuiz from "./components/MainQuiz";
+// import SeeQuiz from "./components/SeeQuiz";
+// import Cancel from "./pages/Cancel";
+// import StudentDashboard from "./components/CheckC";
+// import StockDashboard from "./components/StockPage";
+// import StockPortal from "./components/StockPortal";
+// import Apage from "./components/AAAA.jsx";
+// import Commands from "./components/Commands";
+// import SplunkDictionary from "./components/Dictionary";
+// import StockCard from "./StockPublic";
+// import MassiveStockDashboard from "./StockPublic";
+// import SplunkCareerRoadmap from "./components/SplunkCareerRoadmap";
+// import MarketOverview from "./components/MarketOverview";
+// import SplunkPracticeLab from "./pages/SplunkPracticeLab";
+// import SplunkStudio from "./pages/SplunkStudio";
+// import QuotePage from "./components/QuotePage";
+// import MarketOverviewAdvanced from "./components/MarketOverviewAdvanced";
+// import Home from "./pages/HomeSkill";
+// import LabView from "./pages/skillab/LabView";
+// import Profile from "./pages/skillab/Profile";
+// // import TSkillLabLogin from "./pages/skillab/TSkillLabLogin";
+// import TSkillLabLogin from "./pages/skillab/TSkillLabLogin";
+// import ChatComponent from "./components/ChatComponent";
+// import CourseTabContent from "./components/CourseTabContent";
+// import StudentAccess from "./components/StudentAccess";
+// import AdminExpenses from "./components/AdminExpenses";
+// import SplunkLab from "./pages/SplunkLab";
+// import StockQuiz from "./components/StockQuiz.jsx";
+
+// const LazyPaperTrading = React.lazy(() => import("./pages/PaperTrading"));
+// // 🟣 GLOBAL THEME HELPER
+// function applySavedTheme() {
+//   const saved = localStorage.getItem("theme") || "light";
+//   document.documentElement.classList.toggle("dark", saved === "dark");
+// }
+
+// applySavedTheme();
+
+// // 🟣 ROUTES
+// function AppRouteLayout() {
+//   return (
+//     <>
+//       <Outlet />
+//       <RouteSeo />
+//     </>
+//   );
+// }
+
+// const router = createBrowserRouter([
+//   {
+//     element: <AppRouteLayout />,
+//     children: [
+//       { path: "/mobile-entry", element: <MobileEntry /> },
+//       {
+//         path: "/",
+//         element: <HomeLayout />,
+//         errorElement: <ErrorPage />,
+//         children: [
+//           {
+//             index: true,
+//             element: (
+//               <React.Suspense fallback={<Loader />}>
+//                 <LazyHomePage />
+//               </React.Suspense>
+//             ),
+//           },
+//           {
+//             path: "/cancel",
+//             element: <Cancel />,
+//           },
+
+//           {
+//             path: "/chat",
+//             element: <ChatComponent />,
+//           },
+
+//           {
+//             path: "stockmarkert",
+//             element: <MarketOverviewAdvanced />,
+//           },
+//           {
+//             path: "ad",
+//             element: <MarketOverviewAdvanced />,
+//           },
+//           {
+//             path: "/quote",
+//             element: <QuotePage />,
+//           },
+//           {
+//             path: "/trading-simulator",
+//             element: (
+//               <React.Suspense fallback={<Loader />}>
+//                 <LazyPaperTrading />
+//               </React.Suspense>
+//             ),
+//           },
+
+//           {
+//             path: "/courses",
+//             element: (
+//               <React.Suspense fallback={<Loader />}>
+//                 <LazyCourses />
+//               </React.Suspense>
+//             ),
+
+//             children: [
+//               {
+//                 index: true,
+//                 element: <AllCourses />,
+//               },
+//               {
+//                 path: ":course",
+//                 element: (
+//                   <React.Suspense fallback={<Loader />}>
+//                     <LazyCOURSE />
+//                   </React.Suspense>
+//                 ),
+//               },
+//             ],
+//           },
+
+//           {
+//             path: "/splunk-orientation",
+//             element: (
+//               <React.Suspense fallback={<Loader />}>
+//                 <LazySplunkOrientation />
+//               </React.Suspense>
+//             ),
+//           },
+//           {
+//             path: "/about",
+//             element: (
+//               <React.Suspense fallback={<Loader />}>
+//                 <LazyAbout />
+//               </React.Suspense>
+//             ),
+//           },
+
+//           {
+//             path: "/toskillab",
+//             element: <Home />,
+//           },
+
+//           {
+//             path: "/toskillab/lab",
+//             element: <SplunkLab />,
+//           },
+
+//           {
+//             path: "/mylab",
+//             element: (
+//               <React.Suspense fallback={<Loader />}>
+//                 <SplunkPracticeLab />
+//               </React.Suspense>
+//             ),
+//           },
+
+//           {
+//             path: "/sessions",
+//             element: <Session />,
+//           },
+
+//           {
+//             path: "/career",
+//             element: (
+//               <React.Suspense fallback={<Loader />}>
+//                 <LazyCareer />
+//               </React.Suspense>
+//             ),
+//           },
+//           {
+//             path: "/carrerpage",
+//             element: (
+//               <React.Suspense fallback={<Loader />}>
+//                 <LazyNextxCareer />
+//               </React.Suspense>
+//             ),
+//           },
+//           {
+//             path: "/blog",
+//             element: (
+//               <React.Suspense fallback={<Loader />}>
+//                 <LazyBlogPage />
+//               </React.Suspense>
+//             ),
+//           },
+
+//           {
+//             path: "/contact",
+//             element: <ContactPage />,
+//           },
+//           {
+//             path: "/checkout",
+//             element: <CheckOut />,
+//           },
+//           {
+//             path: "/mentorship",
+//             element: (
+//               <React.Suspense fallback={<Loader />}>
+//                 <LazyMentorship />
+//               </React.Suspense>
+//             ),
+//           },
+//           {
+//             path: "/liveCourses",
+//             element: <LiveCourses />,
+//           },
+//           { path: "/commands", element: <Commands /> },
+//           { path: "/dictionary", element: <SplunkDictionary /> },
+//           {
+//             path: "/result",
+//             element: <QuizResults />,
+//           },
+//           {
+//             path: "/quiz",
+//             element: <SplunkQuiz />,
+//           },
+//           {
+//             path: "/myProfile",
+//             element: <MyProfile />,
+//           },
+//         ],
+//       },
+
+//       {
+//         path: "/admininfo",
+//         element: <AdminLoginForm />,
+//       },
+
+//       {
+//         path: "/createAccount",
+//         element: <CreateAccountForm />,
+//       },
+//       {
+//         path: "/login",
+//         element: <MyLogin />,
+//       },
+//       {
+//         path: "/aaaa",
+//         element: <Apage />,
+//       },
+
+//       {
+//         path: "/toskillab",
+//         element: <Home />,
+//       },
+
+//       {
+//         path: "/labview",
+//         element: <LabView />,
+//       },
+
+//       {
+//         path: "/profile",
+//         element: <Profile />,
+//       },
+
+//       {
+//         path: "/loginskill",
+//         element: <TSkillLabLogin />,
+//       },
+
+//       {
+//         path: "/forgotPassword",
+//         element: <ForgotPassword />,
+//       },
+
+//       {
+//         path: "/reset-password/:token", // there was //
+//         element: <ResetPassword />,
+//       },
+//       {
+//         path: "/OTP",
+//         element: <OTP_Verification />,
+//       },
+
+//       {
+//         path: "/lab",
+//         element: <SplunkStudio />,
+//       },
+//       { path: "/splunk-studio", element: <SplunkStudio /> },
+//       {
+//         path: "/createNewPassword",
+//         element: <CreateNewPassword />,
+//       },
+//       {
+//         path: "/confirmNewPassword",
+//         element: <ConfirmNewPassword />,
+//       },
+//       {
+//         path: "/partner",
+//         element: <ConnectWithContractor />,
+//       },
+
+//       // DASHBOARD
+//       {
+//         path: "/dashboard",
+//         element: (
+//           <React.Suspense fallback={<Loader />}>
+//             <LazyAuthLayout />
+//           </React.Suspense>
+//         ),
+//         children: [
+//           { index: true, element: <MyCourses /> },
+//           { path: "checkout", element: <CheckOut /> },
+//           { path: "quiz", element: <SplunkQuiz /> },
+//           { path: "dictionary", element: <SplunkDictionary /> },
+//           { path: "classmaterials", element: <ClassM /> },
+//           { path: "myCourses", element: <MyCourses /> },
+//           { path: "mentorship", element: <Mentorship /> },
+//           { path: "comment", element: <StudentCommentPage /> },
+//           { path: "links", element: <Links /> },
+//           { path: "commands", element: <Commands /> },
+//           { path: "materials", element: <Materials /> },
+//           { path: "stockside", element: <StockDashboard /> },
+//           { path: "result", element: <QuizResults /> },
+//           { path: "stockportal", element: <StockPortal /> },
+//           {
+//             path: "stock-quiz",
+//             element: <StockQuiz />,
+//           },
+
+//           {
+//             path: "stockmarkert",
+//             element: <MarketOverviewAdvanced />,
+//           },
+//           {
+//             path: "stock",
+//             // Temporarily hide the Massive Stock Dashboard page.
+//             element: null,
+//           },
+//           {
+//             path: "map",
+//             element: <SplunkCareerRoadmap />,
+//           },
+//           { path: "takequiz", element: <MainQuiz /> },
+//           { path: "check", element: <StudentDashboard /> },
+//           { path: "makePayment", element: <PaymentPage /> },
+//           { path: "overview", element: <MarketOverview /> },
+//           { path: "splunk-studio", element: <SplunkStudio /> },
+//           { path: "lab", element: <SplunkStudio /> },
+
+//           { path: "/dashboard/post", element: <Dashboard /> },
+//         ],
+//       },
+
+//       // ADMIN DASHBOARD
+//       {
+//         path: "/ADMIN-DASHBOARD",
+//         element: <AdminLayout />,
+//         children: [
+//           {
+//             index: true,
+//             element: <AdminDashboard />,
+//           },
+
+//           {
+//             path: "viewcourses",
+//             element: <AdminViewCourses />,
+//             children: [
+//               {
+//                 index: true,
+//                 element: <CourseTabContent status="all" />,
+//               },
+//               {
+//                 path: "published",
+//                 element: <CourseTabContent status="published" />,
+//               },
+//               {
+//                 path: "draft",
+//                 element: <CourseTabContent status="draft" />,
+//               },
+//             ],
+//           },
+
+//           {
+//             path: "allStudents",
+//             element: <AllStudents />,
+//           },
+
+//           {
+//             path: "expenses",
+//             element: <AdminExpenses />,
+//           },
+
+//           {
+//             path: "student-access",
+//             element: <StudentAccess />,
+//           },
+//           {
+//             path: "contacts",
+//             element: <Contacts />,
+//           },
+//           {
+//             path: "studentresults",
+//             element: <SeeQuiz />,
+//           },
+//           {
+//             path: "contractors",
+//             element: <Contractors />,
+//           },
+//           {
+//             path: "send-links",
+//             element: <SendLinks />,
+//           },
+//           {
+//             path: "send-pdf",
+//             element: <SendPdf />,
+//           },
+//           {
+//             path: "send-messages",
+//             element: <SendMessages />,
+//           },
+//         ],
+//       },
+//     ],
+//   },
+// ]);
+
+// // 🟪 FINAL APP WITH GLOBAL DARK WRAPPER
+// function App() {
+//   return (
+//     <CartItemProvider>
+//       <div className="">
+//         <AnimatePresence>
+//           <RouterProvider router={router} />
+//         </AnimatePresence>
+//       </div>
+//     </CartItemProvider>
+//   );
+// }
+
+// export default App;
