@@ -3,7 +3,7 @@ import { NavLink, useLocation } from "react-router-dom";
 
 const splunkPages = [
   { label: "My Courses", to: "/dashboard/myCourses" },
-  { label: "Dashboard Home", to: "/dashboard", end: true },
+  // { label: "Dashboard Home", to: "/dashboard", end: true },
   { label: "Learning Portal", to: "/dashboard/materials", end: true },
   { label: "Classes & Docs", to: "/dashboard/classmaterials" },
   { label: "Calendar", to: "/dashboard/check" },
