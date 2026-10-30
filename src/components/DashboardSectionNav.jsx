@@ -11,8 +11,8 @@ const splunkPages = [
   // { label: "Splunk Quiz", to: "/dashboard/quiz" },
   { label: "Results", to: "/dashboard/result" },
   { label: "Splunk Lab", to: "/dashboard/lab" },
-  { label: "Career Roadmap", to: "/dashboard/map" },
-  { label: "Commands", to: "/dashboard/commands" },
+  // { label: "Career Roadmap", to: "/dashboard/map" },
+  // { label: "Commands", to: "/dashboard/commands" },
   { label: "Dictionary", to: "/dashboard/dictionary" },
 ];
 
