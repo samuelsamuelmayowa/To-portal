@@ -585,11 +585,11 @@ const HomePage = () => {
             app or digital product.
           </p>
           <div className="mt-9 flex flex-col justify-center gap-4 sm:flex-row">
-            <Link to="/mentorship">
+            {/* <Link to="/mentorship">
               <button className="w-full rounded-2xl bg-white px-8 py-4 font-black text-BLUE transition duration-300 hover:-translate-y-1 sm:w-auto">
                 Book Mentorship
               </button>
-            </Link>
+            </Link> */}
             <Link to="/contact">
               <button className="w-full rounded-2xl border border-white/40 px-8 py-4 font-black text-white transition duration-300 hover:-translate-y-1 hover:bg-white hover:text-BLUE sm:w-auto">
                 Contact Us
