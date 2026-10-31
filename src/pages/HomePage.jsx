@@ -461,7 +461,7 @@ const HomePage = () => {
         </div>
       </section>
       {/* ========================= SERVICES SECTION ========================= */}
-      <section className="relative bg-slate-50 px-6 py-24 md:px-16 lg:px-24">
+      {/* <section className="relative bg-slate-50 px-6 py-24 md:px-16 lg:px-24">
         <div className="mx-auto max-w-7xl">
           <motion.div variants={fadeUp} className="mx-auto max-w-3xl text-center">
             <p className="text-sm font-black uppercase tracking-[0.3em] text-BLUE">
@@ -518,7 +518,7 @@ const HomePage = () => {
             ))}
           </motion.div>
         </div>
-      </section>
+      </section> */}
       {/* ========================= FEATURED COURSES ========================= */}
       <section className="bg-white px-6 py-24 md:px-16 lg:px-24">
         <div className="mx-auto max-w-7xl">
