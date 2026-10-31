@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 
 /**
- * T.O. Analytics 2026–2027 course calendar.
+ * T.O. Analytics 2026–2027 course calendar — classic blue skin.
  * Source: TO_Analytics_Splunk_Calendar_2026_2027.pdf (6 pages).
  * Times are Eastern (America/New_York). No end times are given for
  * regular classes; orientation alone is confirmed as 8–10 AM.
@@ -125,15 +125,15 @@ const MONTH_NOTES = {
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const TYPE_STYLES = {
   class: {
-    card: "border-violet-200 bg-violet-50 text-violet-800 dark:border-violet-800/60 dark:bg-violet-900/30 dark:text-violet-200",
-    badge: "bg-violet-100 text-violet-700 dark:bg-violet-900/60 dark:text-violet-200",
-    dot: "bg-violet-600",
+    card: "border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-800/60 dark:bg-blue-900/30 dark:text-blue-200",
+    badge: "bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-200",
+    dot: "bg-blue-600",
     label: "Class / orientation",
   },
   deadline: {
-    card: "border-fuchsia-200 bg-fuchsia-50 text-fuchsia-800 dark:border-fuchsia-800/60 dark:bg-fuchsia-900/25 dark:text-fuchsia-200",
-    badge: "bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-900/60 dark:text-fuchsia-200",
-    dot: "bg-fuchsia-500",
+    card: "border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-800/60 dark:bg-rose-900/25 dark:text-rose-200",
+    badge: "bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-200",
+    dot: "bg-rose-500",
     label: "Certification deadline",
   },
   reminder: {
@@ -231,7 +231,7 @@ export default function ClassCalendar() {
       <div className="mb-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <div className="mb-1 flex items-center gap-2">
-            <CalendarDays size={20} className="text-violet-600 dark:text-violet-400" />
+            <CalendarDays size={20} className="text-blue-600 dark:text-blue-400" />
             <h3 className="text-xl font-bold tracking-tight">{currentMonth.format("MMMM YYYY")}</h3>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -240,7 +240,7 @@ export default function ClassCalendar() {
         </div>
         <div className="flex items-center gap-2">
           <button type="button" onClick={reset}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-violet-50 px-3 py-2 text-xs font-semibold text-violet-700 transition hover:bg-violet-100 dark:bg-violet-900/30 dark:text-violet-300">
+            className="inline-flex items-center gap-1.5 rounded-lg bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300">
             <RotateCcw size={13} /> Today
           </button>
           <button type="button" aria-label="Previous month"
@@ -260,12 +260,12 @@ export default function ClassCalendar() {
 
       {/* Monthly statistics */}
       <div className="mb-5 grid grid-cols-2 gap-3">
-        <div className="rounded-xl border border-violet-100 bg-violet-50 p-4 dark:border-violet-900/40 dark:bg-violet-900/20">
-          <div className="mb-2 flex items-center gap-2 text-violet-700 dark:text-violet-300">
+        <div className="rounded-xl border border-blue-100 bg-blue-50 p-4 dark:border-blue-900/40 dark:bg-blue-900/20">
+          <div className="mb-2 flex items-center gap-2 text-blue-700 dark:text-blue-300">
             <BookOpen size={16} /><span className="text-xs font-semibold">Practical Classes</span>
           </div>
-          <p className="text-2xl font-bold text-violet-900 dark:text-white">{classCount}</p>
-          <p className="mt-1 text-[11px] text-violet-600 dark:text-violet-300">This month · orientation excluded</p>
+          <p className="text-2xl font-bold text-blue-900 dark:text-white">{classCount}</p>
+          <p className="mt-1 text-[11px] text-blue-600 dark:text-blue-300">This month · orientation excluded</p>
         </div>
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/60">
           <div className="mb-2 flex items-center gap-2 text-slate-600 dark:text-slate-300">
@@ -285,14 +285,14 @@ export default function ClassCalendar() {
             <button key={key} type="button" onClick={() => { setFilter(key); if (key === "checkin") setShowCheckIns(true); }}
               aria-pressed={filter === key}
               className={`rounded-lg px-2.5 py-1.5 text-[11px] font-semibold transition ${filter === key
-                ? "bg-violet-700 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"}`}>
+                ? "bg-blue-700 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"}`}>
               {label}
             </button>
           ))}
         </div>
         <label className="inline-flex cursor-pointer items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
           <input type="checkbox" checked={showCheckIns} onChange={(e) => setShowCheckIns(e.target.checked)}
-            className="accent-violet-700" /> Show suggested check-ins
+            className="accent-blue-700" /> Show suggested check-ins
         </label>
       </div>
 
@@ -311,7 +311,7 @@ export default function ClassCalendar() {
           const isToday = today === key;
           const category = primary ? TYPE_STYLES[primary.type] : null;
           const style = isSelected
-            ? "border-violet-700 bg-violet-700 text-white shadow-sm dark:border-violet-500 dark:bg-violet-700"
+            ? "border-blue-700 bg-blue-700 text-white shadow-sm dark:border-blue-500 dark:bg-blue-700"
             : !inMonth
               ? "border-transparent bg-slate-50/50 text-slate-300 dark:bg-slate-900/30 dark:text-slate-600"
               : category
@@ -321,7 +321,7 @@ export default function ClassCalendar() {
             <button key={key} type="button" onClick={() => jumpTo(key)}
               aria-label={`${formatDate(key)}${dayEvents.length ? `, ${dayEvents.map((e) => e.title).join(", ")}` : ", no scheduled events"}`}
               aria-pressed={isSelected}
-              className={`relative flex h-[70px] min-w-0 flex-col items-center rounded-xl border pt-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 sm:h-[96px] sm:pt-3 ${style} ${isToday && !isSelected ? "ring-2 ring-inset ring-violet-400" : ""}`}>
+              className={`relative flex h-[70px] min-w-0 flex-col items-center rounded-xl border pt-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 sm:h-[96px] sm:pt-3 ${style} ${isToday && !isSelected ? "ring-2 ring-inset ring-blue-400" : ""}`}>
               <span className="text-xs font-bold sm:text-sm">{date.date()}</span>
               {inMonth && dayEvents.length > 0 && <>
                 <div className="mt-2 flex flex-wrap justify-center gap-1 px-1">
@@ -332,7 +332,7 @@ export default function ClassCalendar() {
                   {primary.short}
                 </span>
               </>}
-              {isToday && <span className={`absolute bottom-1 text-[8px] font-bold ${isSelected ? "text-white" : "text-violet-600 dark:text-violet-300"}`}>TODAY</span>}
+              {isToday && <span className={`absolute bottom-1 text-[8px] font-bold ${isSelected ? "text-white" : "text-blue-600 dark:text-blue-300"}`}>TODAY</span>}
             </button>
           );
         })}
@@ -346,23 +346,23 @@ export default function ClassCalendar() {
         </span>)}
       </div>
       <div className="mt-3 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-        <Clock3 size={14} className="text-violet-500" /> All class times are Eastern (America/New_York).
+        <Clock3 size={14} className="text-blue-500" /> All class times are Eastern (America/New_York).
       </div>
 
       {/* Selected-day detail cards; a date can contain several events */}
       <section className="mt-6">
         <div className="mb-3 flex items-center gap-2">
-          <Clock3 size={17} className="text-violet-600 dark:text-violet-400" />
+          <Clock3 size={17} className="text-blue-600 dark:text-blue-400" />
           <h3 className="text-sm font-bold">Selected Day</h3>
         </div>
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50 sm:p-5">
           <div className="flex items-start gap-4">
             <div className="w-14 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-white text-center dark:border-slate-700 dark:bg-slate-900 sm:w-16">
-              <div className="bg-violet-700 py-1 text-[10px] font-bold text-white">{dayjs(selectedDate).format("MMM").toUpperCase()}</div>
+              <div className="bg-blue-700 py-1 text-[10px] font-bold text-white">{dayjs(selectedDate).format("MMM").toUpperCase()}</div>
               <div className="py-2 text-xl font-bold">{dayjs(selectedDate).format("DD")}</div>
             </div>
             <div className="min-w-0 flex-1">
-              <p className="mb-3 text-xs font-semibold text-violet-700 dark:text-violet-300">{formatDate(selectedDate)}</p>
+              <p className="mb-3 text-xs font-semibold text-blue-700 dark:text-blue-300">{formatDate(selectedDate)}</p>
               {selectedEvents.length ? <div className="space-y-4">
                 {selectedEvents.map((event) => <div key={event.id}
                   className="border-b border-slate-200 pb-3 last:border-0 last:pb-0 dark:border-slate-700">
@@ -371,12 +371,12 @@ export default function ClassCalendar() {
                     {event.suggested && <span className="text-[10px] text-slate-500 dark:text-slate-400">Suggested only</span>}
                   </div>
                   <h4 className="mt-2 text-sm font-bold sm:text-base">{event.title}</h4>
-                  {event.time && <p className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-violet-700 dark:text-violet-300">
+                  {event.time && <p className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-blue-700 dark:text-blue-300">
                     <Clock3 size={12} /> {event.time} Eastern{event.id !== "orientation" ? " (end time not specified)" : ""}
                   </p>}
                   <p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">{event.description}</p>
                   {event.link && <a href={event.link} target="_blank" rel="noopener noreferrer"
-                    className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-violet-700 hover:underline dark:text-violet-300">
+                    className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-blue-700 hover:underline dark:text-blue-300">
                     View recommended server <ExternalLink size={13} />
                   </a>}
                 </div>)}
@@ -393,7 +393,7 @@ export default function ClassCalendar() {
       <section className="mt-7">
         <div className="mb-4 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <BookOpen size={17} className="text-violet-600 dark:text-violet-400" />
+            <BookOpen size={17} className="text-blue-600 dark:text-blue-400" />
             <h3 className="text-sm font-bold">Monthly Schedule</h3>
           </div>
           <span className="text-xs text-slate-400">{eventsInMonth.length} event{eventsInMonth.length === 1 ? "" : "s"}</span>
@@ -401,8 +401,8 @@ export default function ClassCalendar() {
         {eventsInMonth.length ? <div className="space-y-2">
           {eventsInMonth.map((event) => <button key={event.id} type="button"
             onClick={() => jumpTo(event.date)}
-            className="flex w-full items-center gap-3 rounded-xl border border-slate-100 p-3 text-left transition hover:border-violet-300 hover:bg-violet-50/50 dark:border-slate-800 dark:hover:bg-violet-900/10">
-            <div className="flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-lg bg-violet-50 text-violet-700 dark:bg-violet-900/25 dark:text-violet-300">
+            className="flex w-full items-center gap-3 rounded-xl border border-slate-100 p-3 text-left transition hover:border-blue-300 hover:bg-blue-50/50 dark:border-slate-800 dark:hover:bg-blue-900/10">
+            <div className="flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-lg bg-blue-50 text-blue-700 dark:bg-blue-900/25 dark:text-blue-300">
               <span className="text-[9px] font-bold uppercase">{dayjs(event.date).format("MMM")}</span>
               <span className="text-base font-bold">{dayjs(event.date).format("DD")}</span>
             </div>
@@ -413,7 +413,7 @@ export default function ClassCalendar() {
               </p>
             </div>
             {event.date < today ? <span className="shrink-0 text-[10px] font-semibold text-slate-400">Passed</span>
-              : <ArrowUpRight size={17} className="shrink-0 text-violet-500" />}
+              : <ArrowUpRight size={17} className="shrink-0 text-blue-500" />}
           </button>)}
         </div> : <div className="rounded-xl border border-dashed border-slate-200 py-8 text-center dark:border-slate-700">
           <CalendarDays size={25} className="mx-auto mb-3 text-slate-300 dark:text-slate-600" />
@@ -423,12 +423,12 @@ export default function ClassCalendar() {
       </section>
 
       {/* Coming up */}
-      {nextEvent && <section className="mt-6 rounded-xl bg-gradient-to-r from-violet-600 to-purple-700 p-4 text-white sm:p-5">
+      {nextEvent && <section className="mt-6 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 p-4 text-white sm:p-5">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-violet-200">Next Official Event</p>
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-blue-200">Next Official Event</p>
             <h4 className="text-sm font-bold sm:text-base">{nextEvent.title}</h4>
-            <p className="mt-2 flex items-center gap-2 text-xs text-violet-100"><Clock3 size={13} />
+            <p className="mt-2 flex items-center gap-2 text-xs text-blue-100"><Clock3 size={13} />
               {formatDate(nextEvent.date)}{nextEvent.time ? ` · ${nextEvent.time} Eastern` : ""}
             </p>
           </div>
@@ -441,7 +441,7 @@ export default function ClassCalendar() {
 
       {/* PDF's month-specific notes */}
       <div className="mt-6 flex items-start gap-3 rounded-xl bg-slate-50 p-4 dark:bg-slate-800/50">
-        <Info size={17} className="mt-0.5 shrink-0 text-violet-600 dark:text-violet-400" />
+        <Info size={17} className="mt-0.5 shrink-0 text-blue-600 dark:text-blue-400" />
         <div>
           <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{currentMonth.format("MMMM")} Program Notes</p>
           <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
@@ -449,7 +449,7 @@ export default function ClassCalendar() {
           </p>
           {currentMonth.format("YYYY-MM") === "2027-01" && <a
             href={SERVER_URL} target="_blank" rel="noopener noreferrer"
-            className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-violet-700 hover:underline dark:text-violet-300">
+            className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-blue-700 hover:underline dark:text-blue-300">
             <Server size={13} /> Recommended server <ExternalLink size={12} />
           </a>}
         </div>
