@@ -103,7 +103,7 @@ const cohortSuccessStories = [
     iconBackground: "bg-indigo-50 text-indigo-700",
   },
   {
-    role: "Splunk Engineer at Disney",
+    role: "Splunk Engineer",
     salary: "$135,000",
     category: "Splunk Engineering",
     description:
