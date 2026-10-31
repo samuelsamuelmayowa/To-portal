@@ -29,7 +29,7 @@ import splunk from "../assets/images/splunk.png";
 const STOCK_STUDENT_EMAILS = new Set([
   "tomideolulana@gmail.com",
   "annrit11@gmail.com",
-  "samuelsamuelmayowa@gmail.com",
+  // "samuelsamuelmayowa@gmail.com",
   "toanalyticsllc@gmail.com",
   "annrit11@gmail.com",
 ]);
