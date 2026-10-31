@@ -58,8 +58,8 @@ const PREVIOUS_STUDENT_EMAILS = new Set([
 
 // Add new intake addresses here until the enrollment backend is connected.
 const OCTOBER_2026_EMAILS = new Set([
-  "samuelsamuelmayowa@gmail.com",
-  "adminsswdwd@viva.com",
+  // "samuelsamuelmayowa@gmail.com",
+  // "adminsswdwd@viva.com",
   "spheremessage@gmail.com",
 ]);
 
