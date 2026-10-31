@@ -5,7 +5,7 @@ const splunkPages = [
   { label: "My Courses", to: "/dashboard/myCourses" },
   // { label: "Dashboard Home", to: "/dashboard", end: true },
   { label: "Learning Portal", to: "/dashboard/materials", end: true },
-  { label: "Classes & Docs", to: "/dashboard/classmaterials" },
+  { label: "Assignment", to: "/dashboard/classmaterials" },
   { label: "Calendar", to: "/dashboard/check" },
   { label: "Quiz Center", to: "/dashboard/takequiz" },
   // { label: "Splunk Quiz", to: "/dashboard/quiz" },

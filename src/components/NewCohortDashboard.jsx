@@ -559,7 +559,9 @@ export default function NewCohortDashboard({ email = "" }) {
             <div className="flex flex-wrap items-start justify-between gap-3"><div><TextLabel dark={dark}>Official 28-slide presentation</TextLabel><h2 className="mt-2 text-xl font-black">Splunk Orientation 2026 — Zero to Hero</h2>
               <p className={cn("mt-2 text-xs leading-6", colors.muted)}>The unchanged PowerPoint you supplied, with a PDF version for easy viewing.</p></div>
               <button className={primary} onClick={() => changeView("orientation")}>Preview materials <FaArrowRight /></button></div>
-            <div className="mt-5 grid gap-3 sm:grid-cols-2"><a href={ORIENTATION_SLIDES.powerpoint} download className={cn(panelSmall, "flex items-center gap-3 p-5 text-sm font-bold", colors.hover)}><FaDownload className="text-blue-500" />Download PowerPoint (.pptx)</a>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              {/* <a href={ORIENTATION_SLIDES.powerpoint} download className={cn(panelSmall, "flex items-center gap-3 p-5 text-sm font-bold", colors.hover)}><FaDownload className="text-blue-500" />Download PowerPoint (.pptx)</a> */}
+
               <a href={ORIENTATION_SLIDES.pdf} target="_blank" rel="noreferrer" className={cn(panelSmall, "flex items-center gap-3 p-5 text-sm font-bold", colors.hover)}><FaFileLines className="text-blue-500" />Open PDF preview</a></div>
           </section>
           <section className={cn(card, "p-6 sm:p-7")}><h2 className="text-xl font-black">Training and preparation links</h2>
