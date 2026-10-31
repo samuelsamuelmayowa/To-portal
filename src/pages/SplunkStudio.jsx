@@ -73,10 +73,12 @@ export default function SplunkStudio() {
   const addDashboard = ({ name, panels }) => setDashboards((previous) => [
     { id: makeId(), name, panels, createdAt: Date.now() }, ...previous,
   ]);
+  const updateDashboard = (id, changes) => setDashboards((previous) => previous.map((item) => item.id === id ? { ...item, ...changes, updatedAt: Date.now() } : item));
   const deleteDashboard = (id) => setDashboards((previous) => previous.filter((x) => x.id !== id));
-  const addAlert = ({ name, spl, operator, threshold }) => setAlerts((previous) => [
-    { id: makeId(), name, spl, operator, threshold, createdAt: Date.now() }, ...previous,
+  const addAlert = (alert) => setAlerts((previous) => [
+    { id: makeId(), ...alert, createdAt: Date.now() }, ...previous,
   ]);
+  const updateAlert = (id, changes) => setAlerts((previous) => previous.map((item) => item.id === id ? { ...item, ...changes, updatedAt: Date.now() } : item));
   const deleteAlert = (id) => setAlerts((previous) => previous.filter((x) => x.id !== id));
 
   return <>
@@ -85,8 +87,8 @@ export default function SplunkStudio() {
       <StudioShell active={active} setActive={setActive}>
         {active === "lab" && <SearchLab onSaveSearch={(spl) => addSaved({ name: `Saved: ${spl.slice(0, 24)}...`, spl })} />}
         {active === "saved" && <SavedSearches saved={saved} onAdd={addSaved} onRun={runSavedIntoLab} onDelete={deleteSaved} />}
-        {active === "dash" && <DashboardBuilder saved={saved} dashboards={dashboards} onAddDashboard={addDashboard} onDeleteDashboard={deleteDashboard} />}
-        {active === "alerts" && <AlertBuilder saved={saved} alerts={alerts} onAddAlert={addAlert} onDeleteAlert={deleteAlert} />}
+        {active === "dash" && <DashboardBuilder saved={saved} dashboards={dashboards} onAddDashboard={addDashboard} onUpdateDashboard={updateDashboard} onDeleteDashboard={deleteDashboard} />}
+        {active === "alerts" && <AlertBuilder saved={saved} alerts={alerts} onAddAlert={addAlert} onUpdateAlert={updateAlert} onDeleteAlert={deleteAlert} />}
         {active === "admin" && <AdminLab onOpenLab={runSavedIntoLab} />}
       </StudioShell>
     </div>
