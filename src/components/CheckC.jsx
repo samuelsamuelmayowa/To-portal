@@ -491,17 +491,17 @@ export default function StudentDashboard() {
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <a href={SERVER_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-xl bg-blue-700 px-4 py-3 text-xs font-extrabold text-white transition hover:bg-blue-800">
+                  {/* <a href={SERVER_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-xl bg-blue-700 px-4 py-3 text-xs font-extrabold text-white transition hover:bg-blue-800">
                     Recommended server <ArrowUpRight size={15} />
                   </a>
                   <a href={STUDY_HUB_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-3 text-xs font-bold hover:bg-blue-50 dark:border-white/10 dark:hover:bg-white/10">
                     Study hub <ExternalLink size={14} />
-                  </a>
+                  </a> */}
                 </div>
               </div>
               <div className="mt-4 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs leading-6 text-amber-900 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200">
                 <Bell size={16} className="mt-0.5 shrink-0" />
-                <span>Suggested weekly instructor check-ins are reminders to reach out, not confirmed live classes. Certification deadlines do not mean your exam has been booked.</span>
+                {/* <span>Suggested weekly instructor check-ins are reminders to reach out, not confirmed live classes. Certification deadlines do not mean your exam has been booked.</span> */}
               </div>
             </section>
 
