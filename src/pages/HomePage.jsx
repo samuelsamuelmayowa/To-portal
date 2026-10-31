@@ -84,7 +84,7 @@ const cohortSuccessStories = [
   },
   {
     role: "Site Observability",
-    salary: "Nearly $180k",
+    salary: "$180,000",
     category: "Observability",
     description:
       "A cohort member landed a site observability role with compensation approaching $200,000.",
