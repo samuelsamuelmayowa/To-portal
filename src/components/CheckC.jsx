@@ -491,10 +491,10 @@ export default function StudentDashboard() {
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {/* <a href={SERVER_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-xl bg-blue-700 px-4 py-3 text-xs font-extrabold text-white transition hover:bg-blue-800">
+                  <a href={SERVER_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-xl bg-blue-700 px-4 py-3 text-xs font-extrabold text-white transition hover:bg-blue-800">
                     Recommended server <ArrowUpRight size={15} />
                   </a>
-                  <a href={STUDY_HUB_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-3 text-xs font-bold hover:bg-blue-50 dark:border-white/10 dark:hover:bg-white/10">
+                  {/* <a href={STUDY_HUB_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-3 text-xs font-bold hover:bg-blue-50 dark:border-white/10 dark:hover:bg-white/10">
                     Study hub <ExternalLink size={14} />
                   </a> */}
                 </div>
