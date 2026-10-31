@@ -367,7 +367,7 @@ export default function NewCohortDashboard({ email = "" }) {
             <div className={cn(panelSmall, "mt-5 flex flex-wrap items-center gap-4 p-5")}>
               <FaFileLines className="text-3xl text-blue-500" />
               <div className="min-w-0 flex-1"><p className="text-sm font-black">T.O Analytics Splunk Orientation 2026</p><p className={cn("mt-1 text-xs", colors.muted)}>Unchanged original PowerPoint · PDF preview included</p></div>
-              <a href={ORIENTATION_SLIDES.powerpoint} download className={cn("rounded-xl border px-4 py-2.5 text-xs font-bold", colors.line, colors.hover)}>Download PPTX</a>
+              {/* <a href={ORIENTATION_SLIDES.powerpoint} download className={cn("rounded-xl border px-4 py-2.5 text-xs font-bold", colors.line, colors.hover)}>Download PPTX</a> */}
             </div>
           </section>
         </>}
