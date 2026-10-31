@@ -383,7 +383,8 @@ export default function NewCohortDashboard({ email = "" }) {
           <section className={cn(card, "p-5 sm:p-7")}>
             <div className="flex flex-wrap items-start justify-between gap-4"><div><TextLabel dark={dark}>Official PowerPoint · 28 slides</TextLabel><h2 className="mt-2 text-xl font-black">T.O Analytics Splunk Orientation 2026</h2>
               <p className={cn("mt-2 text-xs", colors.muted)}>Saturday, October 31, 2026 · 8:00–10:00 AM Eastern</p></div>
-              <div className="flex flex-wrap gap-2"><a className={primary} download href={ORIENTATION_SLIDES.powerpoint}><FaDownload /> Download PPTX</a>
+              <div className="flex flex-wrap gap-2">
+                {/* <a className={primary} download href={ORIENTATION_SLIDES.powerpoint}><FaDownload /> Download PPTX</a> */}
                 <a href={ORIENTATION_SLIDES.pdf} target="_blank" rel="noreferrer" className={cn("rounded-xl border px-4 py-2.5 text-xs font-extrabold", colors.line, colors.hover)}>Open PDF ↗</a></div>
             </div>
             <div className="mt-5"><SlidesPanel /></div>
