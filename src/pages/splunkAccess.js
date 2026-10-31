@@ -13,19 +13,19 @@ export const SPLUNK_STUDENT_EMAILS = new Set([
   "sammmyayo@gmail.com",
   "kewizle.k@gmail.com",
   "kewizlek@gmail.com",
-  "davidayeni63@gmail.com",
+  // "davidayeni63@gmail.com",
   "pamelaabina24@gmail.com",
   "adesh25416@gmail.com",
-  "basseyvera018@gmail.com",
-  "codeverseprogramming23@gmail.com",
-  "fadeleolutola@gmail.com",
-  "ooolajuyigbe@gmail.com",
-  "jahdek76@gmail.com",
+  // "basseyvera018@gmail.com",
+  // "codeverseprogramming23@gmail.com",
+  // "fadeleolutola@gmail.com",
+  // "ooolajuyigbe@gmail.com",
+  // "jahdek76@gmail.com",
   "oluwaferanmiolulana@gmail.com",
   "tomideolulana@gmail.com",
   "toanalyticsllc@gmail.com",
-  "lybertyudochuu@gmail.com",
-  "kevwe_oberiko@yahoo.com",
+  // "lybertyudochuu@gmail.com",
+  // "kevwe_oberiko@yahoo.com",
   "denisgsam@gmail.com",
   "oluwaferanmi.olulana@gmail.com",
   "fpasamuelmayowa51@gmail.com",
@@ -40,6 +40,8 @@ export const SPLUNK_STUDENT_EMAILS = new Set([
   "toluolubambi@gmail.com",
    "Adeoyeifeoluwa@gmail.com",
   "spheremessage@gmail.com",
+  "toluolubambi@gmail.com"
+
   // "newstudent@example.com", // <-- ADD STUDENT EMAIL ABOVE THIS LINE
 ]);
 
