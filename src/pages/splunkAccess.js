@@ -38,9 +38,10 @@ export const SPLUNK_STUDENT_EMAILS = new Set([
   "yinkalola51@gmail.com",
   "adeoyeifeoluwa@gmail.com",
   "toluolubambi@gmail.com",
-   "Adeoyeifeoluwa@gmail.com",
+  "Adeoyeifeoluwa@gmail.com",
   "spheremessage@gmail.com",
-  "toluolubambi@gmail.com"
+  "toluolubambi@gmail.com",
+  "samuelsamuelmayowa@gmail.com"
 
   // "newstudent@example.com", // <-- ADD STUDENT EMAIL ABOVE THIS LINE
 ]);
