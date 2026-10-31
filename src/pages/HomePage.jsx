@@ -122,7 +122,7 @@ const HomePage = () => {
       </Helmet>
 
       {/* ========================= SPLUNK BETA POPUP ========================= */}
-      {showSplunkPopup && (
+      {/* {showSplunkPopup && (
         <motion.aside
           initial={{ opacity: 0, y: 40, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -191,7 +191,7 @@ const HomePage = () => {
             </div>
           </div>
         </motion.aside>
-      )}
+      )} */}
 
       {/* ========================= HERO SECTION ========================= */}
       <section className="relative min-h-screen overflow-hidden bg-white px-6 pb-20 pt-32 md:px-16 lg:px-24">

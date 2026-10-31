@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { Bell, Mail, Play, RotateCcw, Trash2, Pencil } from "lucide-react";
 import { getLabLogs } from "../../data/splAdminState";
 import { evaluateStudioAlert } from "../../utils/splStudioRuntime";
+// import { sendSimulatedAlertEmail } from "../../services/splunkAlertEmail";
 import { sendSimulatedAlertEmail } from "../../services/splunkAlertEmail";
 import { GlassCard, PrimaryButton, SoftButton } from "./Glass";
 
