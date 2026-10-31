@@ -125,7 +125,7 @@ const simulatorAnnouncements = [
       "Practice real-world investigations with guided SPL missions and hands-on security scenarios.",
     features: ["Security events", "SPL challenges", "Instant feedback"],
     cta: "Try Splunk Simulator",
-    href: "/toskillab/lab",
+    href: "/trading-simulator",
     Icon: Terminal,
   },
   {
