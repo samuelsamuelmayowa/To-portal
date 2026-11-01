@@ -42,6 +42,8 @@ const AUTHORIZED_EMAILS = new Set(
   "adenusitimi@gmail.com",
   "trbanjo@gmail.com",
   "emanfrimpong@gmail.com",
+
+  
   "dipeoluolatunji@gmail.com",
   "yinkalola51@gmail.com",
   "adeoyeifeoluwa@gmail.com",
