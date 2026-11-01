@@ -18,7 +18,7 @@ export const DEVELOPER_PROGRAM_URL = "https://dev.splunk.com/developer-program/"
 export const ORIENTATION_VIDEO = {
   id: "orientation-intro",
   title: "Splunk Orientation — Introduction",
-  url: "https://player.vimeo.com/video/1126909883",
+  url: "https://player.vimeo.com/video/1241993536",
 };
 
 // These paths must match the files under public/course-materials/.
