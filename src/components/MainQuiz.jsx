@@ -27,6 +27,7 @@ import Quiz from "./Quiz";
 const AUTHORIZED_EMAILS = new Set(
   [
    "sammmyayo@gmail.com",
+     "samuelsamuelmayowa@gmail.com",
   "kewizle.k@gmail.com",
   "kewizlek@gmail.com",
   "pamelaabina24@gmail.com",
@@ -43,7 +44,7 @@ const AUTHORIZED_EMAILS = new Set(
   "trbanjo@gmail.com",
   "emanfrimpong@gmail.com",
 
-  
+
   "dipeoluolatunji@gmail.com",
   "yinkalola51@gmail.com",
   "adeoyeifeoluwa@gmail.com",
