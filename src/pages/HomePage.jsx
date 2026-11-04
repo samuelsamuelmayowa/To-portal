@@ -125,7 +125,7 @@ const simulatorAnnouncements = [
       "Practice real-world investigations with guided SPL missions and hands-on security scenarios.",
     features: ["Security events", "SPL challenges", "Instant feedback"],
     cta: "Try Splunk Simulator",
-    href: "/trading-simulator",
+    href: "/lab",
     Icon: Terminal,
   },
   {
@@ -155,20 +155,30 @@ function RotatingSimulatorPopup() {
   const [isTabVisible, setIsTabVisible] = useState(true);
 
   useEffect(() => {
-    // A manual dismissal lasts until this browser tab's session ends.
+    // A manual dismissal lasts until the browser tab's session ends.
     try {
       if (window.sessionStorage.getItem(POPUP_DISMISS_KEY) === "1") return;
     } catch {
-      // Storage may be unavailable (e.g. restrictive privacy settings).
+      // Session storage might be blocked; the popup will still work.
     }
 
-    const timer = window.setTimeout(() => setIsOpen(true), POPUP_START_DELAY_MS);
+    // On phones, avoid covering the hero content immediately on page load.
+    const isMobile = window.matchMedia?.("(max-width: 639px)").matches;
+    const timer = window.setTimeout(
+      () => setIsOpen(true),
+      isMobile ? 6000 : POPUP_START_DELAY_MS
+    );
     return () => window.clearTimeout(timer);
   }, []);
 
   useEffect(() => {
     if (!isOpen) return;
-    const timer = window.setTimeout(() => setIsOpen(false), POPUP_AUTO_HIDE_MS);
+    // The small mobile card disappears sooner, so it does not linger.
+    const isMobile = window.matchMedia?.("(max-width: 639px)").matches;
+    const timer = window.setTimeout(
+      () => setIsOpen(false),
+      isMobile ? 24000 : POPUP_AUTO_HIDE_MS
+    );
     return () => window.clearTimeout(timer);
   }, [isOpen]);
 
@@ -180,7 +190,7 @@ function RotatingSimulatorPopup() {
   }, []);
 
   useEffect(() => {
-    // Avoid switching slides while someone is reading or using the card.
+    // Pause rotation when a visitor interacts with the announcement.
     if (!isOpen || isHovering || hasFocus || !isTabVisible || reduceMotion) return;
 
     const timer = window.setInterval(() => {
@@ -194,7 +204,7 @@ function RotatingSimulatorPopup() {
     try {
       window.sessionStorage.setItem(POPUP_DISMISS_KEY, "1");
     } catch {
-      // Still dismiss normally even when session storage is blocked.
+      // Dismiss normally even if storage is unavailable.
     }
   };
 
@@ -205,11 +215,11 @@ function RotatingSimulatorPopup() {
     <AnimatePresence>
       {isOpen && (
         <motion.aside
-          initial={reduceMotion ? false : { opacity: 0, y: 30, scale: 0.96 }}
+          initial={reduceMotion ? false : { opacity: 0, y: 20, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={reduceMotion ? undefined : { opacity: 0, y: 24, scale: 0.97 }}
-          transition={{ duration: reduceMotion ? 0 : 0.45, ease: "easeOut" }}
-          className="fixed bottom-4 left-4 right-4 z-[9999] sm:bottom-6 sm:left-auto sm:right-6 sm:w-[420px]"
+          exit={reduceMotion ? undefined : { opacity: 0, y: 16, scale: 0.98 }}
+          transition={{ duration: reduceMotion ? 0 : 0.35, ease: "easeOut" }}
+          className="fixed bottom-[calc(0.75rem+env(safe-area-inset-bottom))] left-3 right-3 z-[9999] sm:bottom-6 sm:left-auto sm:right-6 sm:w-[420px]"
           role="region"
           aria-label="T.O Analytics simulator announcements"
           onMouseEnter={() => setIsHovering(true)}
@@ -222,23 +232,23 @@ function RotatingSimulatorPopup() {
             if (event.key === "Escape") dismissPopup();
           }}
         >
-          <div className="relative overflow-hidden rounded-[2rem] border border-blue-400/20 bg-slate-950 p-5 text-white shadow-2xl shadow-blue-950/30 sm:p-6">
-            <div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-cyan-400/20 blur-[65px]" />
-            <div className="pointer-events-none absolute -bottom-16 -left-12 h-44 w-44 rounded-full bg-blue-600/20 blur-[70px]" />
+          <div className="relative max-h-[45dvh] overflow-y-auto rounded-2xl border border-cyan-400/20 bg-slate-950 p-3 text-white shadow-xl shadow-blue-950/30 sm:max-h-none sm:overflow-hidden sm:rounded-[2rem] sm:p-6 sm:shadow-2xl">
+            <div className="pointer-events-none absolute -right-12 -top-12 hidden h-40 w-40 rounded-full bg-cyan-400/20 blur-[65px] sm:block" />
+            <div className="pointer-events-none absolute -bottom-16 -left-12 hidden h-44 w-44 rounded-full bg-blue-600/20 blur-[70px] sm:block" />
 
             <button
               type="button"
               onClick={dismissPopup}
               aria-label="Dismiss simulator announcements"
-              className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-xl font-bold text-white transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+              className="absolute right-2 top-2 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-xl font-bold text-white transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 sm:right-4 sm:top-4"
             >
               ×
             </button>
 
             <div className="relative z-0">
-              <div className="mb-4 flex items-center gap-2 pr-10">
-                <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
-                <span className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-200">
+              <div className="mb-2 flex items-center gap-2 pr-10 sm:mb-4">
+                <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-400 sm:h-2.5 sm:w-2.5" />
+                <span className="text-[10px] font-black uppercase tracking-[0.12em] text-cyan-200 sm:text-[11px] sm:tracking-[0.2em]">
                   Simulator spotlight · Beta 1
                 </span>
               </div>
@@ -246,21 +256,25 @@ function RotatingSimulatorPopup() {
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                   key={announcement.id}
-                  initial={reduceMotion ? false : { opacity: 0, x: 18 }}
+                  initial={reduceMotion ? false : { opacity: 0, x: 12 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={reduceMotion ? undefined : { opacity: 0, x: -18 }}
-                  transition={{ duration: reduceMotion ? 0 : 0.3, ease: "easeInOut" }}
+                  exit={reduceMotion ? undefined : { opacity: 0, x: -12 }}
+                  transition={{ duration: reduceMotion ? 0 : 0.25, ease: "easeInOut" }}
                 >
-                  <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-300/20 bg-cyan-300/10 text-cyan-200">
-                    <AnnouncementIcon size={22} aria-hidden="true" />
+                  <div className="flex items-center gap-3 sm:block">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-300/20 bg-cyan-300/10 text-cyan-200 sm:mb-3 sm:h-10 sm:w-10 sm:rounded-xl">
+                      <AnnouncementIcon size={20} aria-hidden="true" />
+                    </div>
+                    <h2 className="min-w-0 pr-2 text-[15px] font-black leading-5 sm:pr-8 sm:text-[27px] sm:leading-tight">
+                      {announcement.title}
+                    </h2>
                   </div>
-                  <h2 className="pr-8 text-2xl font-black leading-tight sm:text-[27px]">
-                    {announcement.title}
-                  </h2>
-                  <p className="mt-3 text-sm font-medium leading-6 text-slate-300">
+
+                  {/* Hide long descriptions and feature chips on mobile. */}
+                  <p className="mt-3 hidden text-sm font-medium leading-6 text-slate-300 sm:block">
                     {announcement.description}
                   </p>
-                  <div className="mt-4 flex flex-wrap gap-2">
+                  <div className="mt-4 hidden flex-wrap gap-2 sm:flex">
                     {announcement.features.map((feature) => (
                       <span
                         key={feature}
@@ -273,16 +287,16 @@ function RotatingSimulatorPopup() {
                   <Link
                     to={announcement.href}
                     onClick={dismissPopup}
-                    className="mt-5 flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 px-5 py-3.5 text-sm font-black text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+                    className="mt-3 flex w-full items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-cyan-500 px-4 py-2.5 text-xs font-black text-white shadow-lg transition hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 sm:mt-5 sm:rounded-xl sm:px-5 sm:py-3.5 sm:text-sm"
                   >
                     {announcement.cta}
-                    <ArrowUpRight size={18} className="ml-2" aria-hidden="true" />
+                    <ArrowUpRight size={16} className="ml-2 sm:h-[18px] sm:w-[18px]" aria-hidden="true" />
                   </Link>
                 </motion.div>
               </AnimatePresence>
 
-              <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3">
-                <div className="flex items-center gap-2" role="group" aria-label="Choose simulator announcement">
+              <div className="mt-2 flex items-center justify-between border-t border-white/10 pt-2 sm:mt-4 sm:pt-3">
+                <div className="flex items-center gap-1" role="group" aria-label="Choose simulator announcement">
                   {simulatorAnnouncements.map((item, index) => (
                     <button
                       key={item.id}
@@ -290,13 +304,15 @@ function RotatingSimulatorPopup() {
                       onClick={() => setActiveIndex(index)}
                       aria-label={`Show ${item.id === "splunk" ? "Splunk" : "Trading"} announcement`}
                       aria-pressed={activeIndex === index}
-                      className={`h-2.5 rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 ${
-                        activeIndex === index ? "w-8 bg-cyan-300" : "w-2.5 bg-white/30 hover:bg-white/60"
-                      }`}
-                    />
+                      className="flex h-6 w-8 items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 sm:h-5 sm:w-auto"
+                    >
+                      <span className={`h-2 rounded-full transition-all duration-300 ${
+                        activeIndex === index ? "w-6 bg-cyan-300" : "w-2 bg-white/30"
+                      }`} />
+                    </button>
                   ))}
                 </div>
-                <span className="text-[11px] font-semibold tracking-wide text-slate-400">
+                <span className="text-[10px] font-semibold tracking-wide text-slate-400 sm:text-[11px]">
                   {activeIndex + 1} / {simulatorAnnouncements.length}
                 </span>
               </div>
@@ -329,32 +345,32 @@ const HomePage = () => {
       <RotatingSimulatorPopup />
 
       {/* ========================= HERO SECTION ========================= */}
-      <section className="relative min-h-screen overflow-hidden bg-white px-6 pb-20 pt-32 md:px-16 lg:px-24">
+      <section className="relative min-h-screen overflow-hidden bg-white px-4 pb-16 pt-24 sm:px-6 sm:pb-20 sm:pt-32 md:px-16 lg:px-24">
         <div className="absolute left-[-120px] top-[-120px] h-[320px] w-[320px] rounded-full bg-BLUE opacity-10 blur-[90px]" />
         <div className="absolute bottom-[-160px] right-[-120px] h-[380px] w-[380px] rounded-full bg-sky-400 opacity-20 blur-[110px]" />
-        <div className="relative mx-auto grid max-w-7xl items-center gap-16 lg:grid-cols-2">
+        <div className="relative mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-2 lg:gap-16">
           <motion.div variants={staggerContainer}>
             <motion.div
               variants={fadeUp}
               custom={0}
-              className="mb-6 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 shadow-sm"
+              className="mb-6 inline-flex max-w-full items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 shadow-sm sm:px-4"
             >
               <span className="h-2 w-2 rounded-full bg-BLUE" />
-              <span className="text-sm font-bold uppercase tracking-[0.2em] text-BLUE">
+              <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-BLUE sm:text-sm sm:tracking-[0.2em]">
                 Tech Training + Software Solutions
               </span>
             </motion.div>
             <motion.h1
               variants={fadeUp}
               custom={0.1}
-              className="max-w-3xl text-5xl font-black leading-[1.05] tracking-tight text-slate-950 md:text-6xl xl:text-7xl"
+              className="max-w-3xl text-4xl font-black leading-[1.1] tracking-tight text-slate-950 sm:text-5xl sm:leading-[1.05] md:text-6xl xl:text-7xl"
             >
               Launch Your Tech Career & Build Digital Products That Stand Out.
             </motion.h1>
             <motion.p
               variants={fadeUp}
               custom={0.2}
-              className="mt-6 max-w-2xl text-lg font-medium leading-8 text-slate-600 md:text-xl"
+              className="mt-5 max-w-2xl text-base font-medium leading-7 text-slate-600 sm:mt-6 sm:text-lg sm:leading-8 md:text-xl"
             >
               Learn Splunk, Cybersecurity, Linux, Cloud and real-world software
               development through practical mentorship. We also build premium
@@ -375,14 +391,14 @@ const HomePage = () => {
             <motion.div
               variants={fadeUp}
               custom={0.4}
-              className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-4"
+              className="mt-10 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4"
             >
               {stats.map((stat) => (
                 <div
                   key={stat.label}
-                  className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+                  className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4"
                 >
-                  <h3 className="text-2xl font-black text-BLUE">
+                  <h3 className="text-xl font-black text-BLUE sm:text-2xl">
                     {stat.value}
                   </h3>
                   <p className="mt-1 text-xs font-semibold text-slate-500">
@@ -421,13 +437,13 @@ const HomePage = () => {
         </div>
       </section>
       {/* ========================= BENEFITS SECTION ========================= */}
-      <section className="bg-slate-950 px-6 py-16 text-white md:px-16 lg:px-24">
+      <section className="bg-slate-950 px-4 py-14 text-white sm:px-6 sm:py-16 md:px-16 lg:px-24">
         <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-2 md:items-center">
           <motion.div variants={fadeUp}>
             <p className="text-sm font-bold uppercase tracking-[0.3em] text-sky-300">
               Why T.O Analytics?
             </p>
-            <h2 className="mt-4 max-w-xl text-3xl font-black leading-tight md:text-5xl">
+            <h2 className="mt-4 max-w-xl text-2xl font-black leading-tight sm:text-3xl md:text-5xl">
               Training that feels practical, modern and career-focused.
             </h2>
           </motion.div>
@@ -511,14 +527,14 @@ const HomePage = () => {
         </div>
       </section> */}
       {/* ========================= FEATURED COURSES ========================= */}
-      <section className="bg-white px-6 py-24 md:px-16 lg:px-24">
+      <section className="bg-white px-4 py-16 sm:px-6 sm:py-24 md:px-16 lg:px-24">
         <div className="mx-auto max-w-7xl">
           <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <motion.div variants={fadeUp}>
               <p className="text-sm font-black uppercase tracking-[0.3em] text-BLUE">
                 Popular Courses
               </p>
-              <h2 className="mt-4 max-w-2xl text-4xl font-black tracking-tight md:text-5xl">
+              <h2 className="mt-4 max-w-2xl text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">
                 Choose a course and start building real skills.
               </h2>
             </motion.div>
@@ -582,7 +598,7 @@ const HomePage = () => {
       {/* ========================= 2025–2026 COHORT SUCCESS STORIES ========================= */}
       <section
         aria-labelledby="cohort-success-heading"
-        className="relative overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-50 px-6 py-24 md:px-16 lg:px-24"
+        className="relative overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-50 px-4 py-16 sm:px-6 sm:py-24 md:px-16 lg:px-24"
       >
         <div className="pointer-events-none absolute -right-20 top-12 h-80 w-80 rounded-full bg-sky-200/40 blur-[110px]" />
         <div className="pointer-events-none absolute -left-24 bottom-10 h-80 w-80 rounded-full bg-blue-200/30 blur-[110px]" />
@@ -594,13 +610,13 @@ const HomePage = () => {
             viewport={{ once: true, amount: 0.2 }}
             className="mx-auto max-w-4xl text-center"
           >
-            <span className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-5 py-2 text-xs font-black uppercase tracking-[0.17em] text-BLUE">
+            <span className="inline-flex max-w-full items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-2 text-[10px] font-black uppercase tracking-[0.06em] text-BLUE sm:px-5 sm:text-xs sm:tracking-[0.17em]">
               <GraduationCap size={17} aria-hidden="true" />
               T.O Analytics | 2025–2026 Cohort Success Stories
             </span>
             <h2
               id="cohort-success-heading"
-              className="mt-6 text-4xl font-black leading-tight tracking-tight text-slate-950 md:text-5xl lg:text-6xl"
+              className="mt-6 text-3xl font-black leading-tight tracking-tight text-slate-950 sm:text-4xl md:text-5xl lg:text-6xl"
             >
               Celebrating career milestones from our 2025–2026 cohort!
             </h2>
@@ -636,7 +652,7 @@ const HomePage = () => {
                   <p className="mt-8 text-sm font-bold uppercase tracking-[0.13em] text-slate-500">
                     Reported compensation
                   </p>
-                  <p className="mt-1 text-4xl font-black tracking-tight text-BLUE sm:text-5xl">
+                  <p className="mt-1 text-3xl font-black tracking-tight text-BLUE sm:text-5xl">
                     {story.salary}
                   </p>
                   <h3 className="mt-6 text-2xl font-black leading-snug text-slate-950">
@@ -695,6 +711,704 @@ const HomePage = () => {
   );
 };
 export default HomePage;
+
+// import { useEffect, useState } from "react";
+// import { Link } from "react-router-dom";
+// import { Helmet } from "react-helmet";
+// import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+// import { ShieldCheck, Activity, Terminal, Building2, ArrowUpRight, GraduationCap } from "lucide-react";
+// import COURSES from "../coursesAPI/api";
+// import LandingIMG from "../assets/images/landingIMG.png";
+// import WebDev from "../assets/images/workplace-full (1).jpeg";
+// import AppDev from "../assets/images/mobile.jpg";
+// import UiUx from "../assets/images/oneone.jpeg";
+// import Consulting from "../assets/images/make.jpeg";
+// const fadeUp = {
+//   hidden: { opacity: 0, y: 40 },
+//   visible: (delay = 0) => ({
+//     opacity: 1,
+//     y: 0,
+//     transition: {
+//       duration: 0.75,
+//       delay,
+//       ease: "easeOut",
+//     },
+//   }),
+// };
+// const staggerContainer = {
+//   hidden: {},
+//   visible: {
+//     transition: {
+//       staggerChildren: 0.12,
+//     },
+//   },
+// };
+// const services = [
+//   {
+//     title: "Web Development",
+//     image: WebDev,
+//     label: "Business Websites",
+//     description:
+//       "Fast, modern and scalable websites built for brands, startups, schools and businesses.",
+//   },
+//   {
+//     title: "Mobile App Development",
+//     image: AppDev,
+//     label: "iOS & Android",
+//     description:
+//       "Beautiful mobile apps with smooth user experience, clean dashboards and real-world features.",
+//   },
+//   {
+//     title: "UI / UX & Branding",
+//     image: UiUx,
+//     label: "Product Design",
+//     description:
+//       "Premium interfaces, brand identity, prototypes and user-friendly digital experiences.",
+//   },
+//   {
+//     title: "Tech Consulting",
+//     image: Consulting,
+//     label: "Growth Strategy",
+//     description:
+//       "Technical guidance for startups, automation, digital transformation and product launch.",
+//   },
+// ];
+// const stats = [
+//   { value: "14", label: "Weeks to become job-ready" },
+//   { value: "1:1", label: "Mentorship support" },
+//   { value: "6+", label: "Career-focused courses" },
+//   { value: "100%", label: "Hands-on practical learning" },
+// ];
+// const benefits = [
+//   "Real-world labs and projects",
+//   "Beginner-friendly mentorship",
+//   "Career guidance and interview prep",
+//   "Splunk, Cybersecurity, Linux and Cloud training",
+// ];
+// const cohortSuccessStories = [
+//   {
+//     role: "Vulnerability Management",
+//     salary: "$105,000",
+//     category: "Cybersecurity",
+//     description:
+//       "A cohort member secured a six-figure role in vulnerability management—a significant step forward in cybersecurity.",
+//     Icon: ShieldCheck,
+//     tone: "from-blue-600 to-cyan-500",
+//     iconBackground: "bg-blue-50 text-blue-700",
+//   },
+//   {
+//     role: "Site Observability",
+//     salary: "$180,000",
+//     category: "Observability",
+//     description:
+//       "A cohort member landed a site observability role with compensation approaching $200,000.",
+//     Icon: Activity,
+//     tone: "from-cyan-500 to-teal-500",
+//     iconBackground: "bg-cyan-50 text-cyan-700",
+//   },
+//   {
+//     role: "Splunk-Related Opportunity",
+//     salary: "$90,000",
+//     category: "Splunk Skills",
+//     description:
+//       "A cohort member secured a role where Splunk skills helped open the door, earning $90,000.",
+//     Icon: Terminal,
+//     tone: "from-indigo-600 to-blue-500",
+//     iconBackground: "bg-indigo-50 text-indigo-700",
+//   },
+//   {
+//     role: "Splunk Engineer",
+//     salary: "$135,000",
+//     category: "Splunk Engineering",
+//     description:
+//       "A cohort member landed a Splunk Engineer  role , earning $135,000.",
+//     Icon: Building2,
+//     tone: "from-violet-600 to-indigo-500",
+//     iconBackground: "bg-violet-50 text-violet-700",
+//   },
+// ];
+
+// // One floating announcement alternates between both simulators.
+// // Content is kept here so the homepage remains otherwise unchanged.
+// const simulatorAnnouncements = [
+//   {
+//     id: "splunk",
+//     eyebrow: "New · Beta 1",
+//     title: "Try the Splunk Simulator",
+//     description:
+//       "Practice real-world investigations with guided SPL missions and hands-on security scenarios.",
+//     features: ["Security events", "SPL challenges", "Instant feedback"],
+//     cta: "Try Splunk Simulator",
+//     href: "/trading-simulator",
+//     Icon: Terminal,
+//   },
+//   {
+//     id: "trading",
+//     eyebrow: "New · Beta 1",
+//     title: "Learn the market by actually trading.",
+//     description:
+//       "Explore U.S. stocks and build a virtual portfolio using $100,000 in simulated funds.",
+//     features: ["Virtual trades", "Portfolio tracking", "No real money"],
+//     cta: "Try Trading Simulator",
+//     href: "/trading-simulator",
+//     Icon: Activity,
+//   },
+// ];
+
+// const POPUP_DISMISS_KEY = "to_analytics_simulator_popup_dismissed";
+// const POPUP_START_DELAY_MS = 2500;
+// const POPUP_ROTATION_MS = 9000;
+// const POPUP_AUTO_HIDE_MS = 120000;
+
+// function RotatingSimulatorPopup() {
+//   const reduceMotion = useReducedMotion();
+//   const [isOpen, setIsOpen] = useState(false);
+//   const [activeIndex, setActiveIndex] = useState(0);
+//   const [isHovering, setIsHovering] = useState(false);
+//   const [hasFocus, setHasFocus] = useState(false);
+//   const [isTabVisible, setIsTabVisible] = useState(true);
+
+//   useEffect(() => {
+//     // A manual dismissal lasts until this browser tab's session ends.
+//     try {
+//       if (window.sessionStorage.getItem(POPUP_DISMISS_KEY) === "1") return;
+//     } catch {
+//       // Storage may be unavailable (e.g. restrictive privacy settings).
+//     }
+
+//     const timer = window.setTimeout(() => setIsOpen(true), POPUP_START_DELAY_MS);
+//     return () => window.clearTimeout(timer);
+//   }, []);
+
+//   useEffect(() => {
+//     if (!isOpen) return;
+//     const timer = window.setTimeout(() => setIsOpen(false), POPUP_AUTO_HIDE_MS);
+//     return () => window.clearTimeout(timer);
+//   }, [isOpen]);
+
+//   useEffect(() => {
+//     const updateTabVisibility = () => setIsTabVisible(!document.hidden);
+//     updateTabVisibility();
+//     document.addEventListener("visibilitychange", updateTabVisibility);
+//     return () => document.removeEventListener("visibilitychange", updateTabVisibility);
+//   }, []);
+
+//   useEffect(() => {
+//     // Avoid switching slides while someone is reading or using the card.
+//     if (!isOpen || isHovering || hasFocus || !isTabVisible || reduceMotion) return;
+
+//     const timer = window.setInterval(() => {
+//       setActiveIndex((current) => (current + 1) % simulatorAnnouncements.length);
+//     }, POPUP_ROTATION_MS);
+//     return () => window.clearInterval(timer);
+//   }, [isOpen, isHovering, hasFocus, isTabVisible, reduceMotion]);
+
+//   const dismissPopup = () => {
+//     setIsOpen(false);
+//     try {
+//       window.sessionStorage.setItem(POPUP_DISMISS_KEY, "1");
+//     } catch {
+//       // Still dismiss normally even when session storage is blocked.
+//     }
+//   };
+
+//   const announcement = simulatorAnnouncements[activeIndex];
+//   const AnnouncementIcon = announcement.Icon;
+
+//   return (
+//     <AnimatePresence>
+//       {isOpen && (
+//         <motion.aside
+//           initial={reduceMotion ? false : { opacity: 0, y: 30, scale: 0.96 }}
+//           animate={{ opacity: 1, y: 0, scale: 1 }}
+//           exit={reduceMotion ? undefined : { opacity: 0, y: 24, scale: 0.97 }}
+//           transition={{ duration: reduceMotion ? 0 : 0.45, ease: "easeOut" }}
+//           className="fixed bottom-4 left-4 right-4 z-[9999] sm:bottom-6 sm:left-auto sm:right-6 sm:w-[420px]"
+//           role="region"
+//           aria-label="T.O Analytics simulator announcements"
+//           onMouseEnter={() => setIsHovering(true)}
+//           onMouseLeave={() => setIsHovering(false)}
+//           onFocusCapture={() => setHasFocus(true)}
+//           onBlurCapture={(event) => {
+//             if (!event.currentTarget.contains(event.relatedTarget)) setHasFocus(false);
+//           }}
+//           onKeyDown={(event) => {
+//             if (event.key === "Escape") dismissPopup();
+//           }}
+//         >
+//           <div className="relative overflow-hidden rounded-[2rem] border border-blue-400/20 bg-slate-950 p-5 text-white shadow-2xl shadow-blue-950/30 sm:p-6">
+//             <div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-cyan-400/20 blur-[65px]" />
+//             <div className="pointer-events-none absolute -bottom-16 -left-12 h-44 w-44 rounded-full bg-blue-600/20 blur-[70px]" />
+
+//             <button
+//               type="button"
+//               onClick={dismissPopup}
+//               aria-label="Dismiss simulator announcements"
+//               className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-xl font-bold text-white transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+//             >
+//               ×
+//             </button>
+
+//             <div className="relative z-0">
+//               <div className="mb-4 flex items-center gap-2 pr-10">
+//                 <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+//                 <span className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-200">
+//                   Simulator spotlight · Beta 1
+//                 </span>
+//               </div>
+
+//               <AnimatePresence mode="wait" initial={false}>
+//                 <motion.div
+//                   key={announcement.id}
+//                   initial={reduceMotion ? false : { opacity: 0, x: 18 }}
+//                   animate={{ opacity: 1, x: 0 }}
+//                   exit={reduceMotion ? undefined : { opacity: 0, x: -18 }}
+//                   transition={{ duration: reduceMotion ? 0 : 0.3, ease: "easeInOut" }}
+//                 >
+//                   <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-300/20 bg-cyan-300/10 text-cyan-200">
+//                     <AnnouncementIcon size={22} aria-hidden="true" />
+//                   </div>
+//                   <h2 className="pr-8 text-2xl font-black leading-tight sm:text-[27px]">
+//                     {announcement.title}
+//                   </h2>
+//                   <p className="mt-3 text-sm font-medium leading-6 text-slate-300">
+//                     {announcement.description}
+//                   </p>
+//                   <div className="mt-4 flex flex-wrap gap-2">
+//                     {announcement.features.map((feature) => (
+//                       <span
+//                         key={feature}
+//                         className="rounded-full border border-white/10 bg-white/10 px-2.5 py-1 text-[11px] font-bold text-slate-200"
+//                       >
+//                         ✓ {feature}
+//                       </span>
+//                     ))}
+//                   </div>
+//                   <Link
+//                     to={announcement.href}
+//                     onClick={dismissPopup}
+//                     className="mt-5 flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 px-5 py-3.5 text-sm font-black text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+//                   >
+//                     {announcement.cta}
+//                     <ArrowUpRight size={18} className="ml-2" aria-hidden="true" />
+//                   </Link>
+//                 </motion.div>
+//               </AnimatePresence>
+
+//               <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3">
+//                 <div className="flex items-center gap-2" role="group" aria-label="Choose simulator announcement">
+//                   {simulatorAnnouncements.map((item, index) => (
+//                     <button
+//                       key={item.id}
+//                       type="button"
+//                       onClick={() => setActiveIndex(index)}
+//                       aria-label={`Show ${item.id === "splunk" ? "Splunk" : "Trading"} announcement`}
+//                       aria-pressed={activeIndex === index}
+//                       className={`h-2.5 rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 ${
+//                         activeIndex === index ? "w-8 bg-cyan-300" : "w-2.5 bg-white/30 hover:bg-white/60"
+//                       }`}
+//                     />
+//                   ))}
+//                 </div>
+//                 <span className="text-[11px] font-semibold tracking-wide text-slate-400">
+//                   {activeIndex + 1} / {simulatorAnnouncements.length}
+//                 </span>
+//               </div>
+//             </div>
+//           </div>
+//         </motion.aside>
+//       )}
+//     </AnimatePresence>
+//   );
+// }
+
+// const HomePage = () => {
+//   return (
+//     <motion.div
+//       initial="hidden"
+//       animate="visible"
+//       exit="hidden"
+//       className="overflow-hidden bg-white text-slate-950"
+//     >
+//       <Helmet>
+//         <title>T.O Analytics | Practical Tech Training & Software Solutions</title>
+//         <meta
+//           name="description"
+//           content="Build practical skills with hands-on Splunk, cybersecurity, Linux, data and stock trading education from T.O Analytics. Explore training, mentorship and software services."
+//         />
+//         <meta name="robots" content="index, follow" />
+//       </Helmet>
+
+//       {/* Rotating bottom-right popup for Splunk and Trading Simulator */}
+//       <RotatingSimulatorPopup />
+
+//       {/* ========================= HERO SECTION ========================= */}
+//       <section className="relative min-h-screen overflow-hidden bg-white px-6 pb-20 pt-32 md:px-16 lg:px-24">
+//         <div className="absolute left-[-120px] top-[-120px] h-[320px] w-[320px] rounded-full bg-BLUE opacity-10 blur-[90px]" />
+//         <div className="absolute bottom-[-160px] right-[-120px] h-[380px] w-[380px] rounded-full bg-sky-400 opacity-20 blur-[110px]" />
+//         <div className="relative mx-auto grid max-w-7xl items-center gap-16 lg:grid-cols-2">
+//           <motion.div variants={staggerContainer}>
+//             <motion.div
+//               variants={fadeUp}
+//               custom={0}
+//               className="mb-6 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 shadow-sm"
+//             >
+//               <span className="h-2 w-2 rounded-full bg-BLUE" />
+//               <span className="text-sm font-bold uppercase tracking-[0.2em] text-BLUE">
+//                 Tech Training + Software Solutions
+//               </span>
+//             </motion.div>
+//             <motion.h1
+//               variants={fadeUp}
+//               custom={0.1}
+//               className="max-w-3xl text-5xl font-black leading-[1.05] tracking-tight text-slate-950 md:text-6xl xl:text-7xl"
+//             >
+//               Launch Your Tech Career & Build Digital Products That Stand Out.
+//             </motion.h1>
+//             <motion.p
+//               variants={fadeUp}
+//               custom={0.2}
+//               className="mt-6 max-w-2xl text-lg font-medium leading-8 text-slate-600 md:text-xl"
+//             >
+//               Learn Splunk, Cybersecurity, Linux, Cloud and real-world software
+//               development through practical mentorship. We also build premium
+//               websites, mobile apps and product designs for businesses.
+//             </motion.p>
+//             <motion.div
+//               variants={fadeUp}
+//               custom={0.3}
+//               className="mt-9 flex flex-col gap-4 sm:flex-row"
+//             >
+             
+//               <Link to="/courses">
+//                 <button className="w-full rounded-2xl border-2 border-BLUE bg-white px-8 py-4 text-base font-bold text-BLUE transition duration-300 hover:-translate-y-1 hover:bg-BLUE hover:text-white sm:w-auto">
+//                   Explore Courses
+//                 </button>
+//               </Link>
+//             </motion.div>
+//             <motion.div
+//               variants={fadeUp}
+//               custom={0.4}
+//               className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-4"
+//             >
+//               {stats.map((stat) => (
+//                 <div
+//                   key={stat.label}
+//                   className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+//                 >
+//                   <h3 className="text-2xl font-black text-BLUE">
+//                     {stat.value}
+//                   </h3>
+//                   <p className="mt-1 text-xs font-semibold text-slate-500">
+//                     {stat.label}
+//                   </p>
+//                 </div>
+//               ))}
+//             </motion.div>
+//           </motion.div>
+//           <motion.div
+//             initial={{ opacity: 0, scale: 0.85, rotate: -3 }}
+//             animate={{ opacity: 1, scale: 1, rotate: 0 }}
+//             transition={{ duration: 0.9, ease: "easeOut" }}
+//             className="relative"
+//           >
+//             <div className="absolute inset-0 rotate-6 rounded-[3rem] bg-BLUE opacity-10" />
+//             <div className="relative rounded-[3rem] border border-slate-200 bg-white p-4 shadow-2xl shadow-slate-200">
+//               <img
+//                 src={LandingIMG}
+//                 alt="T.O Analytics learning platform"
+//                 className="w-full rounded-[2.3rem] object-cover"
+//               />
+//               <div className="absolute -bottom-6 left-6 right-6 rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-xl backdrop-blur-xl">
+//                 <p className="text-sm font-bold uppercase tracking-[0.18em] text-BLUE">
+//                   Career Path
+//                 </p>
+//                 <h3 className="mt-1 text-xl font-black text-slate-950">
+//                   From Beginner to Job-Ready
+//                 </h3>
+//                 <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
+//                   <div className="h-full w-[78%] rounded-full bg-BLUE" />
+//                 </div>
+//               </div>
+//             </div>
+//           </motion.div>
+//         </div>
+//       </section>
+//       {/* ========================= BENEFITS SECTION ========================= */}
+//       <section className="bg-slate-950 px-6 py-16 text-white md:px-16 lg:px-24">
+//         <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-2 md:items-center">
+//           <motion.div variants={fadeUp}>
+//             <p className="text-sm font-bold uppercase tracking-[0.3em] text-sky-300">
+//               Why T.O Analytics?
+//             </p>
+//             <h2 className="mt-4 max-w-xl text-3xl font-black leading-tight md:text-5xl">
+//               Training that feels practical, modern and career-focused.
+//             </h2>
+//           </motion.div>
+//           <motion.div
+//             variants={staggerContainer}
+//             className="grid gap-4 sm:grid-cols-2"
+//           >
+//             {benefits.map((item, index) => (
+//               <motion.div
+//                 key={item}
+//                 variants={fadeUp}
+//                 custom={index * 0.05}
+//                 className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl"
+//               >
+//                 <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-white text-BLUE">
+//                   ✓
+//                 </div>
+//                 <p className="font-bold leading-7">{item}</p>
+//               </motion.div>
+//             ))}
+//           </motion.div>
+//         </div>
+//       </section>
+//       {/* ========================= SERVICES SECTION ========================= */}
+//       {/* <section className="relative bg-slate-50 px-6 py-24 md:px-16 lg:px-24">
+//         <div className="mx-auto max-w-7xl">
+//           <motion.div variants={fadeUp} className="mx-auto max-w-3xl text-center">
+//             <p className="text-sm font-black uppercase tracking-[0.3em] text-BLUE">
+//               Software Services
+//             </p>
+//             <h2 className="mt-4 text-4xl font-black tracking-tight md:text-5xl">
+//               We Also Build Amazing Digital Products
+//             </h2>
+//             <p className="mt-5 text-lg font-medium leading-8 text-slate-600">
+//               From websites and apps to UI/UX and consulting, we help brands
+//               turn ideas into high-quality digital products.
+//             </p>
+//           </motion.div>
+//           <motion.div
+//             variants={staggerContainer}
+//             className="mt-14 grid gap-7 md:grid-cols-2 xl:grid-cols-4"
+//           >
+//             {services.map((service, index) => (
+//               <motion.div
+//                 key={service.title}
+//                 variants={fadeUp}
+//                 custom={index * 0.08}
+//                 className="group overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm transition duration-500 hover:-translate-y-3 hover:shadow-2xl hover:shadow-slate-200"
+//               >
+//                 <div className="relative h-56 overflow-hidden">
+//                   <img
+//                     src={service.image}
+//                     alt={service.title}
+//                     className="h-full w-full object-cover transition duration-700 group-hover:scale-110"
+//                   />
+//                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/10 to-transparent" />
+//                   <span className="absolute left-5 top-5 rounded-full bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-BLUE">
+//                     {service.label}
+//                   </span>
+//                 </div>
+//                 <div className="p-6">
+//                   <h3 className="text-2xl font-black text-slate-950">
+//                     {service.title}
+//                   </h3>
+//                   <p className="mt-3 text-sm font-medium leading-7 text-slate-600">
+//                     {service.description}
+//                   </p>
+//                   <Link
+//                     to="/contact"
+//                     className="mt-6 inline-flex items-center font-black text-BLUE"
+//                   >
+//                     Start a project
+//                     <span className="ml-2 transition group-hover:translate-x-1">
+//                       →
+//                     </span>
+//                   </Link>
+//                 </div>
+//               </motion.div>
+//             ))}
+//           </motion.div>
+//         </div>
+//       </section> */}
+//       {/* ========================= FEATURED COURSES ========================= */}
+//       <section className="bg-white px-6 py-24 md:px-16 lg:px-24">
+//         <div className="mx-auto max-w-7xl">
+//           <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+//             <motion.div variants={fadeUp}>
+//               <p className="text-sm font-black uppercase tracking-[0.3em] text-BLUE">
+//                 Popular Courses
+//               </p>
+//               <h2 className="mt-4 max-w-2xl text-4xl font-black tracking-tight md:text-5xl">
+//                 Choose a course and start building real skills.
+//               </h2>
+//             </motion.div>
+//             <motion.div variants={fadeUp}>
+//               <Link to="/courses">
+//                 <button className="rounded-2xl bg-slate-950 px-7 py-4 font-bold text-white transition duration-300 hover:-translate-y-1 hover:bg-BLUE">
+//                   View All Courses
+//                 </button>
+//               </Link>
+//             </motion.div>
+//           </div>
+//           <motion.div
+//             variants={staggerContainer}
+//             className="mt-14 grid gap-8 md:grid-cols-2 xl:grid-cols-3"
+//           >
+//             {COURSES.slice(0, 6).map((course, index) => (
+//               <motion.div
+//                 key={`${course.courseName}-${index}`}
+//                 variants={fadeUp}
+//                 custom={index * 0.06}
+//               >
+//                 <Link to={`/courses/${course.courseName.toLowerCase()}`}>
+//                   <div className="group h-full overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm transition duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-slate-200">
+//                     <div className="relative h-56 overflow-hidden">
+//                       <img
+//                         src={course.image}
+//                         alt={course.courseName}
+//                         className="h-full w-full object-cover transition duration-700 group-hover:scale-110"
+//                       />
+//                       <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 to-transparent" />
+//                       <p className="absolute bottom-5 left-5 rounded-full bg-white px-4 py-2 text-sm font-black text-BLUE">
+//                         ${course.price}
+//                       </p>
+//                     </div>
+//                     <div className="p-6">
+//                       <h3 className="text-2xl font-black text-slate-950">
+//                         {course.courseName}
+//                       </h3>
+//                       <p className="mt-2 font-bold text-BLUE">
+//                         {course.intro}
+//                       </p>
+//                       <p className="mt-3 line-clamp-3 text-sm font-medium leading-7 text-slate-600">
+//                         {course.description}
+//                       </p>
+//                       <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-5">
+//                         <span className="text-sm font-bold text-slate-500">
+//                           Learn more
+//                         </span>
+//                         <span className="flex h-10 w-10 items-center justify-center rounded-full bg-BLUE text-white transition group-hover:translate-x-1">
+//                           →
+//                         </span>
+//                       </div>
+//                     </div>
+//                   </div>
+//                 </Link>
+//               </motion.div>
+//             ))}
+//           </motion.div>
+//         </div>
+//       </section>
+//       {/* ========================= 2025–2026 COHORT SUCCESS STORIES ========================= */}
+//       <section
+//         aria-labelledby="cohort-success-heading"
+//         className="relative overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-50 px-6 py-24 md:px-16 lg:px-24"
+//       >
+//         <div className="pointer-events-none absolute -right-20 top-12 h-80 w-80 rounded-full bg-sky-200/40 blur-[110px]" />
+//         <div className="pointer-events-none absolute -left-24 bottom-10 h-80 w-80 rounded-full bg-blue-200/30 blur-[110px]" />
+//         <div className="relative mx-auto max-w-7xl">
+//           <motion.div
+//             variants={fadeUp}
+//             initial="hidden"
+//             whileInView="visible"
+//             viewport={{ once: true, amount: 0.2 }}
+//             className="mx-auto max-w-4xl text-center"
+//           >
+//             <span className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-5 py-2 text-xs font-black uppercase tracking-[0.17em] text-BLUE">
+//               <GraduationCap size={17} aria-hidden="true" />
+//               T.O Analytics | 2025–2026 Cohort Success Stories
+//             </span>
+//             <h2
+//               id="cohort-success-heading"
+//               className="mt-6 text-4xl font-black leading-tight tracking-tight text-slate-950 md:text-5xl lg:text-6xl"
+//             >
+//               Celebrating career milestones from our 2025–2026 cohort!
+//             </h2>
+//             <p className="mx-auto mt-6 max-w-2xl text-lg font-medium leading-8 text-slate-600">
+//               We are proud to recognize cohort members who have taken meaningful
+//               steps forward in cybersecurity, observability, and Splunk-related roles.
+//             </p>
+//           </motion.div>
+
+//           <div className="mt-14 grid gap-6 md:grid-cols-2">
+//             {cohortSuccessStories.map((story, index) => {
+//               const Icon = story.Icon;
+
+//               return (
+//                 <motion.article
+//                   key={story.role}
+//                   variants={fadeUp}
+//                   initial="hidden"
+//                   whileInView="visible"
+//                   viewport={{ once: true, amount: 0.15 }}
+//                   custom={index * 0.05}
+//                   className="group relative flex h-full flex-col overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-7 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-900/10 sm:p-9"
+//                 >
+//                   <div className={`absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r ${story.tone}`} />
+//                   <div className="flex items-start justify-between gap-4">
+//                     <div className={`flex h-14 w-14 items-center justify-center rounded-2xl ${story.iconBackground}`}>
+//                       <Icon size={27} strokeWidth={1.8} aria-hidden="true" />
+//                     </div>
+//                     <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-600">
+//                       {story.category}
+//                     </span>
+//                   </div>
+//                   <p className="mt-8 text-sm font-bold uppercase tracking-[0.13em] text-slate-500">
+//                     Reported compensation
+//                   </p>
+//                   <p className="mt-1 text-4xl font-black tracking-tight text-BLUE sm:text-5xl">
+//                     {story.salary}
+//                   </p>
+//                   <h3 className="mt-6 text-2xl font-black leading-snug text-slate-950">
+//                     {story.role}
+//                   </h3>
+//                   <p className="mt-3 flex-1 text-base font-medium leading-8 text-slate-600">
+//                     {story.description}
+//                   </p>
+//                   <div className="mt-8 border-t border-slate-100 pt-5 text-sm font-bold text-slate-500">
+//                     T.O Analytics · 2025–2026 Cohort
+//                   </div>
+//                 </motion.article>
+//               );
+//             })}
+//           </div>
+
+//           <motion.div
+//             variants={fadeUp}
+//             initial="hidden"
+//             whileInView="visible"
+//             viewport={{ once: true, amount: 0.2 }}
+//             className="relative mt-12 overflow-hidden rounded-[2.5rem] bg-slate-950 px-7 py-11 text-white shadow-2xl shadow-slate-200 sm:px-10 lg:px-14"
+//           >
+//             <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-blue-500/20 blur-[75px]" />
+//             <div className="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+//               <div className="max-w-2xl">
+//                 <p className="text-xs font-black uppercase tracking-[0.22em] text-sky-300">
+//                   A milestone worth celebrating
+//                 </p>
+//                 <h3 className="mt-3 text-3xl font-black leading-tight md:text-4xl">
+//                   Your growth. Your skills. Your next opportunity.
+//                 </h3>
+//                 <p className="mt-4 text-base leading-7 text-slate-300">
+//                   Congratulations to our cohort members on these achievements!
+//                   Every career journey is different, and we celebrate the work
+//                   behind each milestone.
+//                 </p>
+//               </div>
+//               <Link
+//                 to="/courses"
+//                 className="inline-flex shrink-0 items-center justify-center gap-3 rounded-2xl bg-white px-7 py-4 text-sm font-black text-BLUE transition duration-300 hover:-translate-y-1 hover:bg-sky-50 focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:ring-offset-2 focus:ring-offset-slate-950"
+//               >
+//                 Explore Our Courses
+//                 <ArrowUpRight size={19} aria-hidden="true" />
+//               </Link>
+//             </div>
+//           </motion.div>
+
+//           <p className="mx-auto mt-7 max-w-3xl text-center text-xs font-medium leading-6 text-slate-500">
+//             These are reported individual cohort outcomes, not average or typical
+//             results. Individual outcomes do not guarantee employment or salary results.
+//           </p>
+//         </div>
+//       </section>
+//     </motion.div>
+//   );
+// };
+// export default HomePage;
 
 
 // import { useEffect, useRef, useState } from "react";
