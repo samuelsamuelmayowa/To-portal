@@ -26,11 +26,13 @@ import {
 } from "lucide-react";
 
 /**
- * T.O Analytics — Splunk Orientation, 2026–2027
- * Drop-in React + Tailwind page for /splunk-orientation.
- * The calendar information below is sourced from the supplied 6-page PDF.
- * Place the accompanying PDF in /public for the download button to work.
- * Existing page details (tuition, Zelle email, links) are retained.
+ * T.O Analytics — Splunk Cohort Hub, 2026–2027
+ * Drop-in React + Tailwind page for the existing /splunk-orientation route.
+ * Keeps the original violet/white styling, events, calendar and rating component.
+ * The OrientationFeedback component is deliberately placed at the TOP of the page.
+ * Keep the supplied cohort PDF at /public/splunk-cohort-calendar-2026-2027.pdf.
+ * The /login route is used for existing student sign-in; backend authorization
+ * must still determine whether a student may open protected course content.
  */
 
 const SITE = "https://www.to-analytics.com";
@@ -115,7 +117,7 @@ const MILESTONES = [
     date: "Oct 31, 2026",
     title: "Orientation",
     description: "Program introduction and learning expectations.",
-    tag: "Live orientation",
+    tag: "Completed",
     type: "session",
   },
   {
@@ -176,28 +178,32 @@ const DELIVERABLES = [
 
 const FAQS = [
   {
-    question: "When did orientation take place?",
-    answer: "The orientation was held Saturday, October 31, 2026, from 8:00 to 10:00 AM Eastern Time.",
+    question: "I attended orientation. What should I do now?",
+    answer: "Rate the October 31 orientation above, sign in to your student dashboard, and follow the cohort calendar for your study and practical-lab milestones.",
   },
   {
-    question: "When do the practical classes start?",
-    answer: "The new calendar lists ten Saturday classes from January 9 through March 13, 2027. Each class begins at 8:00 AM Eastern Time; class end times are not specified.",
+    question: "How do I access my Splunk course materials?",
+    answer: "Select Student sign in and use your existing T.O Analytics account. Course videos, assignments and quizzes remain subject to the platform's student-access approval checks.",
   },
   {
-    question: "Are there classes every Saturday in November and December?",
-    answer: "The calendar shows suggested weekly check-in reminders, not booked classes, during those months. Certification deadlines are marked separately.",
+    question: "When does practical training begin?",
+    answer: "The cohort calendar lists ten Saturday sessions from January 9 through March 13, 2027, beginning at 8:00 AM Eastern Time. End times are not specified.",
   },
   {
-    question: "Do I need a server for the labs?",
-    answer: "Yes. The course calendar requires each student to purchase a server and prepare it before the first lab on January 9, 2027.",
+    question: "Are November and December check-ins live classes?",
+    answer: "No. The calendar marks suggested weekly follow-ups during November and December, rather than scheduled classes. Certification target dates are separate.",
   },
   {
-    question: "Are the certification dates exam appointments?",
-    answer: "No. The November 28 and December 19 dates are calendar deadlines. Students must schedule their actual certification exams separately.",
+    question: "When do I need my practice server?",
+    answer: "The published calendar calls for students to prepare a lab server and virtual environment before January 9, 2027; January 8 is a suggested readiness check.",
   },
   {
-    question: "How can I enroll or ask a question?",
-    answer: "Use the registration link or contact T.O Analytics using the enrollment email shown on this page.",
+    question: "Are the certification target dates exam appointments?",
+    answer: "No. November 28 and December 19 are listed as cohort targets. Book any external certification exam separately, and confirm your individual certification timeline with the training team.",
+  },
+  {
+    question: "Can new students still join this cohort?",
+    answer: "Enrollment availability is not confirmed here. Contact the T.O Analytics team for the current intake status and payment instructions before making any payment.",
   },
 ];
 
@@ -461,6 +467,41 @@ function CalendarSection() {
 export default function SplunkOrientation() {
   return (
     <main className="min-h-screen overflow-hidden bg-white text-slate-950">
+      {/* Retain the existing T.O Analytics dark header. */}
+      <header className="relative z-20 bg-[#1b1130] text-white">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-5 px-5 py-6 md:px-10">
+          <a href={SITE} className="inline-flex items-center gap-3 text-white" aria-label="T.O Analytics home">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-lg font-black tracking-tight">T.O</span>
+            <span className="text-base font-extrabold tracking-tight">T.O Analytics <span className="font-medium text-violet-300">/ Learning</span></span>
+          </a>
+          <nav className="flex flex-wrap items-center gap-x-5 gap-y-3 text-xs font-bold text-slate-300 sm:text-sm" aria-label="Cohort page sections">
+            <a href="#orientation-feedback" className="text-violet-200 transition hover:text-white">Rate orientation</a>
+            <a href="#student-access" className="transition hover:text-white">Student access</a>
+            <a href="#curriculum" className="transition hover:text-white">Curriculum</a>
+            <a href="#calendar" className="transition hover:text-white">Calendar</a>
+            <a href="#enrollment" className="transition hover:text-white">Enrollment</a>
+          </nav>
+        </div>
+      </header>
+
+      {/* Rating is deliberately the FIRST content section, above the hero. */}
+      <div className="relative z-10 border-b border-violet-100 bg-[#f7f4ff]">
+        <div className="mx-auto max-w-7xl px-5 pt-10 md:px-10">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-violet-700">Orientation completed · October 31, 2026</p>
+              <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">How was your Splunk orientation?</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-600">If you attended the session, share your rating and help us improve the learning experience for every cohort.</p>
+            </div>
+            <span className="inline-flex w-fit items-center gap-2 rounded-full border border-violet-200 bg-white px-4 py-2 text-xs font-bold text-violet-800">
+              <CheckCircle2 size={16} /> Session completed
+            </span>
+          </div>
+        </div>
+        {/* Reuses your real feedback component and its backend. No fake stars or totals. */}
+        <OrientationFeedback />
+      </div>
+
       <section id="overview" className="relative isolate scroll-mt-24 overflow-hidden bg-[#1b1130] text-white">
         <div className="pointer-events-none absolute -right-28 -top-32 h-[36rem] w-[36rem] rounded-full bg-violet-700/35 blur-[110px]" />
         <div className="pointer-events-none absolute -bottom-56 -left-32 h-[32rem] w-[32rem] rounded-full bg-fuchsia-700/20 blur-[110px]" />
@@ -470,19 +511,7 @@ export default function SplunkOrientation() {
           maskImage: "linear-gradient(to bottom,black,transparent 94%)",
         }} />
 
-        <div className="relative mx-auto max-w-7xl px-5 pb-20 pt-8 md:px-10 lg:pb-24">
-          <div className="mb-16 flex flex-wrap items-center justify-between gap-4">
-            <a href={SITE} className="inline-flex items-center gap-3 text-white" aria-label="T.O Analytics home">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-lg font-black tracking-tight">T.O</span>
-              <span className="text-base font-extrabold tracking-tight">T.O Analytics <span className="font-medium text-violet-300">/ Learning</span></span>
-            </a>
-            <nav className="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-300 sm:gap-6 sm:text-sm" aria-label="Orientation page sections">
-              <a href="#curriculum" className="transition hover:text-white">Curriculum</a>
-              <a href="#calendar" className="transition hover:text-white">Calendar</a>
-              <a href="#enrollment" className="transition hover:text-white">Enrollment</a>
-              <a href="#orientation-feedback" className="transition hover:text-white">Rate orientation</a>
-            </nav>
-          </div>
+        <div className="relative mx-auto max-w-7xl px-5 pb-20 pt-16 md:px-10 lg:pb-24 lg:pt-20">
 
           <div className="grid items-center gap-12 lg:grid-cols-[1.12fr_.88fr] lg:gap-16">
             <div>
@@ -490,17 +519,17 @@ export default function SplunkOrientation() {
                 <Sparkles size={15} /> 2026–2027 SPLUNK COHORT
               </div>
               <h1 className="mt-7 max-w-3xl text-[2.65rem] font-black leading-[1.07] tracking-[-0.045em] sm:text-6xl lg:text-[4.2rem]">
-                Learn Splunk. <span className="text-violet-300">Build real skills.</span> Prove what you can do.
+                Your Splunk journey <span className="text-violet-300">continues here.</span>
               </h1>
               <p className="mt-6 max-w-xl text-base leading-8 text-slate-300 sm:text-lg">
-                An orientation and hands-on learning path covering Splunk infrastructure, searching, data onboarding, dashboards, alerts, administration, and a final capstone project.
+                Orientation is complete. Stay on track with your certification targets, prepare your practical lab, and build real Splunk skills through searching, dashboards, alerts, administration and a final capstone.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link to="/login" className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-500 px-6 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-violet-900/30 transition hover:bg-violet-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
-                  Register now <ArrowRight size={17} />
+                  Student sign in <ArrowRight size={17} />
                 </Link>
                 <a href="#calendar" className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-6 py-3.5 text-sm font-extrabold text-white transition hover:bg-white/15">
-                  View course calendar <CalendarDays size={17} />
+                  Check upcoming dates <CalendarDays size={17} />
                 </a>
               </div>
               <div className="mt-10 flex flex-wrap gap-x-6 gap-y-3 text-sm text-slate-300">
@@ -514,7 +543,7 @@ export default function SplunkOrientation() {
               <div className="rounded-[2rem] border border-white/15 bg-white/[0.075] p-4 shadow-2xl shadow-black/25 backdrop-blur-lg sm:p-6">
                 <div className="flex items-center justify-between border-b border-white/15 pb-5">
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-[.2em] text-violet-200">Cohort kickoff</p>
+                    <p className="text-xs font-bold uppercase tracking-[.2em] text-violet-200">Your cohort progress</p>
                     <h2 className="mt-2 text-2xl font-black sm:text-3xl">Orientation completed</h2>
                   </div>
                   <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-400/20 text-violet-200"><GraduationCap size={24} /></span>
@@ -535,16 +564,16 @@ export default function SplunkOrientation() {
                 <div className="mt-5 grid grid-cols-2 gap-3">
                   <div className="rounded-2xl border border-white/10 bg-white/10 p-4">
                     <p className="text-3xl font-black">10</p>
-                    <p className="mt-1 text-xs font-medium text-violet-200">Practical Saturday classes</p>
+                    <p className="mt-1 text-xs font-medium text-violet-200">Practical classes ahead</p>
                   </div>
                   <div className="rounded-2xl border border-white/10 bg-white/10 p-4">
                     <p className="text-3xl font-black">Mar 13</p>
-                    <p className="mt-1 text-xs font-medium text-violet-200">Final capstone · 2027</p>
+                    <p className="mt-1 text-xs font-medium text-violet-200">Capstone deadline · 2027</p>
                   </div>
                 </div>
                 <div className="mt-5 flex items-center justify-between rounded-xl border border-white/10 bg-[#170e2a]/60 px-4 py-3 text-sm">
-                  <span className="font-medium text-slate-300">Course tuition</span>
-                  <strong className="text-lg font-black">$3,500</strong>
+                  <span className="font-medium text-slate-300">Next certification target</span>
+                  <strong className="text-base font-black">Nov 28, 2026</strong>
                 </div>
               </div>
               <div className="pointer-events-none absolute -bottom-5 -right-5 -z-10 h-32 w-32 rounded-full bg-fuchsia-500/30 blur-3xl" />
@@ -556,9 +585,9 @@ export default function SplunkOrientation() {
       <section className="relative z-10 border-b border-slate-100 bg-white py-9">
         <div className="mx-auto grid max-w-7xl gap-4 px-5 md:grid-cols-3 md:px-10">
           {[
-            { icon: CalendarDays, label: "ORIENTATION", value: "Oct 31, 2026", detail: "8:00–10:00 AM Eastern" },
+            { icon: CheckCircle2, label: "ORIENTATION", value: "Completed", detail: "October 31, 2026" },
             { icon: Laptop2, label: "PRACTICAL TRAINING", value: "Jan 9 – Mar 13", detail: "10 Saturday sessions in 2027" },
-            { icon: Award, label: "CERTIFICATION FOCUS", value: "2 pathways", detail: "Core Power User + Enterprise Admin" },
+            { icon: Award, label: "NEXT TARGET", value: "Nov 28, 2026", detail: "Core Power User deadline" },
           ].map((item) => {
             const Icon = item.icon;
             return (
@@ -575,12 +604,64 @@ export default function SplunkOrientation() {
         </div>
       </section>
 
+
+      <section id="student-access" className="scroll-mt-24 bg-white py-20 sm:py-24">
+        <div className="mx-auto grid max-w-7xl items-center gap-10 px-5 md:px-10 lg:grid-cols-[1.02fr_.98fr] lg:gap-16">
+          <div>
+            <SectionHeading
+              eyebrow="For existing cohort students"
+              title="Your training continues in the student dashboard"
+              description="Sign in with the same account you used to join T.O Analytics. Your approved course access determines which lessons, assignments and tools you can open."
+            />
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Link to="/login" className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-700 px-6 py-3.5 text-sm font-extrabold text-white shadow-sm transition hover:bg-violet-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-700">
+                Open student login <ArrowRight size={17} />
+              </Link>
+              <a href="#calendar" className="inline-flex items-center justify-center gap-2 rounded-xl border border-violet-200 px-6 py-3.5 text-sm font-extrabold text-violet-800 transition hover:bg-violet-50">
+                View class calendar <CalendarDays size={17} />
+              </a>
+            </div>
+            <p className="mt-5 flex items-start gap-2 text-sm leading-6 text-slate-600">
+              <ShieldCheck size={18} className="mt-0.5 shrink-0 text-violet-700" />
+              Signing in does not automatically grant course access; access is controlled by the existing approval system.
+            </p>
+          </div>
+          <div className="rounded-[2rem] border border-violet-100 bg-[#f8f6ff] p-5 shadow-[0_20px_60px_-40px_rgba(91,33,182,.45)] sm:p-8">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-xs font-extrabold uppercase tracking-widest text-violet-700">Learning portal</p>
+                <h3 className="mt-2 text-2xl font-black text-slate-950">What is inside?</h3>
+              </div>
+              <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-100 text-violet-800"><Laptop2 size={23} /></span>
+            </div>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              {[
+                { icon: BookOpen, title: "Course lessons", detail: "Videos and class materials" },
+                { icon: FileText, title: "Assignments", detail: "Tasks and due dates" },
+                { icon: Award, title: "Quiz center", detail: "Practice and answer review" },
+                { icon: Terminal, title: "Splunk Lab", detail: "Hands-on practice tools" },
+                { icon: CalendarDays, title: "Class calendar", detail: "Cohort schedule" },
+                { icon: Monitor, title: "Results & progress", detail: "Track learning activity" },
+              ].map(({ icon: Icon, title, detail }) => (
+                <div key={title} className="flex items-start gap-3 rounded-2xl border border-violet-100 bg-white p-4">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-700"><Icon size={19} /></span>
+                  <div>
+                    <p className="text-sm font-extrabold text-slate-900">{title}</p>
+                    <p className="mt-1 text-xs leading-5 text-slate-600">{detail}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section id="curriculum" className="scroll-mt-24 py-20 sm:py-24">
         <div className="mx-auto max-w-7xl px-5 md:px-10">
           <SectionHeading
-            eyebrow="2027 learning path"
-            title="10 Saturday sessions. One practical journey."
-            description="The official calendar lists these ten classes, starting January 9, 2027. Every class begins at 8:00 AM Eastern. The descriptions below summarize the focus of each topic."
+            eyebrow="Your next learning milestones"
+            title="Ten practical sessions. One clear path forward."
+            description="See what is coming next after orientation. The calendar lists ten Saturday classes beginning January 9, 2027, at 8:00 AM Eastern. Each card summarizes that session's focus."
           />
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {CLASSES.map((item) => (
@@ -624,7 +705,7 @@ export default function SplunkOrientation() {
 
       <section id="milestones" className="py-20 sm:py-24">
         <div className="mx-auto max-w-7xl px-5 md:px-10">
-          <SectionHeading eyebrow="Important milestones" title="A clear path from orientation to capstone" description="Key dates below are reproduced from the updated cohort calendar. Certification deadlines do not automatically reserve an exam appointment." />
+          <SectionHeading eyebrow="Cohort milestones" title="Know your next important date" description="Follow the calendar from your completed orientation through certification targets, lab preparation and the final capstone. Certification target dates are not exam reservations." />
           <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {MILESTONES.map((item) => (
               <div key={item.date} className="rounded-2xl border border-slate-200 p-6 shadow-sm">
@@ -685,15 +766,15 @@ export default function SplunkOrientation() {
         <div className="mx-auto max-w-7xl px-5 md:px-10">
           <div className="grid gap-10 rounded-[2rem] border border-violet-100 bg-white p-7 shadow-[0_25px_90px_-55px_rgba(76,29,149,.45)] sm:p-10 lg:grid-cols-[1.1fr_.9fr] lg:gap-16">
             <div>
-              <SectionHeading eyebrow="Registration & tuition" title="Ready to join the cohort?" description="Review the published enrollment details, register through the website, or speak with T.O Analytics before making a payment." />
+              <SectionHeading eyebrow="Future enrollment & tuition" title="Interested in joining T.O Analytics?" description="Orientation for this cohort has ended. Contact the training team to confirm whether this intake is still accepting students or to ask about the next available cohort before making a payment." />
               <div className="mt-8 flex flex-wrap gap-3">
-                <Link to="/login" className="inline-flex items-center gap-2 rounded-xl bg-violet-700 px-6 py-3.5 text-sm font-extrabold text-white transition hover:bg-violet-800">Register now <ArrowRight size={17} /></Link>
+                <Link to="/login" className="inline-flex items-center gap-2 rounded-xl bg-violet-700 px-6 py-3.5 text-sm font-extrabold text-white transition hover:bg-violet-800">Student login <ArrowRight size={17} /></Link>
                 <a href={`mailto:${EMAIL}?subject=Splunk%20Cohort%20Enrollment%20Question`} className="inline-flex items-center gap-2 rounded-xl border border-violet-200 px-6 py-3.5 text-sm font-extrabold text-violet-800 transition hover:bg-violet-50"><Mail size={17} /> Contact enrollment</a>
               </div>
             </div>
             <div className="space-y-4">
               <div className="rounded-2xl bg-[#231638] p-6 text-white">
-                <p className="text-xs font-extrabold uppercase tracking-widest text-violet-200">Tuition shown on existing website</p>
+                    <p className="text-xs font-extrabold uppercase tracking-widest text-violet-200">Published tuition — confirm before paying</p>
                 <p className="mt-2 text-4xl font-black">$3,500</p>
                 <div className="mt-5 border-t border-white/15 pt-5">
                   <p className="text-xs font-bold uppercase tracking-widest text-violet-200">Payment method</p>
@@ -707,11 +788,9 @@ export default function SplunkOrientation() {
         </div>
       </section>
 
-      <OrientationFeedback />
-
       <section id="faq" className="scroll-mt-24 py-20 sm:py-24">
         <div className="mx-auto max-w-7xl px-5 md:px-10">
-          <SectionHeading eyebrow="Frequently asked questions" title="Answers before you begin" description="The details here reflect the supplied cohort calendar and the existing enrollment page." />
+          <SectionHeading eyebrow="Frequently asked questions" title="What happens after orientation?" description="Quick answers about student access, your practical training plan and upcoming milestones." />
           <div className="mt-9 grid gap-4 md:grid-cols-2">
             {FAQS.map((item) => (
               <details key={item.question} className="group h-fit rounded-2xl border border-slate-200 bg-white p-5 open:border-violet-200 open:bg-violet-50/40 sm:p-6">
@@ -745,6 +824,7 @@ export default function SplunkOrientation() {
 
 // import React, { useMemo, useState } from "react";
 // import { Link } from "react-router-dom";
+// import OrientationFeedback from "../components/OrientationFeedback";
 // import {
 //   ArrowRight,
 //   ArrowUpRight,
@@ -920,8 +1000,8 @@ export default function SplunkOrientation() {
 
 // const FAQS = [
 //   {
-//     question: "When is the orientation?",
-//     answer: "Saturday, October 31, 2026, from 8:00 to 10:00 AM Eastern Time.",
+//     question: "When did orientation take place?",
+//     answer: "The orientation was held Saturday, October 31, 2026, from 8:00 to 10:00 AM Eastern Time.",
 //   },
 //   {
 //     question: "When do the practical classes start?",
@@ -1224,6 +1304,7 @@ export default function SplunkOrientation() {
 //               <a href="#curriculum" className="transition hover:text-white">Curriculum</a>
 //               <a href="#calendar" className="transition hover:text-white">Calendar</a>
 //               <a href="#enrollment" className="transition hover:text-white">Enrollment</a>
+//               <a href="#orientation-feedback" className="transition hover:text-white">Rate orientation</a>
 //             </nav>
 //           </div>
 
@@ -1258,7 +1339,7 @@ export default function SplunkOrientation() {
 //                 <div className="flex items-center justify-between border-b border-white/15 pb-5">
 //                   <div>
 //                     <p className="text-xs font-bold uppercase tracking-[.2em] text-violet-200">Cohort kickoff</p>
-//                     <h2 className="mt-2 text-2xl font-black sm:text-3xl">Orientation day</h2>
+//                     <h2 className="mt-2 text-2xl font-black sm:text-3xl">Orientation completed</h2>
 //                   </div>
 //                   <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-400/20 text-violet-200"><GraduationCap size={24} /></span>
 //                 </div>
@@ -1450,6 +1531,8 @@ export default function SplunkOrientation() {
 //         </div>
 //       </section>
 
+//       <OrientationFeedback />
+
 //       <section id="faq" className="scroll-mt-24 py-20 sm:py-24">
 //         <div className="mx-auto max-w-7xl px-5 md:px-10">
 //           <SectionHeading eyebrow="Frequently asked questions" title="Answers before you begin" description="The details here reflect the supplied cohort calendar and the existing enrollment page." />
@@ -1483,499 +1566,3 @@ export default function SplunkOrientation() {
 //     </main>
 //   );
 // }
-
-
-// // import React from "react";
-// // import { Link } from "react-router-dom";
-
-// // const courseHighlights = [
-// //   "14-week Splunk training",
-// //   "Splunk basics & architecture",
-// //   "Search Processing Language (SPL)",
-// //   "Dashboards, reports & visualizations",
-// //   "Alerts & monitoring",
-// //   "Data inputs & indexing",
-// //   "User management & security",
-// //   "Advanced SPL & optimization",
-// //   "Final capstone project",
-// // ];
-
-// // const certificationFocus = [
-// //   "Splunk Core Power User Certification Exam",
-// //   "Splunk Enterprise Certified Admin Exam",
-// // ];
-
-// // const schedule = [
-// //   {
-// //     id: 1,
-// //     date: "October 31st",
-// //     title: "Orientation",
-// //     items: [],
-// //   },
-// //   {
-// //     id: 2,
-// //     date: "November 14th to December 19th",
-// //     title: "Splunk Foundations (Beginner)",
-// //     items: [
-// //       "Introduction to Splunk",
-// //       "Searching & Reporting",
-// //       "Basic SPL",
-// //       "Fields & Knowledge",
-// //     ],
-// //   },
-// //   {
-// //     id: 3,
-// //     date: "Two Weeks Certification Break",
-// //     title: "Power User Certification Exam",
-// //     items: [],
-// //   },
-// //   {
-// //     id: 4,
-// //     date: "January 9th to February 27th",
-// //     title: "Splunk Backend Administration",
-// //     items: [
-// //       "Distributed Splunk Architecture",
-// //       "Data Onboarding & Platform Management",
-// //       "Performance Tuning & Troubleshooting",
-// //     ],
-// //   },
-// //   {
-// //     id: 5,
-// //     date: "Two Weeks Certification Break",
-// //     title: "Splunk Enterprise Certified Admin Exam",
-// //     items: [],
-// //   },
-// //   {
-// //     id: 6,
-// //     date: "March 13th",
-// //     title: "Interview Prep",
-// //     items: [],
-// //   },
-// // ];
-
-// // // const deliverables = [
-// // //   "Weekly assignments",
-// // //   "Hands-on Splunk search tasks",
-// // //   "Dashboard and report practice",
-// // //   "Alert configuration practice",
-// // //   "Final project: Complete Splunk solution from data ingestion to dashboards and alerts",
-// // // ];
-// // const deliverables = [
-// //   "Weekly assignments",
-// //   "Hands-on Splunk search tasks",
-// //   "Dashboard and alert practice",
-// //   "Final project: Building and configuring a distributed Splunk deployment",
-// //   "Final project: Setting up forwarding and data onboarding",
-// //   "Final project: Dashboards and alerts",
-// // ];
-
-// // export default function SplunkOrientation() {
-// //   return (
-// //     <main className="min-h-screen bg-white text-slate-950">
-// //       {/* HERO */}
-// //       <section className="relative overflow-hidden bg-gradient-to-br from-white via-purple-50 to-white">
-// //         <div className="absolute right-0 top-0 h-[420px] w-[420px] rounded-full bg-purple-600/20 blur-3xl" />
-// //         <div className="absolute -left-20 bottom-0 h-[300px] w-[300px] rounded-full bg-fuchsia-500/20 blur-3xl" />
-
-// //         <div className="relative mx-auto max-w-7xl px-5 py-16 md:px-10 lg:py-24">
-// //           <div className="grid items-center gap-12 lg:grid-cols-2">
-// //             <div>
-// //               <div className="mb-6 inline-flex items-center rounded-full border border-purple-200 bg-white px-4 py-2 text-sm font-semibold text-purple-700 shadow-sm">
-// //                 T.O Analytics LLC Orientation Program
-// //               </div>
-
-// //               <h1 className="text-4xl font-extrabold tracking-tight text-slate-950 md:text-6xl">
-// //                 {/* T.O Orientation */}
-// //                 <span className="mt-3 block bg-gradient-to-r from-purple-800 to-fuchsia-600 bg-clip-text text-3xl text-transparent md:text-5xl">
-// //                   Introduction to Splunk
-// //                 </span>
-// //               </h1>
-
-// //               <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-700">
-// //                 Join our Introduction to Splunk Orientation and discover how
-// //                 Splunk helps with data collection, indexing, searching,
-// //                 dashboards, alerts, IT operations, security, and business
-// //                 analytics.
-// //               </p>
-
-// //               <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-// //                 <a
-// //                   href="https://www.to-analytics.com/login"
-// //                   target="_blank"
-// //                   rel="noreferrer"
-// //                   className="rounded-2xl bg-gradient-to-r from-purple-800 to-fuchsia-600 px-7 py-4 text-center font-bold text-white shadow-lg shadow-purple-500/25 transition hover:scale-[1.02]"
-// //                 >
-// //                   Register Now
-// //                 </a>
-
-// //                 <a
-// //                   href="mailto:t.oanalyticsllc@gmail.com"
-// //                   className="rounded-2xl border border-purple-200 bg-white px-7 py-4 text-center font-bold text-purple-800 shadow-sm transition hover:bg-purple-50"
-// //                 >
-// //                   Contact for Enrollment
-// //                 </a>
-// //               </div>
-
-// //               <div className="mt-8 flex flex-wrap gap-3 text-sm font-semibold text-slate-700">
-// //                 <span className="rounded-full bg-purple-100 px-4 py-2 text-purple-800">
-// //                   $3,500 Tuition
-// //                 </span>
-// //                 <span className="rounded-full bg-fuchsia-100 px-4 py-2 text-fuchsia-800">
-// //                   Zelle Payment
-// //                 </span>
-             
-// //               </div>
-// //             </div>
-
-// //             {/* SUMMARY CARD */}
-// //          {/* SUMMARY CARD */}
-// // <div className="rounded-[2rem] border border-purple-100 bg-white p-6 shadow-2xl shadow-purple-900/10">
-// //   <div className="rounded-[1.5rem] bg-gradient-to-br from-purple-950 via-purple-800 to-fuchsia-700 p-6 text-white">
-// //     <p className="text-sm font-semibold uppercase tracking-[0.25em] text-purple-100">
-// //       Program Schedule
-// //     </p>
-
-// //     <h2 className="mt-3 text-3xl font-extrabold">
-// //       Orientation starts October 31st
-// //     </h2>
-
-// //     <p className="mt-4 text-purple-100">
-// //       A structured Splunk learning path covering Splunk Foundations,
-// //       Backend Administration, certification breaks, and interview preparation.
-// //     </p>
-
-// //     <div className="mt-6 space-y-4">
-// //       <div className="rounded-2xl bg-white/10 p-4">
-// //         <p className="font-bold">October 31st</p>
-// //         <p className="text-sm text-purple-100">Orientation</p>
-// //       </div>
-
-// //       <div className="rounded-2xl bg-white/10 p-4">
-// //         <p className="font-bold">November 14th to December 19th</p>
-// //         <p className="text-sm text-purple-100">
-// //           Splunk Foundations (Beginner)
-// //         </p>
-// //       </div>
-
-// //       <div className="rounded-2xl bg-white/10 p-4">
-// //         <p className="font-bold">Two Weeks Certification Break</p>
-// //         <p className="text-sm text-purple-100">
-// //           Power User Certification Exam
-// //         </p>
-// //       </div>
-
-// //       <div className="rounded-2xl bg-white/10 p-4">
-// //         <p className="font-bold">January 9th to February 27th</p>
-// //         <p className="text-sm text-purple-100">
-// //           Splunk Backend Administration
-// //         </p>
-// //       </div>
-
-// //       <div className="rounded-2xl bg-white/10 p-4">
-// //         <p className="font-bold">Two Weeks Certification Break</p>
-// //         <p className="text-sm text-purple-100">
-// //           Splunk Enterprise Certified Admin Exam
-// //         </p>
-// //       </div>
-
-// //       <div className="rounded-2xl bg-white/10 p-4">
-// //         <p className="font-bold">March 13th</p>
-// //         <p className="text-sm text-purple-100">Interview Prep</p>
-// //       </div>
-// //     </div>
-// //   </div>
-
-// //   <div className="mt-6 grid gap-4 sm:grid-cols-2">
-// //     <div className="rounded-2xl border border-purple-100 p-4">
-// //       <p className="text-sm text-slate-500">Tuition Fee</p>
-// //       <p className="mt-1 text-3xl font-extrabold text-slate-950">
-// //         $3,500
-// //       </p>
-// //     </div>
-
-// //     <div className="rounded-2xl border border-purple-100 p-4">
-// //       <p className="text-sm text-slate-500">Payment Option</p>
-// //       <p className="mt-1 font-bold text-slate-950">Zelle</p>
-// //       <p className="mt-1 break-all text-sm text-slate-600">
-// //         t.oanalyticsllc@gmail.com
-// //       </p>
-// //     </div>
-// //   </div>
-// // </div>
-// //           </div>
-// //         </div>
-// //       </section>
-
-// //       {/* CERTIFICATION FOCUS */}
-// //       <section className="mx-auto max-w-7xl px-5 py-16 md:px-10">
-// //         <div className="mb-10 text-center">
-// //           <p className="font-bold uppercase tracking-[0.25em] text-purple-700">
-// //             Certification Focus
-// //           </p>
-// //           <h2 className="mt-3 text-3xl font-extrabold text-slate-950 md:text-5xl">
-// //             Built around real Splunk certification goals
-// //           </h2>
-// //           <p className="mx-auto mt-4 max-w-3xl text-slate-600">
-// //             This orientation introduces the training path, certification
-// //             expectations, schedule, payment details, and the practical skills
-// //             students will build during the program.
-// //           </p>
-// //         </div>
-
-// //         <div className="grid gap-6 md:grid-cols-2">
-// //           {certificationFocus.map((item, index) => (
-// //             <div
-// //               key={item}
-// //               className="rounded-3xl border border-purple-100 bg-gradient-to-br from-white to-purple-50 p-7 shadow-lg shadow-purple-900/5"
-// //             >
-// //               <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-purple-700 text-2xl font-black text-white">
-// //                 {index + 1}
-// //               </div>
-// //               <h3 className="text-2xl font-extrabold text-slate-950">{item}</h3>
-// //               <p className="mt-3 text-slate-600">
-// //                 Students will be guided through the core knowledge areas,
-// //                 hands-on practice, exam preparation, and project-based learning
-// //                 needed to become more confident with Splunk.
-// //               </p>
-// //             </div>
-// //           ))}
-// //         </div>
-// //       </section>
-
-// //       {/* COURSE HIGHLIGHTS */}
-// //       <section className="bg-slate-950 py-16 text-white">
-// //         <div className="mx-auto max-w-7xl px-5 md:px-10">
-// //           <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
-// //             <div>
-// //               <p className="font-bold uppercase tracking-[0.25em] text-fuchsia-300">
-// //                 Course Highlights
-// //               </p>
-// //               <h2 className="mt-3 text-3xl font-extrabold md:text-5xl">
-// //                 What students will learn
-// //               </h2>
-// //               <p className="mt-5 text-slate-300">
-// //                 The program covers beginner-friendly Splunk foundations and
-// //                 gradually moves into dashboards, alerts, security, indexing,
-// //                 optimization, and administration.
-// //               </p>
-// //             </div>
-
-// //             <div className="grid gap-4 sm:grid-cols-2">
-// //               {courseHighlights.map((item) => (
-// //                 <div
-// //                   key={item}
-// //                   className="rounded-2xl border border-white/10 bg-white/5 p-5"
-// //                 >
-// //                   <div className="mb-3 h-2 w-10 rounded-full bg-gradient-to-r from-purple-400 to-fuchsia-400" />
-// //                   <p className="font-semibold">{item}</p>
-// //                 </div>
-// //               ))}
-// //             </div>
-// //           </div>
-// //         </div>
-// //       </section>
-
-// //       {/* SCHEDULE */}
-// //       {/* SCHEDULE */}
-// //       <section className="mx-auto max-w-7xl px-5 py-16 md:px-10">
-// //         <div className="mb-12">
-// //           <p className="font-bold uppercase tracking-[0.25em] text-purple-700">
-// //             Training Schedule
-// //           </p>
-// //           <h2 className="mt-3 text-3xl font-extrabold text-slate-950 md:text-5xl">
-// //             Important program dates
-// //           </h2>
-// //         </div>
-
-// //         <div className="relative">
-// //           <div className="absolute left-5 top-0 hidden h-full w-px bg-purple-200 md:block" />
-
-// //           <div className="space-y-6">
-// //             {schedule.map((item) => (
-// //               <div
-// //                 key={item.id}
-// //                 className="relative rounded-3xl border border-purple-100 bg-white p-6 shadow-lg shadow-purple-900/5 md:ml-12"
-// //               >
-// //                 <div className="absolute -left-[3.25rem] top-6 hidden h-10 w-10 items-center justify-center rounded-full bg-purple-700 text-sm font-bold text-white md:flex">
-// //                   {item.id}
-// //                 </div>
-
-// //                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-// //                   <div>
-// //                     <p className="text-xl font-extrabold text-purple-800">
-// //                       {item.date}
-// //                     </p>
-
-// //                     <h3 className="mt-1 text-2xl font-bold text-slate-950">
-// //                       {item.title}
-// //                     </h3>
-
-// //                     {item.items.length > 0 && (
-// //                       <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-// //                         {item.items.map((point) => (
-// //                           <li
-// //                             key={point}
-// //                             className="flex gap-3 rounded-2xl bg-purple-50 px-4 py-3 text-slate-700"
-// //                           >
-// //                             <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-purple-700" />
-// //                             <span className="font-medium">{point}</span>
-// //                           </li>
-// //                         ))}
-// //                       </ul>
-// //                     )}
-// //                   </div>
-
-// //                   <span className="w-fit rounded-full bg-purple-100 px-4 py-2 text-sm font-bold text-purple-800">
-// //                     Schedule
-// //                   </span>
-// //                 </div>
-// //               </div>
-// //             ))}
-// //           </div>
-// //         </div>
-// //       </section>
-
-// //       {/* DELIVERABLES + PAYMENT */}
-// //       <section className="bg-gradient-to-br from-purple-50 via-white to-fuchsia-50 py-16">
-// //         <div className="mx-auto max-w-7xl px-5 md:px-10">
-// //           <div className="grid gap-8 lg:grid-cols-2">
-// //             <div className="rounded-[2rem] border border-purple-100 bg-white p-8 shadow-xl shadow-purple-900/5">
-// //               <p className="font-bold uppercase tracking-[0.25em] text-purple-700">
-// //                 Deliverables
-// //               </p>
-// //               <h2 className="mt-3 text-3xl font-extrabold text-slate-950">
-// //                 What each student receives
-// //               </h2>
-
-// //               <ul className="mt-8 space-y-4">
-// //                 {deliverables.map((item) => (
-// //                   <li key={item} className="flex gap-3 text-slate-700">
-// //                     <span className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-purple-700 text-xs text-white">
-// //                       ✓
-// //                     </span>
-// //                     <span>{item}</span>
-// //                   </li>
-// //                 ))}
-// //               </ul>
-// //             </div>
-
-// //             <div className="rounded-[2rem] bg-slate-950 p-8 text-white shadow-xl shadow-purple-900/20">
-// //               <p className="font-bold uppercase tracking-[0.25em] text-fuchsia-300">
-// //                 Enrollment Details
-// //               </p>
-// //               <h2 className="mt-3 text-3xl font-extrabold">
-// //                 Secure your seat for the Splunk Orientation
-// //               </h2>
-
-// //               <div className="mt-8 grid gap-4">
-// //                 <div className="rounded-2xl bg-white/10 p-5">
-// //                   <p className="text-sm text-slate-300">Course Tuition Fee</p>
-// //                   <p className="mt-1 text-4xl font-extrabold">$3,500</p>
-// //                 </div>
-
-// //                 <div className="rounded-2xl bg-white/10 p-5">
-// //                   <p className="text-sm text-slate-300">Payment Option</p>
-// //                   <p className="mt-1 text-xl font-bold">Zelle</p>
-// //                   <p className="mt-1 break-all text-slate-200">
-// //                     t.oanalyticsllc@gmail.com
-// //                   </p>
-// //                 </div>
-
-// //                 <div className="rounded-2xl bg-white/10 p-5">
-// //                   <p className="text-sm text-slate-300">Website</p>
-// //                   <a
-// //                     href="https://www.to-analytics.com"
-// //                     target="_blank"
-// //                     rel="noreferrer"
-// //                     className="mt-1 block break-all text-xl font-bold text-fuchsia-200 underline"
-// //                   >
-// //                     https://www.to-analytics.com
-// //                   </a>
-// //                 </div>
-// //               </div>
-
-// //               <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-// //                 <a
-// //                   href="mailto:t.oanalyticsllc@gmail.com"
-// //                   className="rounded-2xl bg-white px-6 py-4 text-center font-bold text-purple-900"
-// //                 >
-// //                   Email for Enrollment
-// //                 </a>
-
-// //                 <Link
-// //                   to="/contact"
-// //                   className="rounded-2xl border border-white/20 px-6 py-4 text-center font-bold text-white hover:bg-white/10"
-// //                 >
-// //                   Contact Page
-// //                 </Link>
-// //               </div>
-// //             </div>
-// //           </div>
-// //         </div>
-// //       </section>
-
-// //       {/* FAQ */}
-// //       <section className="mx-auto max-w-7xl px-5 py-16 md:px-10">
-// //         <div className="mb-10 text-center">
-// //           <p className="font-bold uppercase tracking-[0.25em] text-purple-700">
-// //             Quick Questions
-// //           </p>
-// //           <h2 className="mt-3 text-3xl font-extrabold text-slate-950 md:text-5xl">
-// //             Orientation FAQ
-// //           </h2>
-// //         </div>
-
-// //         <div className="grid gap-6 md:grid-cols-2">
-// //           <div className="rounded-3xl border border-slate-200 p-6">
-// //             <h3 className="text-xl font-bold text-slate-950">
-// //               Who is this orientation for?
-// //             </h3>
-// //             <p className="mt-3 text-slate-600">
-// //               It is for beginners, IT professionals, security learners, data
-// //               analysts, and anyone who wants to understand Splunk and prepare
-// //               for certification.
-// //             </p>
-// //           </div>
-
-// //           <div className="rounded-3xl border border-slate-200 p-6">
-// //             <h3 className="text-xl font-bold text-slate-950">
-// //               Is there a certification path?
-// //             </h3>
-// //             {/* <p className="mt-3 text-slate-600">
-// //               Yes. The program focuses on the Splunk Core Power User
-// //               Certification Exam and the Splunk Enterprise Certified Admin Exam.
-// //             </p> */}
-// //             <p className="mt-3 text-slate-600">
-// //               Yes. The program focuses on the Splunk Core Power User
-// //               Certification Exam and the Splunk Enterprise Certified Admin Exam.
-// //             </p>
-// //           </div>
-
-// //           <div className="rounded-3xl border border-slate-200 p-6">
-// //             <h3 className="text-xl font-bold text-slate-950">
-// //               Will students do practical work?
-// //             </h3>
-// //             {/* <p className="mt-3 text-slate-600"> */}
-// //             <p className="mt-3 text-slate-600">
-// //               Yes . Students will receive weekly assignments and complete a
-// //               final project that includes building and configuring a distributed
-// //               Splunk deployment, setting up forwarding and data onboarding, and
-// //               creating dashboards and alerts.
-// //             </p>
-// //             {/* </p> */}
-// //           </div>
-
-// //           <div className="rounded-3xl border border-slate-200 p-6">
-// //             <h3 className="text-xl font-bold text-slate-950">
-// //               How do students enroll?
-// //             </h3>
-// //             <p className="mt-3 text-slate-600">
-// //               Students can register through the website or contact T.O Analytics
-// //               LLC directly using the enrollment email.
-// //             </p>
-// //           </div>
-// //         </div>
-// //       </section>
-// //     </main>
-// //   );
-// // }
