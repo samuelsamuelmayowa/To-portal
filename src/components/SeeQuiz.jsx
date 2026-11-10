@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { useStateContext } from "../context/ContextProvider";
+import { cookieAuthApi } from "../lib/cookieAuth";
 
 import {
   FaChartLine,
@@ -68,17 +70,8 @@ const ResultStatCard = ({
 );
 
 const SeeQuiz = () => {
-  const api = import.meta.env.VITE_HOME_OO;
-
-  /*
-    This email check is only visual protection.
-
-    Your backend /api/all-scores endpoint must also verify that the
-    request belongs to an authenticated administrator.
-  */
-  const adminEmails = ["admin@gmail.com"];
-  const storedUser = "admin@gmail.com";
-  const userEmail = storedUser.toLowerCase();
+  const { token, user, authLoading } = useStateContext();
+  const isAdmin = Boolean(token && user?.role === "admin" && user?.email?.toLowerCase() === "admin@gmail.com");
 
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -89,34 +82,17 @@ const SeeQuiz = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
+    if (authLoading) return undefined;
+    if (!isAdmin) {
+      setAccessDenied(true);
+      setLoading(false);
+      return undefined;
+    }
+    let active = true;
     const fetchResults = async () => {
-      const isAdmin = adminEmails.includes(userEmail);
-
-      if (!isAdmin) {
-        setAccessDenied(true);
-        setLoading(false);
-        return;
-      }
-
-      if (!api) {
-        setFetchError("The VITE_HOME_OO API URL is not configured.");
-        setLoading(false);
-        return;
-      }
-
       try {
         setFetchError("");
-
-        const endpoint = `${api}/api/all-scores`;
-        const response = await fetch(endpoint);
-
-        if (!response.ok) {
-          throw new Error(
-            `Unable to load quiz results. Server returned ${response.status}.`
-          );
-        }
-
-        const responseData = await response.json();
+        const { data: responseData } = await cookieAuthApi.get("/api/all-scores");
 
         if (!Array.isArray(responseData)) {
           throw new Error("The quiz result response is not a valid array.");
@@ -129,19 +105,23 @@ const SeeQuiz = () => {
           return secondDate - firstDate;
         });
 
-        setResults(sortedResults);
+        if (active) setResults(sortedResults);
       } catch (error) {
         console.error("Error fetching results:", error);
-        setFetchError(
-          error.message || "An unexpected error occurred while loading results."
-        );
+        if (active) {
+          setFetchError(error.response?.data?.message || error.message || "An unexpected error occurred while loading results.");
+          if (error.response?.status === 401 || error.response?.status === 403) setAccessDenied(true);
+        }
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
 
+    setAccessDenied(false);
+    setLoading(true);
     fetchResults();
-  }, [api, userEmail]);
+    return () => { active = false; };
+  }, [authLoading, isAdmin]);
 
   const resultStatistics = useMemo(() => {
     const totalSubmissions = results.length;

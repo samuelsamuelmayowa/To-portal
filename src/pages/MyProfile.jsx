@@ -6,14 +6,15 @@ const MyProfile = () => {
   const navigate = useNavigate()
   const [localuser, setUser] = useState("")
   const { data } = FetchAllStudents()
-  const { token } = useStateContext();
+  const { token, authLoading, user } = useStateContext();
   useEffect(()=> {
-    const loggedinUuser = (localStorage.getItem("user"))
+    const loggedinUuser = user?.email || localStorage.getItem("user")
     if (loggedinUuser) {
       setUser(loggedinUuser);
     }
-  }, [navigate])
+  }, [navigate, user?.email])
   
+  if (authLoading) return <div className="min-h-screen" aria-busy="true" />;
   if (!token) return <Navigate to="/" />
 
   const currentlyLoggedInUSer = data?.data?.response.find((user)=> user.email === localuser)

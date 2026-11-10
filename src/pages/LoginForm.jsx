@@ -15,16 +15,14 @@ import {
   FaCircleCheck,
 } from "react-icons/fa6";
 import React, { useState } from "react";
-import axios from "axios";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { Toaster, toast } from "sonner";
 import * as yup from "yup";
 import { app } from "../../firebase.config";
-import { GoogleAuthProvider, getAuth, signInWithPopup } from "firebase/auth";
+import { GoogleAuthProvider, getAuth, getIdToken, signInWithPopup } from "firebase/auth";
 import { useStateContext } from "../context/ContextProvider";
-
-const api = import.meta.env.VITE_BACKEND_API;
+import { cookieAuthApi } from "../lib/cookieAuth";
 
 const schema = yup.object().shape({
   email: yup
@@ -85,33 +83,19 @@ const Login = () => {
 
   // New-student routing uses verified enrollment, not a query flag or email list.
   // Legacy/other students continue to their existing /dashboard destination.
-  const nextDestination = async (token, user) => {
-    if (!token || !user?.email) return "/dashboard";
+  const nextDestination = async (user) => {
+    if (!user?.email) return "/dashboard";
     try {
-      const response = await fetch("/api/check-student-access", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ email: user.email, courseId: "splunk-2026" }),
-        cache: "no-store",
-      });
-      if (!response.ok) return "/dashboard";
-      const data = await response.json();
+      const { data } = await cookieAuthApi.post("/api/check-student-access", { courseId: "splunk" });
       return data?.allowed === true ? "/dashboard/materials" : "/dashboard";
     } catch (error) {
-      console.warn("Cohort routing unavailable; using normal dashboard", error);
+      console.warn("Cohort routing unavailable; using normal dashboard");
       return "/dashboard";
     }
   };
 
-  const saveAuthData = (token, user) => {
-    if (token) {
-      localStorage.setItem("ACCESS_TOKEN", token);
-      setToken(token);
-    }
-
+  const saveAuthData = (user) => {
+    setToken(true);
     if (user?.email) {
       localStorage.setItem("user", user.email);
     }
@@ -127,33 +111,24 @@ const Login = () => {
 
       const result = await signInWithPopup(auth, googleProvider);
       const loggedInUser = result.user;
+      const idToken = await getIdToken(loggedInUser);
 
-      const payload = {
-        name: loggedInUser.displayName,
-        email: loggedInUser.email,
-      };
+      const payload = { idToken };
 
-      const res = await axios.post(`${api}/api/google`, payload, {
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      });
+      const res = await cookieAuthApi.post("/api/google", payload);
 
       if (res.status === 200 || res.status === 201) {
-        const user = res.data.data || {
+        const user = res.data.user || {
           name: loggedInUser.displayName,
           email: res.data.email || loggedInUser.email,
         };
 
-        saveAuthData(res.data.token, user);
+        saveAuthData(user);
 
         toast.success("Welcome back!");
-        navigate(await nextDestination(res.data.token, user), { replace: true });
+        navigate(await nextDestination(user), { replace: true });
       }
     } catch (error) {
-      console.log("GOOGLE LOGIN ERROR:", error);
-
       toast.error(
         error?.response?.data?.message ||
           "Google login failed. Please try again."
@@ -172,22 +147,15 @@ const Login = () => {
         password: data.password,
       };
 
-      const res = await axios.post(`${api}/api/login`, payload, {
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      });
+      const res = await cookieAuthApi.post("/api/login", payload);
 
       if (res.status === 200 || res.status === 201) {
-        saveAuthData(res.data.token, res.data.data);
+        saveAuthData(res.data.data);
 
         toast.success("Login successful");
-        navigate(await nextDestination(res.data.token, res.data.data), { replace: true });
+        navigate(await nextDestination(res.data.data), { replace: true });
       }
     } catch (error) {
-      console.log("LOGIN ERROR:", error);
-
       toast.error(
         error?.response?.data?.message ||
           "Login failed. Please check your details."

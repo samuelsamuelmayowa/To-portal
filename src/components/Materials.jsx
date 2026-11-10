@@ -3,13 +3,11 @@ import React, { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { FaArrowRight, FaLock, FaUserShield } from "react-icons/fa6";
 import NewCohortDashboard from "./NewCohortDashboard";
-import { isSplunkEmailApproved, readSignedInStudentEmail } from "./splunkAccess";
+import { useStateContext } from "../context/ContextProvider";
+import { cookieAuthApi } from "../lib/cookieAuth";
 
 /**
- * SPLUNK CLASSROOM — Orientation open access is OFF.
- * Email list is maintained ONLY in splunkAccess.js.
- * Both previous and new approved students see one 2026–2027 dashboard.
- * This guard is a frontend convenience; secure premium files on the server.
+ * Course content is shown only when the signed-in student has an active assignment.
  */
 const SUPPORT_EMAIL = "t.oanalyticsllc@gmail.com";
 
@@ -22,11 +20,11 @@ function AccessPage({ email }) {
           {signedIn ? <FaLock /> : <FaUserShield />}
         </div>
         <p className="mt-6 text-[11px] font-extrabold uppercase tracking-[0.2em] text-blue-700">T.O Analytics · Student Campus</p>
-        <h1 className="mt-3 text-2xl font-black sm:text-3xl">{signedIn ? "Splunk course access required" : "Sign in to your student account"}</h1>
+        <h1 className="mt-3 text-2xl font-black sm:text-3xl">{signedIn ? "Course access not assigned" : "Sign in to your student account"}</h1>
         <p className="mt-4 text-sm leading-7 text-slate-600">
           {signedIn
-            ? "The orientation open-access period has ended. The 2026–2027 Splunk classroom is now shown only to approved student accounts. Contact the training team if you have enrolled and need access."
-            : "Please sign in using your T.O Analytics student account to access your enrolled courses."}
+            ? "Your administrator has not assigned this course to your account yet. Contact them to request access."
+            : "Please sign in using your T.O Analytics account to access assigned courses."}
         </p>
         {signedIn && (
           <div className="mt-5 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
@@ -48,21 +46,30 @@ function AccessPage({ email }) {
 }
 
 export default function CoursePortal() {
-  const [email, setEmail] = useState(() => readSignedInStudentEmail());
+  const { token, user, authLoading } = useStateContext();
+  const email = user?.email || "";
+  const [access, setAccess] = useState({ loading: true, allowed: false });
 
   useEffect(() => {
-    const updateEmail = () => setEmail(readSignedInStudentEmail());
-    updateEmail();
-    // Sign-in/out from a different tab should be reflected when this tab regains focus.
-    window.addEventListener("focus", updateEmail);
-    window.addEventListener("storage", updateEmail);
-    return () => {
-      window.removeEventListener("focus", updateEmail);
-      window.removeEventListener("storage", updateEmail);
-    };
-  }, []);
+    if (authLoading) return undefined;
+    if (!token || !email) {
+      setAccess({ loading: false, allowed: false });
+      return undefined;
+    }
+    let active = true;
+    cookieAuthApi.post("/api/check-student-access", { courseId: "splunk-2026" })
+      .then(({ data }) => {
+        if (active) setAccess({ loading: false, allowed: data?.allowed === true });
+      })
+      .catch(() => {
+        if (active) setAccess({ loading: false, allowed: false });
+      });
+    return () => { active = false; };
+  }, [authLoading, token, email]);
 
-  if (!isSplunkEmailApproved(email)) return <AccessPage email={email} />;
+  if (authLoading) return <main className="min-h-[85vh]" aria-busy="true" />;
+  if (access.loading) return <main className="min-h-[85vh]" aria-busy="true" />;
+  if (!token || !email || !access.allowed) return <AccessPage email={email} />;
   return <NewCohortDashboard email={email} />;
 }
 

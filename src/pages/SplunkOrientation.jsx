@@ -183,7 +183,7 @@ const FAQS = [
   },
   {
     question: "How do I access my Splunk course materials?",
-    answer: "Select Student sign in and use your existing T.O Analytics account. Course videos, assignments and quizzes remain subject to the platform's student-access approval checks.",
+    answer: "Select Student sign in and use your T.O Analytics account. Students are automatically enrolled in available courses and quizzes when they sign in.",
   },
   {
     question: "When does practical training begin?",
@@ -611,7 +611,7 @@ export default function SplunkOrientation() {
             <SectionHeading
               eyebrow="For existing cohort students"
               title="Your training continues in the student dashboard"
-              description="Sign in with the same account you used to join T.O Analytics. Your approved course access determines which lessons, assignments and tools you can open."
+              description="Sign in with your T.O. Analytics account. Available courses and quizzes are added automatically to your account."
             />
             <div className="mt-7 flex flex-wrap gap-3">
               <Link to="/login" className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-700 px-6 py-3.5 text-sm font-extrabold text-white shadow-sm transition hover:bg-violet-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-700">
@@ -623,7 +623,7 @@ export default function SplunkOrientation() {
             </div>
             <p className="mt-5 flex items-start gap-2 text-sm leading-6 text-slate-600">
               <ShieldCheck size={18} className="mt-0.5 shrink-0 text-violet-700" />
-              Signing in does not automatically grant course access; access is controlled by the existing approval system.
+              Signing in automatically adds your account to available courses and quizzes.
             </p>
           </div>
           <div className="rounded-[2rem] border border-violet-100 bg-[#f8f6ff] p-5 shadow-[0_20px_60px_-40px_rgba(91,33,182,.45)] sm:p-8">

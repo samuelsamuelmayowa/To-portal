@@ -22,50 +22,8 @@ import {
   FiUser,
 } from "react-icons/fi";
 import Quiz from "./Quiz";
-
-// Keep your current access list. Normalize it once to remove duplicates/case issues.
-const AUTHORIZED_EMAILS = new Set(
-  [
-   "sammmyayo@gmail.com",
-     "samuelsamuelmayowa@gmail.com",
-  "kewizle.k@gmail.com",
-  "kewizlek@gmail.com",
-  "pamelaabina24@gmail.com",
-  "adesh25416@gmail.com",
-  "oluwaferanmiolulana@gmail.com",
-  "tomideolulana@gmail.com",
-  "toanalyticsllc@gmail.com",
-  "denisgsam@gmail.com",
-  "oluwaferanmi.olulana@gmail.com",
-  "fpasamuelmayowa51@gmail.com",
-  "randommayowa@gmail.com",
-  "oluwatiroyeamoye@gmail.com",
-  "adenusitimi@gmail.com",
-  "trbanjo@gmail.com",
-  "emanfrimpong@gmail.com",
-
-
-  "dipeoluolatunji@gmail.com",
-  "yinkalola51@gmail.com",
-  "adeoyeifeoluwa@gmail.com",
-  "toluolubambi@gmail.com",
-  "Adeoyeifeoluwa@gmail.com",
-  "spheremessage@gmail.com",
-  "toluolubambi@gmail.com",
-  "adeoyeifeoluwa@ymail.com",
-  "samuelsamuelmayowa@gmail.com",
-  "adeoyeifeoluwa42@gmail.com",
-  "tobijbello@gmail.com",
-  "Tobijbello@gmail.com",
-  "adeoyeifeoluwa@ymail.com",
-  "toluolubambi@gmail.com"
-  ].map((email) => email.trim().toLowerCase())
-);
-
-const STAFF_EMAILS = new Set([
-  "toanalyticsllc@gmail.com",
-  "tomideolulana@gmail.com",
-]);
+import { useStateContext } from "../context/ContextProvider";
+import { cookieAuthApi } from "../lib/cookieAuth";
 
 const QUIZZES = [
   {
@@ -94,12 +52,11 @@ const QUIZZES = [
     // The unusual en dash + hyphen is retained for your existing backend route.
     apiName: "T.O Analytics –- SPLK-2002 Practice Quiz",
     title: "SPLK-2002 Practice Quiz",
-    subtitle: "Additional assessment for authorized staff accounts.",
+    subtitle: "Additional Splunk administration assessment.",
     level: "Staff only",
     category: "Special assessment",
     icon: FiShield,
     tone: "amber",
-    staffOnly: true,
   },
 ];
 
@@ -117,14 +74,6 @@ const TONES = {
     line: "bg-amber-500",
   },
 };
-
-function getSavedEmail() {
-  try {
-    return (localStorage.getItem("user") || "").trim();
-  } catch {
-    return "";
-  }
-}
 
 function getSavedTheme() {
   try {
@@ -185,11 +134,13 @@ function QuizCard({ quiz, selected, onSelect }) {
 
 export default function MainQuiz() {
   const api = (import.meta.env.VITE_HOME_OO || "").replace(/\/$/, "");
-  const [userEmail] = useState(getSavedEmail);
+  const { token: sessionAuthenticated, user, authLoading } = useStateContext();
+  const userEmail = user?.email || "";
   const normalizedEmail = userEmail.toLowerCase();
-  const isAllowed = AUTHORIZED_EMAILS.has(normalizedEmail);
-  const isBoss = STAFF_EMAILS.has(normalizedEmail);
+  const isAllowed = !authLoading && Boolean(sessionAuthenticated && normalizedEmail);
+  const isBoss = user?.role === "admin";
   const [darkMode, setDarkMode] = useState(getSavedTheme);
+  const [quizAccess, setQuizAccess] = useState({ loading: true, ids: [], error: "" });
 
   const [assignments, setAssignments] = useState([]);
   const [assignmentStatus, setAssignmentStatus] = useState("loading");
@@ -201,8 +152,8 @@ export default function MainQuiz() {
   const quizRequest = useRef(null);
 
   const availableQuizzes = useMemo(
-    () => QUIZZES.filter((quiz) => !quiz.staffOnly || isBoss),
-    [isBoss]
+    () => QUIZZES.filter((quiz) => quizAccess.ids.includes(quiz.id)),
+    [quizAccess.ids]
   );
   const selectedQuiz = availableQuizzes.find((quiz) => quiz.id === selectedQuizId);
 
@@ -214,6 +165,23 @@ export default function MainQuiz() {
       // Theme still works for the current page if storage is unavailable.
     }
   }, [darkMode]);
+
+  useEffect(() => {
+    if (authLoading) return undefined;
+    if (!sessionAuthenticated) {
+      setQuizAccess({ loading: false, ids: [], error: "" });
+      return undefined;
+    }
+    let active = true;
+    cookieAuthApi.get("/api/my-access")
+      .then(({ data }) => {
+        if (active) setQuizAccess({ loading: false, ids: data?.quizIds || [], error: "" });
+      })
+      .catch((error) => {
+        if (active) setQuizAccess({ loading: false, ids: [], error: error.response?.data?.message || "Quiz access could not be loaded." });
+      });
+    return () => { active = false; };
+  }, [authLoading, sessionAuthenticated]);
 
   useEffect(() => {
     if (!isAllowed) return;
@@ -256,7 +224,7 @@ export default function MainQuiz() {
       if (!api) throw new Error("Quiz API is not configured. Check VITE_HOME_OO.");
       const response = await fetch(
         `${api}/api/quiz/${encodeURIComponent(quiz.apiName)}`,
-        { signal: controller.signal }
+        { signal: controller.signal, credentials: "include" }
       );
       if (!response.ok) throw new Error(`Unable to load quiz (${response.status}).`);
 
@@ -296,8 +264,7 @@ export default function MainQuiz() {
           </p>
           <h1 className="mt-2 text-3xl font-extrabold tracking-tight">Quiz access restricted</h1>
           <p className="mt-3 text-sm leading-6 text-slate-500 dark:text-slate-400">
-            The Splunk Quiz Center is available to approved students and staff.
-            Please sign in using your registered student email.
+            Sign in with your T.O. Analytics account. Your administrator assigns access to each quiz.
           </p>
           {userEmail && (
             <div className="mt-6 break-all rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
@@ -311,7 +278,7 @@ export default function MainQuiz() {
             <FiHome /> Return to home <FiArrowRight />
           </NavLink>
           <p className="mt-5 text-xs text-slate-400">
-            Need access? Contact T.O Analytics administration.
+            Ask your administrator to assign quiz access.
           </p>
         </motion.div>
       </div>
@@ -439,15 +406,18 @@ export default function MainQuiz() {
                   {availableQuizzes.length} quizzes
                 </span>
               </div>
+              {quizAccess.error && <p role="alert" className="mb-3 rounded-xl bg-red-50 p-3 text-xs font-semibold text-red-700">{quizAccess.error}</p>}
               <div className="space-y-3">
-                {availableQuizzes.map((quiz) => (
+                {quizAccess.loading ? (
+                  <p className="rounded-xl bg-slate-50 p-5 text-sm font-semibold text-slate-500 dark:bg-slate-800">Loading assigned quizzes…</p>
+                ) : availableQuizzes.length ? availableQuizzes.map((quiz) => (
                   <QuizCard
                     key={quiz.id}
                     quiz={quiz}
                     selected={selectedQuizId === quiz.id}
                     onSelect={loadQuiz}
                   />
-                ))}
+                )) : <p className="rounded-xl bg-amber-50 p-5 text-sm leading-6 text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">No quizzes have been assigned to your account yet. Ask your administrator for access.</p>}
               </div>
               <div className="mt-5 flex items-start gap-3 rounded-xl bg-slate-50 p-4 dark:bg-slate-800/70">
                 <FiShield className="mt-0.5 shrink-0 text-blue-600 dark:text-blue-300" size={18} />

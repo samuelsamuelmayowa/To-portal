@@ -8,17 +8,21 @@ import Footer from "../components/Footer";
 const api = 'http://localhost:8000/api/'
 import Messages from "../components/Messages";
 import DashboardSectionNav from "../components/DashboardSectionNav";
+import { cookieAuthApi } from "../lib/cookieAuth";
 function AuthLayout() {
-    const {  token ,  setToken , user, setUser } = useStateContext();
+    const { token, authLoading, setToken, setUser } = useStateContext();
+    const auth = getAuth(app);
+    const signout = async () => {
+        try { await cookieAuthApi.post("/api/session/logout"); }
+        finally {
+            await signOut(auth).catch(() => {});
+            setToken(false);
+            setUser(null);
+        }
+    };
+    if (authLoading) return <div className="min-h-screen" aria-busy="true" />;
     if (!token) {
         return <Navigate to="/" />
-    }
-    const auth = getAuth(app);
-    const signout = () => {
-        signOut(auth).then((user) => {
-            // window.localStorage.removeItem("ACCESS_TOKEN");
-            setToken(null)
-        }).catch((err) => console.log(err.message))
     }
     // useEffect(() => {
     //     const maintoken = window.localStorage.getItem("ACCESS_TOKEN")

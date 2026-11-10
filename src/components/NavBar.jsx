@@ -19,6 +19,7 @@ import LOGO from "../assets/images/logo2.png";
 import { app } from "../../firebase.config";
 import CartItemContext from "../context/CartItemContext";
 import { useStateContext } from "../context/ContextProvider";
+import { cookieAuthApi } from "../lib/cookieAuth";
 // import FetchAllStudents from "../hooks/FetchAllStudents";
 
 const HIDE_THRESHOLD = 150;
@@ -203,7 +204,7 @@ const DesktopCluster = ({ cluster, pathname, openCluster, setOpenCluster }) => {
 const NavBar = () => {
   // const { data } = FetchAllStudents();
   const { cartItem } = useContext(CartItemContext);
-  const { token, setToken, FullScreen } = useStateContext();
+  const { token, setToken, FullScreen, user, setUser } = useStateContext();
   const [showMenu, setShowMenu] = useState(false);
   const [openCluster, setOpenCluster] = useState(null);
   const [hidden, setHidden] = useState(false);
@@ -214,12 +215,9 @@ const NavBar = () => {
   const headerRef = useRef(null);
 
   useEffect(() => {
-    const savedToken = localStorage.getItem("ACCESS_TOKEN");
     const savedUser = localStorage.getItem("user");
-
-    if (savedToken) setToken(savedToken);
     if (savedUser) setLocalUser(savedUser);
-  }, [setToken]);
+  }, []);
 
   useEffect(() => {
     setShowMenu(false);
@@ -285,6 +283,7 @@ const NavBar = () => {
   if (!token) return null;
 
   const email = (
+    user?.email ||
     localStorage.getItem("user") ||
     localUser ||
     ""
@@ -292,26 +291,27 @@ const NavBar = () => {
 
   if (!email) return null;
 
-  const fullname = email.split("@")[0];
+  const fullname = user?.name?.trim() || email.split("@")[0];
 
   return {
     fullname,
     email,
     initial: fullname.slice(0, 2).toUpperCase(),
   };
-}, [token, localUser]);
+}, [token, localUser, user]);
 
   const handleSignOut = async () => {
     try {
-      await signOut(auth);
-      localStorage.removeItem("ACCESS_TOKEN");
+      await cookieAuthApi.post("/api/session/logout");
+      await signOut(auth).catch(() => {});
       localStorage.removeItem("user");
-      setToken(null);
+      setToken(false);
+      setUser(null);
       setLocalUser(null);
       setShowMenu(false);
       setOpenCluster(null);
     } catch (error) {
-      console.error("Sign out error:", error.message);
+      console.error("Sign out error:", error.response?.data?.message || error.message);
     }
   };
 

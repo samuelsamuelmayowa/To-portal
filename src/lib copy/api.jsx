@@ -1,20 +1,24 @@
 // src/lib/api.js
 import axios from "axios";
+import { getCsrfToken } from "../lib/cookieAuth";
 
 const API_BASE_URL = import.meta.env.VITE_HOME_OO;
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Add token dynamically
+// Use the backend-managed HttpOnly cookie for website sessions.
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("ACCESS_TOKEN");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  config.withCredentials = true;
+  const method = String(config.method || "get").toUpperCase();
+  const csrfToken = getCsrfToken();
+  if (!["GET", "HEAD", "OPTIONS"].includes(method) && csrfToken) {
+    config.headers["X-CSRF-Token"] = csrfToken;
   }
   return config;
 });

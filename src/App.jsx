@@ -83,6 +83,7 @@ import TSkillLabLogin from "./pages/skillab/TSkillLabLogin";
 import ChatComponent from "./components/ChatComponent";
 import CourseTabContent from "./components/CourseTabContent";
 import StudentAccess from "./components/StudentAccess";
+import CourseAccessGate from "./components/CourseAccessGate";
 import AdminExpenses from "./components/AdminExpenses";
 import SplunkLab from "./pages/SplunkLab";
 import StockQuiz from "./components/StockQuiz.jsx";
@@ -136,11 +137,11 @@ const router = createBrowserRouter([
 
           {
             path: "stockmarkert",
-            element: <MarketOverviewAdvanced />,
+            element: <CourseAccessGate courseId="stock-options"><MarketOverviewAdvanced /></CourseAccessGate>,
           },
           {
             path: "ad",
-            element: <MarketOverviewAdvanced />,
+            element: <CourseAccessGate courseId="stock-options"><MarketOverviewAdvanced /></CourseAccessGate>,
           },
           {
             path: "/quote",
@@ -269,15 +270,15 @@ const router = createBrowserRouter([
             path: "/liveCourses",
             element: <LiveCourses />,
           },
-          { path: "/commands", element: <Commands /> },
-          { path: "/dictionary", element: <SplunkDictionary /> },
+          { path: "/commands", element: <CourseAccessGate courseId="splunk"><Commands /></CourseAccessGate> },
+          { path: "/dictionary", element: <CourseAccessGate courseId="splunk"><SplunkDictionary /></CourseAccessGate> },
           {
             path: "/result",
             element: <QuizResults />,
           },
           {
             path: "/quiz",
-            element: <SplunkQuiz />,
+            element: <MainQuiz />,
           },
           {
             path: "/myProfile",
@@ -340,9 +341,9 @@ const router = createBrowserRouter([
 
       {
         path: "/lab",
-        element: <SplunkStudio />,
+        element: <CourseAccessGate courseId="splunk"><SplunkStudio /></CourseAccessGate>,
       },
-      { path: "/splunk-studio", element: <SplunkStudio /> },
+      { path: "/splunk-studio", element: <CourseAccessGate courseId="splunk"><SplunkStudio /></CourseAccessGate> },
       {
         path: "/createNewPassword",
         element: <CreateNewPassword />,
@@ -367,16 +368,16 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <MyCourses /> },
           { path: "checkout", element: <CheckOut /> },
-          { path: "quiz", element: <SplunkQuiz /> },
-          { path: "dictionary", element: <SplunkDictionary /> },
-          { path: "classmaterials", element: <ClassM /> },
+          { path: "quiz", element: <MainQuiz /> },
+          { path: "dictionary", element: <CourseAccessGate courseId="splunk"><SplunkDictionary /></CourseAccessGate> },
+          { path: "classmaterials", element: <CourseAccessGate courseId="splunk"><ClassM /></CourseAccessGate> },
           { path: "myCourses", element: <MyCourses /> },
           { path: "mentorship", element: <Mentorship /> },
           { path: "comment", element: <StudentCommentPage /> },
           { path: "links", element: <Links /> },
-          { path: "commands", element: <Commands /> },
+          { path: "commands", element: <CourseAccessGate courseId="splunk"><Commands /></CourseAccessGate> },
           { path: "materials", element: <Materials /> },
-          { path: "stockside", element: <StockDashboard /> },
+          { path: "stockside", element: <CourseAccessGate courseId="stock-options"><StockDashboard /></CourseAccessGate> },
           { path: "result", element: <QuizResults /> },
           { path: "stockportal", element: <StockPortal /> },
           {
@@ -386,7 +387,7 @@ const router = createBrowserRouter([
 
           {
             path: "stockmarkert",
-            element: <MarketOverviewAdvanced />,
+            element: <CourseAccessGate courseId="stock-options"><MarketOverviewAdvanced /></CourseAccessGate>,
           },
           {
             path: "stock",
@@ -395,14 +396,14 @@ const router = createBrowserRouter([
           },
           {
             path: "map",
-            element: <SplunkCareerRoadmap />,
+            element: <CourseAccessGate courseId="splunk"><SplunkCareerRoadmap /></CourseAccessGate>,
           },
           { path: "takequiz", element: <MainQuiz /> },
           { path: "check", element: <StudentDashboard /> },
           { path: "makePayment", element: <PaymentPage /> },
-          { path: "overview", element: <MarketOverview /> },
-          { path: "splunk-studio", element: <SplunkStudio /> },
-          { path: "lab", element: <SplunkStudio /> },
+          { path: "overview", element: <CourseAccessGate courseId="stock-options"><MarketOverview /></CourseAccessGate> },
+          { path: "splunk-studio", element: <CourseAccessGate courseId="splunk"><SplunkStudio /></CourseAccessGate> },
+          { path: "lab", element: <CourseAccessGate courseId="splunk"><SplunkStudio /></CourseAccessGate> },
 
           { path: "/dashboard/post", element: <Dashboard /> },
         ],
@@ -451,6 +452,7 @@ const router = createBrowserRouter([
             path: "student-access",
             element: <StudentAccess />,
           },
+
           {
             path: "contacts",
             element: <Contacts />,
@@ -580,7 +582,6 @@ export default App;
 // import TSkillLabLogin from "./pages/skillab/TSkillLabLogin";
 // import ChatComponent from "./components/ChatComponent";
 // import CourseTabContent from "./components/CourseTabContent";
-// import StudentAccess from "./components/StudentAccess";
 // import AdminExpenses from "./components/AdminExpenses";
 // import SplunkLab from "./pages/SplunkLab";
 // import StockQuiz from "./components/StockQuiz.jsx";
@@ -941,10 +942,6 @@ export default App;
 //             element: <AdminExpenses />,
 //           },
 
-//           {
-//             path: "student-access",
-//             element: <StudentAccess />,
-//           },
 //           {
 //             path: "contacts",
 //             element: <Contacts />,

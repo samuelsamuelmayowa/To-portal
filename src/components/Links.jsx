@@ -3,7 +3,8 @@ import { FaPaperPlane } from "react-icons/fa";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { useNavigate, Link } from "react-router-dom";
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
+import { cookieAuthApi } from "../lib/cookieAuth";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import "react-toastify/dist/ReactToastify.css";
 import * as yup from "yup";
@@ -18,17 +19,12 @@ const api_educational = import.meta.env.VITE_EDUCATIONAL_SEND;
 
 const Links = () => {
   const email = (localStorage.getItem("user"));
-  const ACCESS_TOKEN = (localStorage.getItem('ACCESS_TOKEN'))
   const [error, setError] = useState()
   const { data:splunk, isLoading: isSplunkLoading, error: splunkError } = useQuery({
-    queryKey: ["splunk-link", email, ACCESS_TOKEN],
+    queryKey: ["splunk-link", email],
     queryFn: async ({ queryKey }) => {
       try {
-        const response = await axios.get(`${api}link/${queryKey[1]}`, {
-          headers: {
-            Authorization: `Bearer ${queryKey[2]}`,
-          },
-        });
+        const response = await cookieAuthApi.get(`${api}link/${queryKey[1]}`);
         return response;
       } catch (error) {
         console.log(error)
@@ -38,14 +34,10 @@ const Links = () => {
   })
   
   const { data:consulting, isLoading: isConsultingLoading, error: consultingError } = useQuery({
-    queryKey: ["educational-consult-link", email, ACCESS_TOKEN],
+    queryKey: ["educational-consult-link", email],
     queryFn: async ({ queryKey }) => {
       try {
-        const response = await axios.get(`${api_educational}linkeducational/${queryKey[1]}`, {
-          headers: {
-            Authorization: `Bearer ${queryKey[2]}`,
-          },
-        });
+        const response = await cookieAuthApi.get(`${api_educational}linkeducational/${queryKey[1]}`);
         return response;
       } catch (error) {
         console.log(error)

@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useStateContext } from "../context/ContextProvider";
+import { cookieAuthApi } from "../lib/cookieAuth";
 import {
   FiAlertCircle,
   FiArrowLeft,
@@ -13,18 +15,6 @@ import {
 
 // import { supabase } from "./supabaseClient";
 import { supabase } from "../supabaseClient";
-function readStudentEmail() {
-  const raw = localStorage.getItem("user");
-  if (!raw) return "";
-
-  try {
-    const parsed = JSON.parse(raw);
-    return String(parsed?.email || "").trim().toLowerCase();
-  } catch {
-    return String(raw).trim().toLowerCase();
-  }
-}
-
 function formatTime(seconds) {
   const safe = Math.max(0, seconds);
   const minutes = Math.floor(safe / 60);
@@ -35,6 +25,7 @@ const card =
   "rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950";
 
 export default function StockQuiz() {
+  const { token, user, authLoading } = useStateContext();
   const [catalog, setCatalog] = useState([]);
   const [quiz, setQuiz] = useState(null);
   const [answers, setAnswers] = useState({});
@@ -45,20 +36,24 @@ export default function StockQuiz() {
   const [submitting, setSubmitting] = useState(false);
   const [emailStatus, setEmailStatus] = useState("");
   const [error, setError] = useState("");
-  const studentEmail = useMemo(readStudentEmail, []);
+  const studentEmail = useMemo(() => String(user?.email || "").trim().toLowerCase(), [user?.email]);
 
   useEffect(() => {
     async function loadCatalog() {
       setLoading(true);
-      const { data, error: requestError } = await supabase.rpc(
-        "list_published_stock_quizzes",
-      );
-      if (requestError) setError(requestError.message);
-      else setCatalog(data || []);
-      setLoading(false);
+      setError("");
+      try {
+        if (authLoading || !token) return;
+        const { data } = await cookieAuthApi.get("/api/stock-quizzes");
+        setCatalog(data || []);
+      } catch (requestError) {
+        setError(requestError.response?.data?.message || requestError.message || "Quiz access could not be loaded.");
+      } finally {
+        setLoading(false);
+      }
     }
     loadCatalog();
-  }, []);
+  }, [authLoading, token]);
 
   const openQuiz = async (slug) => {
     setLoading(true);
@@ -67,16 +62,14 @@ export default function StockQuiz() {
     setAnswers({});
     setCurrent(0);
 
-    const { data, error: requestError } = await supabase.rpc(
-      "get_published_stock_quiz",
-      { p_slug: slug },
-    );
-
-    if (requestError || !data) {
-      setError(requestError?.message || "Quiz not found.");
-    } else {
+    try {
+      const { data } = await cookieAuthApi.get(`/api/stock-quizzes/${encodeURIComponent(slug)}`);
+      if (!data) throw new Error("Quiz not found.");
       setQuiz(data);
       setRemaining(Number(data.duration_minutes || 30) * 60);
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || requestError.message || "Quiz could not be loaded.");
+      setQuiz(null);
     }
     setLoading(false);
   };
@@ -90,18 +83,11 @@ export default function StockQuiz() {
 
     setSubmitting(true);
     setError("");
-    const { data, error: requestError } = await supabase.rpc(
-      "submit_stock_quiz",
-      {
-        p_quiz_id: quiz.id,
-        p_student_email: studentEmail,
-        p_answers: answers,
-      },
-    );
-
-    if (requestError) {
-      setError(requestError.message);
-    } else {
+    try {
+      const { data } = await cookieAuthApi.post(
+        `/api/stock-quizzes/${encodeURIComponent(quiz.id)}/submit`,
+        { answers },
+      );
       setResult(data);
       setEmailStatus("sending");
 
@@ -111,8 +97,11 @@ export default function StockQuiz() {
       );
 
       setEmailStatus(emailError ? "failed" : "sent");
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || requestError.message || "Quiz answers could not be submitted.");
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   }, [answers, quiz, result, studentEmail, submitting]);
 
   useEffect(() => {

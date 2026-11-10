@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { cookieAuthApi } from "../lib/cookieAuth";
 import { Toaster, toast } from "sonner";
 import CartItemContext from "../context/CartItemContext";
 import { useStateContext } from "../context/ContextProvider";
@@ -60,13 +60,10 @@ export default function CheckOut() {
     setIsCheckingOut(true);
 
     try {
-      const { data } = await axios.post(
+      const { data } = await cookieAuthApi.post(
         `${API_URL}/api/payment/create-checkout-session`,
         { courseIds },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          timeout: 20000,
-        }
+        { timeout: 20000 }
       );
 
       if (!data?.url || typeof data.url !== "string") {

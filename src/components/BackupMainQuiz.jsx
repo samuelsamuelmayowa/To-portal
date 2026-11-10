@@ -22,45 +22,7 @@ import {
   FiUser,
 } from "react-icons/fi";
 import Quiz from "./Quiz";
-
-// Keep your current access list. Normalize it once to remove duplicates/case issues.
-const AUTHORIZED_EMAILS = new Set(
-  [
-   "sammmyayo@gmail.com",
-     "samuelsamuelmayowa@gmail.com",
-  "kewizle.k@gmail.com",
-  "kewizlek@gmail.com",
-  "pamelaabina24@gmail.com",
-  "adesh25416@gmail.com",
-  "oluwaferanmiolulana@gmail.com",
-  "tomideolulana@gmail.com",
-  "toanalyticsllc@gmail.com",
-  "denisgsam@gmail.com",
-  "oluwaferanmi.olulana@gmail.com",
-  "fpasamuelmayowa51@gmail.com",
-  "randommayowa@gmail.com",
-  "oluwatiroyeamoye@gmail.com",
-  "adenusitimi@gmail.com",
-  "trbanjo@gmail.com",
-  "emanfrimpong@gmail.com",
-
-
-  "dipeoluolatunji@gmail.com",
-  "yinkalola51@gmail.com",
-  "adeoyeifeoluwa@gmail.com",
-  "toluolubambi@gmail.com",
-  "Adeoyeifeoluwa@gmail.com",
-  "spheremessage@gmail.com",
-  "toluolubambi@gmail.com",
-  "adeoyeifeoluwa@ymail.com",
-  "samuelsamuelmayowa@gmail.com",
-  "adeoyeifeoluwa42@gmail.com",
-  "tobijbello@gmail.com",
-  "Tobijbello@gmail.com",
-  "adeoyeifeoluwa@ymail.com",
-  "toluolubambi@gmail.com"
-  ].map((email) => email.trim().toLowerCase())
-);
+import { useStateContext } from "../context/ContextProvider";
 
 const STAFF_EMAILS = new Set([
   "toanalyticsllc@gmail.com",
@@ -185,9 +147,11 @@ function QuizCard({ quiz, selected, onSelect }) {
 
 export default function MainQuiz() {
   const api = (import.meta.env.VITE_HOME_OO || "").replace(/\/$/, "");
-  const [userEmail] = useState(getSavedEmail);
+  const { token: sessionAuthenticated, user, authLoading } = useStateContext();
+  const [savedEmail] = useState(getSavedEmail);
+  const userEmail = user?.email || savedEmail;
   const normalizedEmail = userEmail.toLowerCase();
-  const isAllowed = AUTHORIZED_EMAILS.has(normalizedEmail);
+  const isAllowed = !authLoading && Boolean(sessionAuthenticated && normalizedEmail);
   const isBoss = STAFF_EMAILS.has(normalizedEmail);
   const [darkMode, setDarkMode] = useState(getSavedTheme);
 

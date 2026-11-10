@@ -24,7 +24,7 @@ const PaymentPage = () => {
   }, []);
   // document.cookie = "myCookie=value; SameSite=Lax";
   const status = useThirdPartyCookieCheck();
-  const { token } = useStateContext();
+  const { token, authLoading } = useStateContext();
   const { cartItem, setCartItem } = useContext(CartItemContext);
   const studentName = window.localStorage.getItem("user");
   const [message, setMessage] = useState("");
@@ -136,6 +136,7 @@ const PaymentPage = () => {
     });
     console.log(cookies);
   };
+  if (authLoading) return <div className="min-h-screen" aria-busy="true" />;
   if (!token) return <Navigate to="/" />;
   return (
     <section className="min-h-screen payment-page">

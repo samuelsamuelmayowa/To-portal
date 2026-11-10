@@ -7,7 +7,6 @@ import GOOGLE from "../../assets/images/google.png";
 import LOGO from '../../assets/images/logo.jpg';
 import { FaXmark } from "react-icons/fa6";
 import React from "react";
-import axios from "axios";
 import { Toaster, toast } from "sonner";
 
 // import { app } from "../../firebase.config";
@@ -15,13 +14,13 @@ import { app } from "../../../firebase.config";
 import {
   GoogleAuthProvider,
   getAuth,
+  getIdToken,
   signInWithPopup,
 } from "firebase/auth";
 
 // import { useStateContext } from "../context/ContextProvider";
 import { useStateContext } from "../../context/ContextProvider";
-
-const api = import.meta.env.VITE_BACKEND_API;
+import { cookieAuthApi } from "../../lib/cookieAuth";
 
 const formVariant = {
   initial: { opacity: 0 },
@@ -44,31 +43,20 @@ const TSkillLabLogin = () => {
       const result = await signInWithPopup(auth, googleProvider);
       const loggedInUser = result.user;
 
-      const payload = {
-        name: loggedInUser.displayName,
-        email: loggedInUser.email,
-        avatar: loggedInUser.photoURL,
-      };
+      const payload = { idToken: await getIdToken(loggedInUser) };
 
-      const res = await axios.post(`${api}/api/google`, payload, {
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      });
+      const res = await cookieAuthApi.post("/api/google", payload);
 
       if (res.status === 200 || res.status === 201) {
-        window.localStorage.setItem("ACCESS_TOKEN", res.data.token);
         window.localStorage.setItem("user", res.data.email);
 
-        setToken(res.data.token);
+        setToken(true);
         setUser(res.data.user);
 
         // ✅ Go to SkillLab profile page
         navigate("/skilllab/profile");
       }
     } catch (err) {
-      console.error(err);
       toast.error("Google login failed. Please try again.");
     }
   };

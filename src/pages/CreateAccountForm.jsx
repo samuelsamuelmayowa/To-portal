@@ -10,13 +10,11 @@ import { app } from "../../firebase.config";
 import { useForm } from "react-hook-form"
 import { getIdToken, GithubAuthProvider, GoogleAuthProvider, getAuth, signInWithPopup, signOut } from "firebase/auth";
 import { useStateContext } from '../context/ContextProvider';
-import axiosclinet from "../layoutAuth/axios/axios-clinet"
 import { useEffect, useRef, useState } from 'react';
-import axios from 'axios';
+import { cookieAuthApi } from "../lib/cookieAuth";
 import { yupResolver } from "@hookform/resolvers/yup"
 import * as yup from "yup"
 import { Toaster, toast } from 'sonner';
-const api = import.meta.env.VITE_BACKEND_API;
 const formVariant = {
     initial: {
         opacity: 0
@@ -72,17 +70,12 @@ const CreateAccountForm = () => {
             email: data.email
         }
         setLoading(true)
-        axios.post(`${api}/api/sighup`, payload, {
-            headers: {
-                "Accept": "application/json",
-                "Content-Type": "application/json",
-            },
-        }).then((res) => {
+        cookieAuthApi.post("/api/sighup", payload).then((res) => {
             if (res.status === 201 || res.status === 200) {
                 setLoading(false)
                 setUser(res.data.data)
                 window.localStorage.setItem("user", res.data.data.email)
-                setToken(res.data.token)
+                setToken(true)
                 navigate('/dashboard')
             }
           

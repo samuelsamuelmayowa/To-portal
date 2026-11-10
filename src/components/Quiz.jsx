@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useStateContext } from "../context/ContextProvider";
+import { cookieAuthFetch } from "../lib/cookieAuth";
 import jsPDF from "jspdf";
 const Quiz = ({ data }) => {
   const api = import.meta.env.VITE_HOME_OO;
@@ -32,55 +34,13 @@ const Quiz = ({ data }) => {
   const [missedQuestions, setMissedQuestions] = useState([]);
   const [showReview, setShowReview] = useState(false);
   const [notAllowed, setNotAllowed] = useState(false);
-  // ✅ Get and parse user from localStorage
-  const rawUser = localStorage.getItem("user");
-  let user = null;
-  try {
-    user = JSON.parse(rawUser);
-  } catch {
-    user = { email: rawUser }; // fallback if stored as plain string
-  }
+  const { token, user, authLoading } = useStateContext();
   const userEmail = user?.email || "";
-  // ✅ Allowed test-takers
-  const allowedEmails = [
-   "sammmyayo@gmail.com",
-  "kewizle.k@gmail.com",
-  "kewizlek@gmail.com",
-  "pamelaabina24@gmail.com",
-  "adesh25416@gmail.com",
-  "oluwaferanmiolulana@gmail.com",
-  "tomideolulana@gmail.com",
-  "toanalyticsllc@gmail.com",
-  "denisgsam@gmail.com",
-  "oluwaferanmi.olulana@gmail.com",
-  "fpasamuelmayowa51@gmail.com",
-  "randommayowa@gmail.com",
-  "oluwatiroyeamoye@gmail.com",
-  "adenusitimi@gmail.com",
-  "trbanjo@gmail.com",
-  "emanfrimpong@gmail.com",
-  "dipeoluolatunji@gmail.com",
-  "yinkalola51@gmail.com",
-  "adeoyeifeoluwa@gmail.com",
-  "toluolubambi@gmail.com",
-  "Adeoyeifeoluwa@gmail.com",
-  "spheremessage@gmail.com",
-  "toluolubambi@gmail.com",
-  "adeoyeifeoluwa@ymail.com",
-  "samuelsamuelmayowa@gmail.com",
-  "adeoyeifeoluwa42@gmail.com",
-  "tobijbello@gmail.com",
-  "Tobijbello@gmail.com",
-  "adeoyeifeoluwa@ymail.com",
-  "toluolubambi@gmail.com"
-  ];
 
-  // 🛑 Block unauthorized users
+  // Students are automatically enrolled, and quiz access follows the session.
   useEffect(() => {
-    if (userEmail && !allowedEmails.includes(userEmail)) {
-      setNotAllowed(true);
-    }
-  }, [userEmail]);
+    setNotAllowed(!authLoading && (!token || !userEmail));
+  }, [authLoading, token, userEmail]);
   //   useEffect(() => {
   //   // const q = questions[currentQuestion];
   //   const q = questions?.[currentQuestion];
@@ -340,7 +300,7 @@ const Quiz = ({ data }) => {
 
       console.log("Submitting result:", resultData);
 
-      const res = await fetch(`${api}/api/quiz/save`, {
+      const res = await cookieAuthFetch(`${api}/api/quiz/save`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(resultData),

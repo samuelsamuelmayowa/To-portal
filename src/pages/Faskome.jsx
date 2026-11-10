@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
 import {
   ArrowLeft,
   ArrowRight,
@@ -22,6 +21,7 @@ import {
   TerminalSquare,
 } from "lucide-react";
 import { useStateContext } from "../context/ContextProvider";
+import { cookieAuthApi } from "../lib/cookieAuth";
 
 // Complete drop-in redesign of the HomeSkill / TO Skill Lab page.
 // Existing API endpoints, request bodies, response fields, and auth flow are preserved.
@@ -67,10 +67,7 @@ const cx = (...parts) => parts.filter(Boolean).join(" ");
 
 const roleId = (item) => item?.slug || item?.id;
 
-function authHeaders() {
-  const accessToken = localStorage.getItem("ACCESS_TOKEN");
-  return accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
-}
+const authHeaders = () => ({});
 
 function roleIcon(id) {
   if (id === "soc") return ShieldCheck;
@@ -182,7 +179,7 @@ export default function HomeSkill() {
   useEffect(() => {
     if (!token) return;
     let cancelled = false;
-    axios
+    cookieAuthApi
       .get(`${API}/api/skill-lab/roles`, { headers: authHeaders() })
       .then(({ data }) => {
         if (cancelled || !Array.isArray(data?.roles) || !data.roles.length) return;
@@ -211,14 +208,14 @@ export default function HomeSkill() {
   }, [screen, seconds, current, questions, expiresAt]);
 
   const begin = async () => {
-    if (!token || !localStorage.getItem("ACCESS_TOKEN")) {
+    if (!token) {
       navigate("/login", { state: { from: location.pathname } });
       return;
     }
     try {
       setLoading(true);
       setError("");
-      const { data } = await axios.post(
+      const { data } = await cookieAuthApi.post(
         `${API}/api/skill-lab/interviews/start`,
         { role, level },
         { headers: authHeaders() },
@@ -266,7 +263,7 @@ export default function HomeSkill() {
     try {
       setLoading(true);
       setError("");
-      const { data } = await axios.post(
+      const { data } = await cookieAuthApi.post(
         `${API}/api/skill-lab/interviews/${attemptId}/submit`,
         { answers, labAnswers },
         { headers: authHeaders() },

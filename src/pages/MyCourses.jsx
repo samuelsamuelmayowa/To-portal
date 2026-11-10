@@ -1,7 +1,8 @@
-import { useMemo } from "react";
-import { isSplunkEmailApproved, readSignedInStudentEmail } from "./splunkAccess";
+import { useEffect, useMemo, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
+import { useStateContext } from "../context/ContextProvider";
+import { cookieAuthApi } from "../lib/cookieAuth";
 import {
   FaArrowRight,
   FaBookOpen,
@@ -21,28 +22,15 @@ import splunk from "../assets/images/splunk.png";
 /**
  * TAKE ON — a refreshed My Courses interface for T.O. Analytics.
  *
- * Orientation open-house has ENDED. Only approved emails see Splunk.
- * One Splunk course card opens the same 2026–2027 dashboard for all approved students.
- * Stocks & Options still uses its existing visibility list.
- * Frontend allowlists do not replace server-side authorization.
+ * Students see only the courses assigned to their authenticated account.
  */
-const STOCK_STUDENT_EMAILS = new Set([
-  "tomideolulana@gmail.com",
-  "annrit11@gmail.com",
-  // "samuelsamuelmayowa@gmail.com",
-  "toanalyticsllc@gmail.com",
-  "annrit11@gmail.com",
-]);
-
 const shellMotion = {
   hidden: { opacity: 0, y: 12 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.45 } },
 };
 
-function getAvailableCourses(email) {
-  const stockStudent = STOCK_STUDENT_EMAILS.has(email);
-  const splunkStudent = isSplunkEmailApproved(email);
-
+function getAvailableCourses(courseIds) {
+  const assigned = new Set(courseIds);
   return [
     {
       id: "splunk-2026",
@@ -60,7 +48,7 @@ function getAvailableCourses(email) {
       level: "Beginner to Pro",
       action: "Open Splunk classroom",
       toOrientation: "/splunk-orientation",
-      visible: splunkStudent,
+      visible: assigned.has("splunk") || assigned.has("splunk-2026"),
     },
     {
       id: "stock-options",
@@ -77,7 +65,7 @@ function getAvailableCourses(email) {
       duration: "Self-paced access",
       level: "Advanced",
       action: "Open trading classroom",
-      visible: stockStudent,
+      visible: assigned.has("stock-options"),
     },
   ].filter((course) => course.visible);
 }
@@ -87,12 +75,36 @@ const focusRing =
 
 export default function MyCourses() {
   const prefersReducedMotion = useReducedMotion();
-  const userEmail = useMemo(readSignedInStudentEmail, []);
-  const courses = useMemo(() => getAvailableCourses(userEmail), [userEmail]);
+  const { token, user, authLoading } = useStateContext();
+  const userEmail = user?.email || "";
+  const [access, setAccess] = useState({ loading: true, courseIds: [], quizIds: [], error: "" });
+
+  useEffect(() => {
+    if (authLoading) return undefined;
+    if (!token) {
+      setAccess({ loading: false, courseIds: [], quizIds: [], error: "" });
+      return undefined;
+    }
+    let active = true;
+    cookieAuthApi.get("/api/my-access")
+      .then(({ data }) => {
+        if (active) setAccess({ loading: false, courseIds: data?.courseIds || [], quizIds: data?.quizIds || [], error: "" });
+      })
+      .catch((error) => {
+        if (active) setAccess({ loading: false, courseIds: [], quizIds: [], error: error.response?.data?.message || "We couldn’t load your assigned access." });
+      });
+    return () => { active = false; };
+  }, [authLoading, token]);
+
+  const courses = useMemo(() => token ? getAvailableCourses(access.courseIds) : [], [token, access.courseIds]);
   const hasCourses = courses.length > 0;
   const trackCount = new Set(courses.map((course) => course.type)).size;
   const hasSplunk = courses.some((course) => course.id === "splunk-2026");
   const primaryCourse = courses[0];
+
+  if (authLoading || access.loading) {
+    return <main className="min-h-screen bg-[#f4f7fc]" aria-busy="true" />;
+  }
 
   return (
     <motion.main
@@ -122,8 +134,10 @@ export default function MyCourses() {
           </NavLink>
         </header>
 
+        {access.error && <p role="alert" className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">{access.error}</p>}
+
         {!hasCourses ? (
-          <AccessView email={userEmail} />
+          <AccessView email={user?.email || userEmail} quizCount={access.quizIds.length} />
         ) : (
           <>
             <section className="relative isolate overflow-hidden rounded-[28px] bg-[#101d3a] text-white shadow-xl shadow-slate-900/10">
@@ -320,8 +334,8 @@ function CourseCard({ course }) {
 
         <p className="mt-5 text-xs leading-5 text-slate-500">
           {isNew
-            ? "Approved Splunk students share the same updated 2026–2027 classroom and study materials."
-            : "Access this private program using your enrolled account."}
+            ? "Your admin-assigned Splunk classroom, orientation and study materials."
+            : "Your admin-assigned Stocks & Options learning program."}
         </p>
 
         <div className="mt-auto flex flex-col gap-3 pt-6 sm:flex-row sm:items-center">
@@ -359,7 +373,7 @@ function MetaItem({ icon, label, value }) {
   );
 }
 
-function AccessView({ email }) {
+function AccessView({ email, quizCount = 0 }) {
   return (
     <section className="relative overflow-hidden rounded-[28px] border border-slate-200 bg-white px-6 py-14 text-center shadow-sm sm:px-10 sm:py-20">
       <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full bg-blue-50 blur-2xl" />
@@ -370,12 +384,12 @@ function AccessView({ email }) {
         Learning access
       </p>
       <h2 className="relative mt-3 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-        No courses available yet
+        {quizCount ? "Your quizzes are ready" : "No course access assigned yet"}
       </h2>
       <p className="relative mx-auto mt-4 max-w-lg text-sm leading-7 text-slate-500 sm:text-base">
-        We couldn’t find any paid programs assigned to this account. If you
-        recently enrolled, please contact T.O. Analytics to confirm that your
-        account has been added to the correct course.
+        {quizCount
+          ? `You have access to ${quizCount} quiz${quizCount === 1 ? "" : "zes"}. Your administrator controls which courses and quizzes appear here.`
+          : "Ask your administrator to assign the courses or quizzes you need. They will appear here after access is granted."}
       </p>
       {email && (
         <div className="relative mx-auto mt-6 max-w-md rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
@@ -384,12 +398,15 @@ function AccessView({ email }) {
         </div>
       )}
       <div className="relative mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-        <NavLink
-          to="/courses"
-          className={`inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-5 py-3.5 text-sm font-bold text-white transition hover:bg-blue-800 ${focusRing}`}
-        >
-          Browse courses <FaArrowRight aria-hidden="true" />
-        </NavLink>
+        {quizCount > 0 ? (
+          <NavLink to="/dashboard/takequiz" className={`inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-5 py-3.5 text-sm font-bold text-white transition hover:bg-blue-800 ${focusRing}`}>
+            Open quizzes <FaArrowRight aria-hidden="true" />
+          </NavLink>
+        ) : (
+          <NavLink to="/courses" className={`inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-5 py-3.5 text-sm font-bold text-white transition hover:bg-blue-800 ${focusRing}`}>
+            Browse courses <FaArrowRight aria-hidden="true" />
+          </NavLink>
+        )}
         <NavLink
           to="/dashboard"
           className={`inline-flex items-center justify-center rounded-xl border border-slate-200 px-5 py-3.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 ${focusRing}`}

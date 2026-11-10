@@ -85,18 +85,18 @@ const AdminDashboard = () => {
       icon: FaUsers,
     },
     {
+      title: "Assign course & quiz access",
+      description: "Choose which courses and quizzes each student can open.",
+      path: "/ADMIN-DASHBOARD/student-access",
+      icon: FaUsers,
+    },
+    {
       title: "Send learning link",
       description: "Share online classes and useful resources.",
       path: "/ADMIN-DASHBOARD/send-links",
       icon: FaLink,
     },
 
-    {
-      title: "Manage student access",
-      description: "Approve, suspend or revoke student portal access.",
-      path: "/ADMIN-DASHBOARD/student-access",
-      icon: FaUsers,
-    },
   ];
 
   return (

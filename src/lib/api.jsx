@@ -1,5 +1,6 @@
 // src/lib/api.js
 import axios from "axios";
+import { getCsrfToken } from "./cookieAuth";
 
 const API_BASE_URL =
   import.meta.env.VITE_BACKEND_API || "http://localhost:5050/api";
@@ -22,21 +23,21 @@ function getStudentEmail() {
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Add token and student email dynamically
+// Browser sessions ride in the backend's HttpOnly cookie.
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("ACCESS_TOKEN");
-
-    // For your real app, use the real token.
-    // For Splunk lab testing, this fallback helps the demo backend work.
-    const finalToken = token || "student-demo-token";
-
-    config.headers.Authorization = `Bearer ${finalToken}`;
+    config.withCredentials = true;
+    const method = String(config.method || "get").toUpperCase();
+    const csrfToken = getCsrfToken();
+    if (!["GET", "HEAD", "OPTIONS"].includes(method) && csrfToken) {
+      config.headers["X-CSRF-Token"] = csrfToken;
+    }
     config.headers["x-student-email"] = getStudentEmail();
 
     return config;

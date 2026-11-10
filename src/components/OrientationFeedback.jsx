@@ -1,21 +1,13 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { CheckCircle2, MessageSquareText, Star, ShieldCheck } from "lucide-react";
+import { useStateContext } from "../context/ContextProvider";
+import { cookieAuthFetch } from "../lib/cookieAuth";
 
 // Use the same backend origin that Login.jsx uses for /api/login and /api/google.
 // Do not use a relative /api URL here unless Vercel explicitly proxies that path.
 const API_BASE = String(import.meta.env.VITE_BACKEND_API || "").replace(/\/+$/, "");
 const API = `${API_BASE}/api/orientation-feedback`;
-
-function getSiteToken() {
-  try { return window.localStorage.getItem("ACCESS_TOKEN") || ""; }
-  catch { return ""; }
-}
-
-function authOptions() {
-  const token = getSiteToken();
-  return { headers: token ? { Authorization: `Bearer ${token}` } : {} };
-}
 
 async function readApiJson(response) {
   const type = (response.headers.get("content-type") || "").toLowerCase();
@@ -64,6 +56,7 @@ function RatingStars({ selected, onChoose, disabled = false }) {
 }
 
 export default function OrientationFeedback() {
+  const { token, authLoading } = useStateContext();
   const [summary, setSummary] = useState(null);
   const [canRate, setCanRate] = useState(false);
   const [sessionStatus, setSessionStatus] = useState("checking");
@@ -80,7 +73,6 @@ export default function OrientationFeedback() {
     setError("");
     setCanRate(false);
     setSessionStatus("checking");
-    const token = getSiteToken();
     if (!API_BASE) {
       setError("VITE_BACKEND_API is missing from your frontend environment. Configure your Render API URL and redeploy.");
       setSessionStatus(token ? "verification-error" : "signed-out");
@@ -89,7 +81,7 @@ export default function OrientationFeedback() {
     }
     try {
       // Read the public summary first: even signed-out visitors can view it.
-      const summaryResponse = await fetch(API, { signal, cache: "no-store" });
+      const summaryResponse = await cookieAuthFetch(API, { signal, cache: "no-store" });
       const summaryData = await readApiJson(summaryResponse);
       if (!signal?.aborted) setSummary(summaryData?.summary || { count: 0, average: null });
 
@@ -98,13 +90,10 @@ export default function OrientationFeedback() {
         return;
       }
 
-      // Site login always stores the backend-issued token in ACCESS_TOKEN.
-      const meResponse = await fetch(`${API}/me`, {
-        ...authOptions(), signal, cache: "no-store",
-      });
+      const meResponse = await cookieAuthFetch(`${API}/me`, { signal, cache: "no-store" });
       if (meResponse.status === 401 || meResponse.status === 403) {
         setSessionStatus("expired");
-        setError("Your account is signed in on the website, but the rating API rejected its login token. Check the backend authentication middleware.");
+        setError("Your account is signed in on the website, but the rating service could not verify your session.");
         return;
       }
       const userData = await readApiJson(meResponse);
@@ -124,9 +113,10 @@ export default function OrientationFeedback() {
     } finally {
       if (!signal?.aborted) setLoading(false);
     }
-  }, []);
+  }, [token]);
 
   useEffect(() => {
+    if (authLoading) return undefined;
     const controller = new AbortController();
     loadFeedback(controller.signal);
     if (window.location.hash === "#orientation-feedback") {
@@ -136,7 +126,7 @@ export default function OrientationFeedback() {
       );
     }
     return () => controller.abort();
-  }, [loadFeedback]);
+  }, [loadFeedback, authLoading]);
 
   async function submitRating(event) {
     event.preventDefault();
@@ -145,11 +135,9 @@ export default function OrientationFeedback() {
     setSuccess("");
     setError("");
     try {
-      const options = authOptions();
-      const response = await fetch(API, {
-        ...options,
+      const response = await cookieAuthFetch(API, {
         method: "POST",
-        headers: { ...options.headers, "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ rating, comment: comment.trim().slice(0, 1000) }),
       });
       if (response.status === 401) {
@@ -231,7 +219,7 @@ export default function OrientationFeedback() {
             ) : (
               <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-5">
                 <p className="text-sm font-bold text-amber-950">We couldn't verify your website session</p>
-                <p className="mt-2 text-sm leading-6 text-amber-900">You're already signed in, but the feedback service still needs to accept your site's login token.</p>
+                <p className="mt-2 text-sm leading-6 text-amber-900">You're signed in, but the feedback service could not verify your session.</p>
                 <button type="button" onClick={() => loadFeedback()} className="mt-4 rounded-xl bg-amber-900 px-5 py-3 text-sm font-extrabold text-white">Try verification again</button>
               </div>
             )}

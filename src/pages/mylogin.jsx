@@ -4,7 +4,7 @@ import LOGO from "../assets/images/logo.jpg";
 import GOOGLE from "../assets/images/google.png";
 import { FaXmark } from "react-icons/fa6";
 import React, { useEffect, useRef, useState } from 'react';
-import axios from 'axios';
+import { cookieAuthApi } from "../lib/cookieAuth";
 import { yupResolver } from "@hookform/resolvers/yup"
 import { useForm } from "react-hook-form"
 import { Toaster, toast } from 'sonner';
@@ -12,7 +12,6 @@ import * as yup from "yup"
 import { app } from "../../firebase.config";
 import { getIdToken, GithubAuthProvider, GoogleAuthProvider, getAuth, signInWithPopup, signOut } from "firebase/auth";
 import { useStateContext } from '../context/ContextProvider';
-const api = import.meta.env.VITE_BACKEND_API
 React.StrictMode = React.Fragment
 
 const formVariant = {
@@ -34,39 +33,26 @@ const MyLogin= () => {
     const notifyfail = () => toast.warning("Kindly refresh your browser ");
     const navigate = useNavigate()
     const { setToken, setUser } = useStateContext();
-    const [tempToken, settempToken] = useState("");
-    const [tempName, settempName] = useState("")
     const [checkpassword, setCheckPassword] = useState(null)
     const [loading, setLoading] = useState(false)
     const auth = getAuth(app);
     const googleProvider = new GoogleAuthProvider();
     const loginwihGoogle = () => {
         signInWithPopup(auth, googleProvider)
-            .then(result => {
+            .then(async result => {
                 const loggedInUser = result.user;
-                // window.localStorage.setItem("user", loggedInUser.email)
-                const payload = {
-                    name: loggedInUser.displayName,
-                    email: loggedInUser.email
-                }
-                axios.post(`${api}/api/google`, payload, {
-                    headers: {
-                        "Accept": "application/json",
-                        "Content-Type": "application/json"
-                    }
-                }).then((res) => {
+                const payload = { idToken: await getIdToken(loggedInUser) };
+                cookieAuthApi.post("/api/google", payload).then((res) => {
                     if (res.status === 201 || res.status === 200) {
-                        settempToken(res.data.token)
-                        settempName(res.data.email)
-                        window.localStorage.setItem("ACCESS_TOKEN", res.data.token)
                         window.localStorage.setItem("user", res.data.email)
+                        setUser(res.data.user)
                         navigate('/dashboard')
-                        setToken(res.data.token)
+                        setToken(true)
                     }
                 }).catch((err) => notifyfail())
 
             }).catch(error => {
-                console.log('error', error.message);
+                toast.error("Google login failed. Please try again.");
             })
     }
     const schema = yup.object().shape({
@@ -87,31 +73,21 @@ const MyLogin= () => {
         duration : 2000
     })
     const onSubmit = (data) => {
-        console.log(data)
         const payload = {
             password: data.password,
             email: data.email
         }
         setLoading(true)
-        axios.post(`${api}/api/login`, payload, {
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json"
-            }
-            
-        }).then((res) => {
+        cookieAuthApi.post("/api/login", payload).then((res) => {
             if (res.status === 201 || res.status === 200) {
                 setLoading(false)
                 setUser(res.data.data)
-                console.log(res.data.token)
                 window.localStorage.setItem("user", res.data.data.email)
-                setToken(res.data.token)
+                setToken(true)
                 navigate('/dashboard')
             }
         }).catch(err => {
             const response = err.response
-            console.log(err)
-            console.log(err.response)
             if (response.status === 401) {
                 setLoading(false)
                 toast.error(response.data.message)

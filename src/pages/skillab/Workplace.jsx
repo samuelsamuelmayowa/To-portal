@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
+import { cookieAuthApi } from "../../lib/cookieAuth";
+import { useStateContext } from "../../context/ContextProvider";
 import {
   ArrowLeft, ArrowRight, BadgeCheck, BriefcaseBusiness, CalendarDays, CheckCircle2,
   CircleAlert, Clock3, Code2, FileText, LayoutDashboard, ListTodo,
@@ -10,11 +11,6 @@ import {
 const API = import.meta.env.VITE_BACKEND_API;
 const credits = (value) => `${Number(value || 0).toLocaleString("en-US")} TO Credits`;
 const dateLabel = (value) => value ? new Date(value).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }) : "—";
-
-function authHeaders() {
-  const token = String(localStorage.getItem("ACCESS_TOKEN") || "").trim();
-  return token ? { Authorization: `Bearer ${token}` } : null;
-}
 
 const statusStyles = {
   completed: "border-emerald-200 bg-emerald-50 text-emerald-800",
@@ -32,6 +28,7 @@ function Box({ children, className = "" }) {
 export default function Workplace() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { token, authLoading } = useStateContext();
   const [data, setData] = useState(null);
   const [busy, setBusy] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -43,8 +40,8 @@ export default function Workplace() {
   const [report, setReport] = useState("");
 
   const fetchWorkplace = useCallback(async () => {
-    const headers = authHeaders();
-    if (!headers) {
+    if (authLoading) return;
+    if (!token) {
       setBusy(false);
       navigate("/login", { state: { from: location.pathname }, replace: true });
       return;
@@ -52,7 +49,7 @@ export default function Workplace() {
     try {
       setBusy(true);
       setError("");
-      const response = await axios.get(`${API}/api/skill-lab/workplace`, { headers });
+      const response = await cookieAuthApi.get(`${API}/api/skill-lab/workplace`);
       setData(response.data);
     } catch (requestError) {
       if (requestError.response?.status === 401) {
@@ -63,7 +60,7 @@ export default function Workplace() {
     } finally {
       setBusy(false);
     }
-  }, [navigate, location.pathname]);
+  }, [navigate, location.pathname, token, authLoading]);
 
   useEffect(() => { fetchWorkplace(); }, [fetchWorkplace]);
 
@@ -87,15 +84,14 @@ export default function Workplace() {
   };
 
   const acceptOffer = async (offerId) => {
-    const headers = authHeaders();
-    if (!headers) {
+    if (!token) {
       navigate("/login", { state: { from: location.pathname }, replace: true });
       return;
     }
     try {
       setSaving(true);
       setError("");
-      await axios.post(`${API}/api/skill-lab/offers/${offerId}/accept`, {}, { headers });
+      await cookieAuthApi.post(`${API}/api/skill-lab/offers/${offerId}/accept`, {});
       setInfo("Offer accepted. Your simulated employee account is active.");
       await fetchWorkplace();
     } catch (requestError) {
@@ -109,8 +105,7 @@ export default function Workplace() {
 
   const submitTask = async () => {
     if (!active) return;
-    const headers = authHeaders();
-    if (!headers) {
+    if (!token) {
       navigate("/login", { state: { from: location.pathname }, replace: true });
       return;
     }
@@ -118,10 +113,9 @@ export default function Workplace() {
       setSaving(true);
       setError("");
       setInfo("");
-      const { data: result } = await axios.post(
+      const { data: result } = await cookieAuthApi.post(
         `${API}/api/skill-lab/workplace/tasks/${active.id}/submit`,
         { splQuery, report },
-        { headers },
       );
       setInfo(result.task.status === "completed"
         ? `Ticket completed with ${result.task.score}/100 automated rubric points.`

@@ -7,13 +7,14 @@ import { useEffect, useRef, useState } from 'react';
 import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { useForm } from "react-hook-form"
-import axios from 'axios';
+import { cookieAuthApi } from "../lib/cookieAuth";
 import { useStateContext } from '../context/ContextProvider';
-const api = import.meta.env.VITE_BACKEND_API_ROUTES;
+const api = import.meta.env.VITE_BACKEND_API_ROUTES || `${import.meta.env.VITE_BACKEND_API}/api/admin/login`;
 const AdminLoginForm = () => {
-    const { setToken} = useStateContext();
+    const { setToken, setUser } = useStateContext();
     const navigate = useNavigate()
     const [error, setError] = useState(null)
+    const [submitting, setSubmitting] = useState(false)
     const schema = yup.object().shape({
         password: yup.string().required(),
         email: yup.string().required(),
@@ -26,34 +27,30 @@ const AdminLoginForm = () => {
         resolver: yupResolver(schema),
     })
 
-    const onSubmit = (data) => {
-        console.log(data)
+    const onSubmit = async (data) => {
         const payload = {
             password: data.password,
             email: data.email
         }
-        axios.post(`${api}`, payload, {
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json"
-            }
-        }).then((res) => {
+        setError(null)
+        setSubmitting(true)
+        try {
+            const res = await cookieAuthApi.post(`${api}`, payload)
             if (res.status === 201 || res.status === 200) {
-                window.localStorage.setItem("ADMIN", res.data.response.email)
+                setToken(true)
+                setUser(res.data.response)
                 navigate('/ADMIN-DASHBOARD')
-                setToken(res.data.token)
-                console.log(res.data.token)
             }
-        }).catch(err => {
-            const response = err.response
-            if (response.status === 422) {
-                setError(response.data.message)
-            } else if (response.status === 403) {
-                setCheckPassword(response.data.message)
-                setError(response.data.message)
-            }
-
-        })
+        } catch (err) {
+            const status = err.response?.status
+            const serverMessage = err.response?.data?.message
+            if (status === 422) setError(serverMessage || "Invalid admin email or password.")
+            else if (status === 403) setError(serverMessage || "This local app origin is not allowed by the backend.")
+            else if (!err.response) setError("Cannot reach the local backend. Start the backend API on port 8000 and try again.")
+            else setError(serverMessage || `Admin login failed (${status}).`)
+        } finally {
+            setSubmitting(false)
+        }
 
     }
     
@@ -86,7 +83,7 @@ const AdminLoginForm = () => {
                       </label>
                       <p className='text-red-600'>{errors.password?.message}</p>
                     </div>
-                    <button type="submit" className="w-full rounded-xl hover:text-BLUE border-2 hover:bg-transparent border-BLUE duration-300 bg-BLUE py-2 font-semibold text-white text-base md:text-xl">Login</button>
+                    <button type="submit" disabled={submitting} className="w-full rounded-xl hover:text-BLUE border-2 hover:bg-transparent border-BLUE duration-300 bg-BLUE py-2 font-semibold text-white text-base md:text-xl disabled:cursor-not-allowed disabled:opacity-60">{submitting ? "Signing in…" : "Login"}</button>
                 </form>
             </motion.div>
         </section>

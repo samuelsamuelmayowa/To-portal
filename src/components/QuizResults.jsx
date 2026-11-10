@@ -1,49 +1,44 @@
 import { useEffect, useState } from "react";
+import { useStateContext } from "../context/ContextProvider";
+import { cookieAuthApi } from "../lib/cookieAuth";
 
 const QuizResults = () => {
-  const api = import.meta.env.VITE_HOME_OO;
-  const storedUser = localStorage.getItem("user");
-  let userEmail = "";
+  const { token, user, authLoading } = useStateContext();
+  const userEmail = user?.email || "";
  const [darkMode, setDarkMode] = useState(false);
  useEffect(() => {
   document.documentElement.classList.toggle("dark", darkMode);
 }, [darkMode]);
-  try {
-    const parsed = JSON.parse(storedUser);
-    userEmail = parsed?.email || parsed?.username || "";
-  } catch {
-    userEmail = storedUser || "";
-  }
-
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (authLoading) return undefined;
+    if (!token || !userEmail) {
+      setResults([]);
+      setLoading(false);
+      return undefined;
+    }
+    let active = true;
     const fetchResults = async () => {
       try {
-        const res = await fetch(`${api}/api/quiz/my-scores/${userEmail}`);
-        const data = await res.json();
-        console.log(data);
-
-        if (!Array.isArray(data)) {
-          console.warn("Expected an array but got:", data);
-          setResults([]);
-          return;
-        }
-
-        const userResults = data.filter(
-          (r) => r.username?.toLowerCase() === userEmail.toLowerCase()
-        );
-        setResults(userResults.reverse());
+        const { data } = await cookieAuthApi.get(`/api/quiz/my-scores/${encodeURIComponent(userEmail)}`);
+        if (active) setResults(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Error fetching results:", err);
+        if (active) setResults([]);
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
 
-    if (userEmail) fetchResults();
-  }, [userEmail]);
+    setLoading(true);
+    fetchResults();
+    return () => { active = false; };
+  }, [authLoading, token, userEmail]);
+
+  if (authLoading) return <div className="min-h-screen p-6 text-center">Loading your session…</div>;
+  if (!token || !userEmail) return <div className="min-h-screen p-6 text-center">Sign in to view your quiz results.</div>;
 
   if (loading)
     return (

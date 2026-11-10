@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Player from "@vimeo/player";
 import { NavLink } from "react-router-dom";
+import { cookieAuthApi } from "../lib/cookieAuth";
+import { useStateContext } from "../context/ContextProvider";
 import {
   FaArrowRight, FaBookOpen, FaChartLine, FaCheck, FaCirclePlay,
   FaClock, FaFileLines, FaGraduationCap, FaLayerGroup, FaLock,
@@ -183,7 +185,7 @@ function AccessState({ loading, email }) {
         </span>
         <h1 className="mt-6 text-2xl font-black">{loading ? "Verifying course access" : "Stock & Options access required"}</h1>
         <p className="mt-3 text-sm leading-7 text-slate-500">
-          {loading ? "Checking your student enrollment." : "This training portal is for approved Stocks & Options students. Sign in with your enrolled account or contact the training team."}
+          {loading ? "Checking your account session." : "Sign in with your T.O. Analytics account. Students are added to available courses automatically."}
         </p>
         {!!email && !loading && <p className="mt-4 break-all rounded-xl bg-blue-50 p-3 text-xs font-semibold text-blue-900">{email}</p>}
         {!loading && <div className="mt-6 flex flex-wrap justify-center gap-3">
@@ -196,6 +198,7 @@ function AccessState({ loading, email }) {
 }
 
 export default function StockOptionsCoursePortal() {
+  const { user, token, authLoading } = useStateContext();
   const [userEmail, setUserEmail] = useState("");
   const [access, setAccess] = useState({ checking: true, allowed: false });
   const [view, setView] = useState("overview");
@@ -228,24 +231,15 @@ export default function StockOptionsCoursePortal() {
     .filter((doc) => doc.title && doc.url).map((doc, j) => ({ ...doc, source: item.title, uniqueKey: `${i}-${j}` })));
 
   useEffect(() => {
-    const email = normalizeEmail(localStorage.getItem("user") || "");
+    if (authLoading) return undefined;
+    const email = normalizeEmail(user?.email || localStorage.getItem("user") || "");
     setUserEmail(email);
-    if (!email) { setAccess({ checking: false, allowed: false }); return; }
+    if (!token || !email) { setAccess({ checking: false, allowed: false }); return undefined; }
     const controller = new AbortController();
     let active = true;
-    // Keep the existing stock enrollment endpoint. Your backend MUST verify the
-    // authenticated identity; a browser-supplied email by itself is not proof.
     (async () => {
       try {
-        const token = localStorage.getItem("ACCESS_TOKEN") || "";
-        const response = await fetch("/api/check-student-access", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-          body: JSON.stringify({ email, courseId: "stock-options" }),
-          cache: "no-store", signal: controller.signal,
-        });
-        if (!response.ok) throw new Error(`Enrollment check failed: ${response.status}`);
-        const data = await response.json();
+        const { data } = await cookieAuthApi.post("/api/check-student-access", { courseId: "stock-options" }, { signal: controller.signal });
         if (active) setAccess({ checking: false, allowed: data?.allowed === true });
       } catch (err) {
         if (err?.name !== "AbortError") console.error("Stocks & Options access check failed", err);
@@ -253,7 +247,7 @@ export default function StockOptionsCoursePortal() {
       }
     })();
     return () => { active = false; controller.abort(); };
-  }, []);
+  }, [authLoading, token, user?.email]);
 
   useEffect(() => {
     try { localStorage.setItem("to_stock_portal_theme", dark ? "dark" : "light"); } catch { /* ignored */ }

@@ -16,7 +16,6 @@ import {
   FaMoneyBillWave,
   FaRegFilePdf,
   FaSearch,
-  FaUsers,
 } from "react-icons/fa";
 
 import {
@@ -48,6 +47,11 @@ const navigationItems = [
     path: "/ADMIN-DASHBOARD/viewcourses",
     icon: MdOutlineViewList,
   },
+  {
+    name: "Student Access",
+    path: "/ADMIN-DASHBOARD/student-access",
+    icon: FaGraduationCap,
+  },
   //   {
   //     name: "All Students",
   //     path: "/ADMIN-DASHBOARD/allStudents",
@@ -57,11 +61,6 @@ const navigationItems = [
 
 
 
-  {
-  name: "Student Access",
-  path: "/ADMIN-DASHBOARD/student-access",
-  icon: FaUsers,
-},
   {
     name: "Students Result",
     path: "/ADMIN-DASHBOARD/studentresults",
@@ -110,7 +109,7 @@ const getPageTitle = (pathname) => {
 };
 
 const AdminLayout = () => {
-  const { token } = useStateContext();
+  const { token, user, authLoading } = useStateContext();
   const location = useLocation();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -130,8 +129,12 @@ const AdminLayout = () => {
     };
   }, [mobileMenuOpen]);
 
+  if (authLoading) return <div className="min-h-screen" aria-busy="true" />;
   if (!token) {
     return <Navigate to="/" replace />;
+  }
+  if (user?.role !== "admin" || user?.email?.toLowerCase() !== "admin@gmail.com") {
+    return <Navigate to="/dashboard" replace />;
   }
 
   const SidebarContent = ({ closeSidebar }) => (
