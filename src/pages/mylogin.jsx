@@ -1,148 +1,264 @@
-import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import LOGO from "../assets/images/logo.jpg";
-import GOOGLE from "../assets/images/google.png";
-import { FaXmark } from "react-icons/fa6";
-import React, { useEffect, useRef, useState } from 'react';
-import { cookieAuthApi } from "../lib/cookieAuth";
-import { yupResolver } from "@hookform/resolvers/yup"
-import { useForm } from "react-hook-form"
-import { Toaster, toast } from 'sonner';
-import * as yup from "yup"
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  FaArrowRight,
+  FaEnvelope,
+  FaEye,
+  FaEyeSlash,
+  FaLock,
+} from "react-icons/fa6";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useForm } from "react-hook-form";
+import { Toaster, toast } from "sonner";
+import * as yup from "yup";
+import {
+  GoogleAuthProvider,
+  getAuth,
+  getIdToken,
+  signInWithPopup,
+} from "firebase/auth";
 import { app } from "../../firebase.config";
-import { getIdToken, GithubAuthProvider, GoogleAuthProvider, getAuth, signInWithPopup, signOut } from "firebase/auth";
-import { useStateContext } from '../context/ContextProvider';
-React.StrictMode = React.Fragment
+import { useStateContext } from "../context/ContextProvider";
+import { cookieAuthApi } from "../lib/cookieAuth";
+import AuthPageFrame from "../components/AuthPageFrame";
+import GOOGLE from "../assets/images/google.png";
 
-const formVariant = {
-    initial: {
-        opacity: 0
-    },
-    animate: {
-        opacity: 1,
-        transition: {
-            type: "spring", stiffness: 180, duration: 1000
-        }
-    },
-    exit: {
-        x: "-1000px",
-        opacity: 0,
-    }
-}
-const MyLogin= () => {
-    const notifyfail = () => toast.warning("Kindly refresh your browser ");
-    const navigate = useNavigate()
-    const { setToken, setUser } = useStateContext();
-    const [checkpassword, setCheckPassword] = useState(null)
-    const [loading, setLoading] = useState(false)
-    const auth = getAuth(app);
-    const googleProvider = new GoogleAuthProvider();
-    const loginwihGoogle = () => {
-        signInWithPopup(auth, googleProvider)
-            .then(async result => {
-                const loggedInUser = result.user;
-                const payload = { idToken: await getIdToken(loggedInUser) };
-                cookieAuthApi.post("/api/google", payload).then((res) => {
-                    if (res.status === 201 || res.status === 200) {
-                        window.localStorage.setItem("user", res.data.email)
-                        setUser(res.data.user)
-                        navigate('/dashboard')
-                        setToken(true)
-                    }
-                }).catch((err) => notifyfail())
+const schema = yup.object().shape({
+  email: yup
+    .string()
+    .email("Enter a valid email address")
+    .required("Email address is required"),
+  password: yup.string().required("Password is required"),
+});
 
-            }).catch(error => {
-                toast.error("Google login failed. Please try again.");
-            })
+const MyLogin = () => {
+  const navigate = useNavigate();
+  const { setToken, setUser } = useStateContext();
+  const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const auth = getAuth(app);
+  const googleProvider = new GoogleAuthProvider();
+
+  const {
+    register,
+    formState: { errors },
+    handleSubmit,
+  } = useForm({ resolver: yupResolver(schema) });
+
+  const saveAuthData = (user) => {
+    setUser(user);
+    if (user?.email) localStorage.setItem("user", user.email);
+    setToken(true);
+  };
+
+  const loginWithGoogle = async () => {
+    try {
+      setGoogleLoading(true);
+      const result = await signInWithPopup(auth, googleProvider);
+      const loggedInUser = result.user;
+      const idToken = await getIdToken(loggedInUser);
+      const res = await cookieAuthApi.post("/api/google", { idToken });
+
+      if (res.status === 200 || res.status === 201) {
+        const user = res.data.user || {
+          name: loggedInUser.displayName,
+          email: res.data.email || loggedInUser.email,
+        };
+        saveAuthData(user);
+        navigate("/dashboard", { replace: true });
+      }
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || "Google login failed. Please try again."
+      );
+    } finally {
+      setGoogleLoading(false);
     }
-    const schema = yup.object().shape({
-        password: yup.string().required(),
-        email: yup.string().required(),
-    });
-    const {
-        register,
-        formState: { errors },
-        handleSubmit,
-    } = useForm({
-        resolver: yupResolver(schema),
-    })
-    if (errors.email) toast.error(errors.email?.message, {
-        duration : 2000
-    })
-    if (errors.password) toast.error(errors.password?.message, {
-        duration : 2000
-    })
-    const onSubmit = (data) => {
-        const payload = {
-            password: data.password,
-            email: data.email
-        }
-        setLoading(true)
-        cookieAuthApi.post("/api/login", payload).then((res) => {
-            if (res.status === 201 || res.status === 200) {
-                setLoading(false)
-                setUser(res.data.data)
-                window.localStorage.setItem("user", res.data.data.email)
-                setToken(true)
-                navigate('/dashboard')
-            }
-        }).catch(err => {
-            const response = err.response
-            if (response.status === 401) {
-                setLoading(false)
-                toast.error(response.data.message)
-            } else if (response.status === 403) {
-                setLoading(false)
-                setCheckPassword(response.data.message)
-                toast.error(response.data.message)
-            }
-        })
-        
+  };
+
+  const onSubmit = async (data) => {
+    try {
+      setLoading(true);
+      const res = await cookieAuthApi.post("/api/login", {
+        email: data.email,
+        password: data.password,
+      });
+
+      if (res.status === 200 || res.status === 201) {
+        saveAuthData(res.data.data);
+        navigate("/dashboard", { replace: true });
+      }
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+          "Login failed. Please check your details."
+      );
+    } finally {
+      setLoading(false);
     }
-    
-    return (
-        <>
-            <section className="ANIMATE-BG min-h-screen flex justify-center items-center">
-                <motion.div variants={formVariant} initial="initial" animate="animate" exit={{ x: -100, }} className="md:w-[400px] p-5 bg-white rounded-3xl">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <Link to="/"><img src={LOGO} className="w-[150px] pl-0" alt="" /></Link>
-                        </div>
-                        <p onClick={()=> navigate(-1)} className='cursor-pointer'>
-                            <FaXmark size={30} />
-                        </p>
-                    </div>
-                    <p className="font-bold">Welcome Back!</p>
-                    <p className="text-sm md:text-base text-slate-700 font-medium">Enter Your details to continue</p>
-                    <form onSubmit={handleSubmit(onSubmit)}>
-                        <div className="my-4">
-                            <label className="font-bold" htmlFor="email">Email Address
-                                <input name="email"
-                                    {...register("email", { required: true })} type="text" id="" className="text-base pl-2 h-10 rounded-xl w-full border-2 border-inputColor bg-inputColor" />
-                            </label>
-                        </div>
-                        <div className="my-4">
-                            <label className="font-bold" htmlFor="password">Password
-                                <input   {...register("password", { required: true })} type="password" name="password" id="" className="text-base pl-2 h-10 rounded-xl w-full border-2 border-inputColor bg-inputColor" />
-                            </label>
-                        </div>
-                        <p className="text-right my-4 font-bold"><a href="forgotPassword.html" className="text-BLUE"><Link to="/forgotPassword">Forgot Password?</Link></a></p>
-                        <button type="submit" className="w-full rounded-xl hover:text-BLUE border-2 hover:bg-transparent border-BLUE duration-300 bg-BLUE py-2 font-semibold text-white text-base md:text-xl">{loading ? <div>
-                            <span className="loading loading-ring loading-sm"></span>
-                            <span className="loading loading-ring loading-sm"></span>
-                            <span className="loading loading-ring loading-sm"></span>
-                        </div> :"Login"}</button>
-                        <p className='text-center font-extralight py-1'>or</p>
-                    </form>
-                    <div className='login-options flex flex-col gap-3 font-medium'>
-                        <button onClick={loginwihGoogle} className='flex items-center justify-center gap-2 border-[1px] border-black rounded-3xl py-2 hover:bg-black hover:text-white duration-300'><img src={GOOGLE} alt="" className='w-5' />Continue with Google</button>
-                    </div>
-                    <p className="text-sm md:text-base mt-4 font-semibold ">Don&apos;t have an account? <Link className="underline underline-offset-2 text-BLUE" to="/createAccount">Create Account</Link></p>
-                </motion.div>
-            </section>
-            <Toaster position='top-center' />
-        </>
-    )
-}
+  };
+
+  return (
+    <>
+      <AuthPageFrame
+        eyebrow="Member access"
+        title="Welcome back"
+        description="Sign in to pick up your learning, check your progress and get back to your dashboard."
+        brandTitle="Pick up right where you left off."
+        brandDescription="Your courses, progress and next steps are all waiting in one place. Keep moving toward the skills you want to build."
+      >
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <div>
+            <label
+              htmlFor="email"
+              className="mb-2 block text-sm font-bold text-slate-800"
+            >
+              Email address
+            </label>
+            <div
+              className={`group flex h-14 items-center gap-3.5 rounded-xl border px-4 transition focus-within:bg-white focus-within:shadow-[0_8px_24px_-14px_rgba(45,32,101,0.45)] ${
+                errors.email
+                  ? "border-rose-400 bg-rose-50"
+                  : "border-slate-200 bg-slate-50 focus-within:border-indigo-700"
+              }`}
+            >
+              <FaEnvelope
+                aria-hidden="true"
+                className={`shrink-0 ${errors.email ? "text-rose-400" : "text-slate-400 group-focus-within:text-indigo-800"}`}
+              />
+              <input
+                {...register("email")}
+                id="email"
+                type="email"
+                autoComplete="email"
+                placeholder="you@example.com"
+                aria-invalid={Boolean(errors.email)}
+                className="h-full w-full bg-transparent text-sm font-medium text-slate-900 outline-none placeholder:text-slate-400"
+              />
+            </div>
+            {errors.email && (
+              <p className="mt-1.5 text-xs font-semibold text-rose-600" role="alert">
+                {errors.email.message}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label
+              htmlFor="password"
+              className="mb-2 block text-sm font-bold text-slate-800"
+            >
+              Password
+            </label>
+            <div
+              className={`group flex h-14 items-center gap-3.5 rounded-xl border px-4 transition focus-within:bg-white focus-within:shadow-[0_8px_24px_-14px_rgba(45,32,101,0.45)] ${
+                errors.password
+                  ? "border-rose-400 bg-rose-50"
+                  : "border-slate-200 bg-slate-50 focus-within:border-indigo-700"
+              }`}
+            >
+              <FaLock
+                aria-hidden="true"
+                className={`shrink-0 ${errors.password ? "text-rose-400" : "text-slate-400 group-focus-within:text-indigo-800"}`}
+              />
+              <input
+                {...register("password")}
+                id="password"
+                type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
+                placeholder="Enter your password"
+                aria-invalid={Boolean(errors.password)}
+                className="h-full w-full bg-transparent text-sm font-medium text-slate-900 outline-none placeholder:text-slate-400"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((visible) => !visible)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                className="shrink-0 rounded-md p-1 text-slate-400 transition hover:text-indigo-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-700"
+              >
+                {showPassword ? <FaEyeSlash aria-hidden="true" /> : <FaEye aria-hidden="true" />}
+              </button>
+            </div>
+            {errors.password && (
+              <p className="mt-1.5 text-xs font-semibold text-rose-600" role="alert">
+                {errors.password.message}
+              </p>
+            )}
+          </div>
+
+          <div className="flex items-center justify-end">
+            <Link
+              to="/forgotPassword"
+              className="text-sm font-bold text-indigo-800 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700"
+            >
+              Forgot password?
+            </Link>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading || googleLoading}
+            className="group flex h-14 w-full items-center justify-center gap-2.5 rounded-xl bg-BLUE px-5 text-sm font-extrabold text-white shadow-lg shadow-indigo-950/15 transition hover:-translate-y-0.5 hover:bg-[#21164f] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {loading ? (
+              <>
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                Signing in…
+              </>
+            ) : (
+              <>
+                Sign in to your dashboard
+                <FaArrowRight aria-hidden="true" className="transition group-hover:translate-x-1" />
+              </>
+            )}
+          </button>
+        </form>
+
+        <div className="my-6 flex items-center gap-4">
+          <span className="h-px flex-1 bg-slate-200" />
+          <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
+            or continue with
+          </span>
+          <span className="h-px flex-1 bg-slate-200" />
+        </div>
+
+        <button
+          type="button"
+          onClick={loginWithGoogle}
+          disabled={loading || googleLoading}
+          className="flex h-14 w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-5 text-sm font-bold text-slate-800 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {googleLoading ? (
+            <>
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-slate-800" />
+              Connecting…
+            </>
+          ) : (
+            <>
+              <img src={GOOGLE} alt="" aria-hidden="true" className="h-5 w-5 object-contain" />
+              Continue with Google
+            </>
+          )}
+        </button>
+
+        <p className="mt-7 text-center text-sm text-slate-600">
+          New to T.O Analytics?{" "}
+          <Link
+            to="/createAccount"
+            className="font-extrabold text-indigo-800 underline decoration-indigo-300 underline-offset-4 hover:decoration-indigo-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700"
+          >
+            Create an account
+          </Link>
+        </p>
+        <p className="mt-5 text-center text-xs leading-5 text-slate-400">
+          Your account is protected with secure sign-in.
+        </p>
+      </AuthPageFrame>
+      <Toaster position="top-center" richColors />
+    </>
+  );
+};
 
 export default MyLogin;

@@ -1,152 +1,219 @@
-import { Link, redirect, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import LOGO from "../assets/images/logo.jpg";
-import GOOGLE from "../assets/images/google.png";
-// import FACEBOOK from "../assets/images/facebook.png";
-// import APPLE from "../assets/images/apple.png";
-import { FaXmark } from "react-icons/fa6";
-// import { FaApple } from "react-icons/fa";
-import { app } from "../../firebase.config";
-import { useForm } from "react-hook-form"
-import { getIdToken, GithubAuthProvider, GoogleAuthProvider, getAuth, signInWithPopup, signOut } from "firebase/auth";
-import { useStateContext } from '../context/ContextProvider';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { FaArrowRight, FaEnvelope, FaEye, FaEyeSlash, FaLock, FaUser } from "react-icons/fa6";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useForm } from "react-hook-form";
+import { Toaster, toast } from "sonner";
+import * as yup from "yup";
+import { useStateContext } from "../context/ContextProvider";
 import { cookieAuthApi } from "../lib/cookieAuth";
-import { yupResolver } from "@hookform/resolvers/yup"
-import * as yup from "yup"
-import { Toaster, toast } from 'sonner';
-const formVariant = {
-    initial: {
-        opacity: 0
-    },
-    animate: {
-        opacity: 1,
-        transition: {
-            type: "spring", stiffness: 180, duration: 1000
-        }
-    },
-    exit: {
-        x: "-1000px",
-        opacity: 0,
-    }
-}
+import AuthPageFrame from "../components/AuthPageFrame";
+
+const schema = yup.object().shape({
+  name: yup.string().trim().required("Your name is required"),
+  email: yup
+    .string()
+    .email("Enter a valid email address")
+    .required("Email address is required"),
+  password: yup.string().required("Choose a password to continue"),
+});
 
 const CreateAccountForm = () => {
-    const navigate = useNavigate()
-    const { setToken, setUser } = useStateContext();
-    const emailRef = useRef();
-    const passwordRef = useRef();
-    const nameRef = useRef();
-    const [loading, setLoading] = useState(false)
-    const auth = getAuth(app);
-    const googleProvider = new GoogleAuthProvider();
-  
-    const schema = yup.object().shape({
-        name: yup.string().required(),
-        password: yup.string().required(),
-        email: yup.string().required(),
-    });
-    const {
-        register,
-        formState: { errors },
-        handleSubmit,
-    } = useForm({
-        resolver: yupResolver(schema),
-    })
-    if (errors.email) toast.error(errors.email?.message, {
-        duration : 3000
-    })
-    if (errors.password) toast.error(errors.password?.message, {
-        duration : 3000
-    })
-    if (errors.name) toast.error(errors.name?.message, {
-        duration : 3000
-    })
-    const onSubmit = (data) => {
-      
-        const payload = {
-            name: data.name,
-            password: data.password,
-            email: data.email
-        }
-        setLoading(true)
-        cookieAuthApi.post("/api/sighup", payload).then((res) => {
-            if (res.status === 201 || res.status === 200) {
-                setLoading(false)
-                setUser(res.data.data)
-                window.localStorage.setItem("user", res.data.data.email)
-                setToken(true)
-                navigate('/dashboard')
-            }
-          
-        }).catch(err => {
-            const response = err.response
-            if (response.status === 422) {
-                setLoading(false)
-                toast.error(response.data.message)
-            } else if (response.status === 401) {
-                setLoading(false)
-                toast.error(response.data.message)
-            } else if (response.status === 403) {
-                setLoading(false)
-                toast.error(response.data.message)
-            }
-        })
+  const navigate = useNavigate();
+  const { setToken, setUser } = useStateContext();
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const {
+    register,
+    formState: { errors },
+    handleSubmit,
+  } = useForm({ resolver: yupResolver(schema) });
+
+  const onSubmit = async (data) => {
+    try {
+      setLoading(true);
+      const res = await cookieAuthApi.post("/api/sighup", {
+        name: data.name.trim(),
+        email: data.email,
+        password: data.password,
+      });
+
+      if (res.status === 201 || res.status === 200) {
+        setUser(res.data.data);
+        localStorage.setItem("user", res.data.data.email);
+        setToken(true);
+        toast.success("Your account is ready");
+        navigate("/dashboard", { replace: true });
+      }
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+          "We couldn't create your account. Please try again."
+      );
+    } finally {
+      setLoading(false);
     }
-    
+  };
 
-    return (
-        <>
-            <section className="ANIMATE-BG min-h-screen flex justify-center items-center">
-                <motion.div variants={formVariant} initial="initial" animate="animate" exit={{ x: -100, }} className="md:w-[400px] p-5 bg-white rounded-3xl">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <Link to="/"><img src={LOGO} className="w-[150px] h-[50px] object-cover" alt="" /></Link>
-                        </div>
-                        <p onClick={()=> navigate(-1)} className='cursor-pointer'>
-                            <FaXmark size={30} />
-                        </p>
-                    </div>
-                    <p className="font-bold">Please fill in your details to get started</p>
-                    <form onSubmit={handleSubmit(onSubmit)}>
-                        <div className="my-4">
-                            <label className="font-bold" htmlFor="name">Name
-                                <input name="name" ref={nameRef}
-                                    {...register("name", { required: true })} type="text" id="name" className="text-base pl-2 h-10 rounded-xl w-full border-2 border-inputColor bg-inputColor" />
-                            </label>
-                        </div>
-                        <div className="my-4">
-                            <label className="font-bold" htmlFor="email">Email Address
-                                <input name="email" ref={emailRef}
-                                    {...register("email", { required: true })} type="text" id="" className="text-base pl-2 h-10 rounded-xl w-full border-2 border-inputColor bg-inputColor" />
-                            </label>
-                        </div>
-                        <div className="my-4">
-                            <label className="font-bold" htmlFor="password">Password
-                                <input name="password"
-                                    ref={passwordRef}
-                                    {...register("password", { required: true })} type="password" id="" className="text-base pl-2 h-10 rounded-xl w-full border-2 border-inputColor bg-inputColor" />
-                            </label>
-                        </div>
-                        <button type="submit" className="w-full rounded-xl hover:text-BLUE border-2 hover:bg-transparent border-BLUE duration-300 bg-BLUE py-2 font-semibold text-white text-base md:text-">{loading ? <div>
-                            <span className="loading loading-ring loading-sm"></span>
-                            <span className="loading loading-ring loading-sm"></span>
-                            <span className="loading loading-ring loading-sm"></span>
-                        </div> : "Create Account"}</button>
-                        {/* <p className='text-center font-extralight py-1'>or</p> */}
-                    </form>
-                    <div className='login-options flex flex-col gap-3 font-medium'>
-                        {/* <button onClick={loginwihGoogle} className='flex items-center justify-center gap-2 border-[1px] border-black rounded-3xl py-2 hover:bg-black hover:text-white duration-300'><img src={GOOGLE} alt="" className='w-5' />Continue with Google</button> */}
-                        {/* <button className='flex items-center justify-center gap-2 border-[1px] border-black rounded-3xl py-2 hover:text-white duration-300'><img src={FACEBOOK} alt="" className='w-5' />Continue with Facebook</button>
-                        <button className='flex items-center justify-center gap-2 border-[1px] border-black rounded-3xl py-2 hover:text-white duration-300'><FaApple size={20} />Continue with Apple ID</button> */}
-                    </div>
-                    <p className="text-sm md:text-base mt-4 font-semibold ">Already have an account? <Link className="underline underline-offset-2 text-BLUE" to="/login">Log In</Link></p>
-                </motion.div>
-            </section>
+  return (
+    <>
+      <AuthPageFrame
+        eyebrow="Create your account"
+        title="Start learning"
+        description="Create your account and keep your courses, progress and learning journey together."
+        brandTitle="Make room for what’s next."
+        brandDescription="Build practical skills at your pace, follow a clear learning path and keep every milestone in view."
+      >
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <div>
+            <label
+              htmlFor="name"
+              className="mb-2 block text-sm font-bold text-slate-800"
+            >
+              Full name
+            </label>
+            <div
+              className={`group flex h-14 items-center gap-3.5 rounded-xl border px-4 transition focus-within:bg-white focus-within:shadow-[0_8px_24px_-14px_rgba(45,32,101,0.45)] ${
+                errors.name
+                  ? "border-rose-400 bg-rose-50"
+                  : "border-slate-200 bg-slate-50 focus-within:border-indigo-700"
+              }`}
+            >
+              <FaUser
+                aria-hidden="true"
+                className={`shrink-0 ${errors.name ? "text-rose-400" : "text-slate-400 group-focus-within:text-indigo-800"}`}
+              />
+              <input
+                {...register("name")}
+                id="name"
+                type="text"
+                autoComplete="name"
+                placeholder="Your full name"
+                aria-invalid={Boolean(errors.name)}
+                className="h-full w-full bg-transparent text-sm font-medium text-slate-900 outline-none placeholder:text-slate-400"
+              />
+            </div>
+            {errors.name && (
+              <p className="mt-1.5 text-xs font-semibold text-rose-600" role="alert">
+                {errors.name.message}
+              </p>
+            )}
+          </div>
 
-            <Toaster position='top-center' />
-        </>
-    )
-}
+          <div>
+            <label
+              htmlFor="email"
+              className="mb-2 block text-sm font-bold text-slate-800"
+            >
+              Email address
+            </label>
+            <div
+              className={`group flex h-14 items-center gap-3.5 rounded-xl border px-4 transition focus-within:bg-white focus-within:shadow-[0_8px_24px_-14px_rgba(45,32,101,0.45)] ${
+                errors.email
+                  ? "border-rose-400 bg-rose-50"
+                  : "border-slate-200 bg-slate-50 focus-within:border-indigo-700"
+              }`}
+            >
+              <FaEnvelope
+                aria-hidden="true"
+                className={`shrink-0 ${errors.email ? "text-rose-400" : "text-slate-400 group-focus-within:text-indigo-800"}`}
+              />
+              <input
+                {...register("email")}
+                id="email"
+                type="email"
+                autoComplete="email"
+                placeholder="you@example.com"
+                aria-invalid={Boolean(errors.email)}
+                className="h-full w-full bg-transparent text-sm font-medium text-slate-900 outline-none placeholder:text-slate-400"
+              />
+            </div>
+            {errors.email && (
+              <p className="mt-1.5 text-xs font-semibold text-rose-600" role="alert">
+                {errors.email.message}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label
+              htmlFor="password"
+              className="mb-2 block text-sm font-bold text-slate-800"
+            >
+              Password
+            </label>
+            <div
+              className={`group flex h-14 items-center gap-3.5 rounded-xl border px-4 transition focus-within:bg-white focus-within:shadow-[0_8px_24px_-14px_rgba(45,32,101,0.45)] ${
+                errors.password
+                  ? "border-rose-400 bg-rose-50"
+                  : "border-slate-200 bg-slate-50 focus-within:border-indigo-700"
+              }`}
+            >
+              <FaLock
+                aria-hidden="true"
+                className={`shrink-0 ${errors.password ? "text-rose-400" : "text-slate-400 group-focus-within:text-indigo-800"}`}
+              />
+              <input
+                {...register("password")}
+                id="password"
+                type={showPassword ? "text" : "password"}
+                autoComplete="new-password"
+                placeholder="Create a password"
+                aria-invalid={Boolean(errors.password)}
+                className="h-full w-full bg-transparent text-sm font-medium text-slate-900 outline-none placeholder:text-slate-400"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((visible) => !visible)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                className="shrink-0 rounded-md p-1 text-slate-400 transition hover:text-indigo-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-700"
+              >
+                {showPassword ? <FaEyeSlash aria-hidden="true" /> : <FaEye aria-hidden="true" />}
+              </button>
+            </div>
+            {errors.password && (
+              <p className="mt-1.5 text-xs font-semibold text-rose-600" role="alert">
+                {errors.password.message}
+              </p>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="group mt-2 flex h-14 w-full items-center justify-center gap-2.5 rounded-xl bg-BLUE px-5 text-sm font-extrabold text-white shadow-lg shadow-indigo-950/15 transition hover:-translate-y-0.5 hover:bg-[#21164f] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {loading ? (
+              <>
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                Creating your account…
+              </>
+            ) : (
+              <>
+                Create account
+                <FaArrowRight aria-hidden="true" className="transition group-hover:translate-x-1" />
+              </>
+            )}
+          </button>
+        </form>
+
+        <p className="mt-7 text-center text-sm text-slate-600">
+          Already have an account?{" "}
+          <Link
+            className="font-extrabold text-indigo-800 underline decoration-indigo-300 underline-offset-4 hover:decoration-indigo-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700"
+            to="/login"
+          >
+            Sign in
+          </Link>
+        </p>
+        <p className="mt-5 text-center text-xs leading-5 text-slate-400">
+          Your learning courses and progress will be saved to your account.
+        </p>
+      </AuthPageFrame>
+      <Toaster position="top-center" richColors />
+    </>
+  );
+};
 
 export default CreateAccountForm;

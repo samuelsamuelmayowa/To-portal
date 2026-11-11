@@ -341,7 +341,7 @@ const router = createBrowserRouter([
 
       {
         path: "/lab",
-        element: <CourseAccessGate courseId="splunk"><SplunkStudio /></CourseAccessGate>,
+        element: <SplunkStudio  />,
       },
       { path: "/splunk-studio", element: <CourseAccessGate courseId="splunk"><SplunkStudio /></CourseAccessGate> },
       {
