@@ -63,7 +63,7 @@ export default function DashboardBuilder({ saved = [], dashboards = [], onAddDas
   const [addingPanel, setAddingPanel] = useState(false);
   const addPanel = async () => {
     if (!spl.trim()) return setNotice("Choose a saved search or enter your SPL query.");
-    if (!/^index=buttercup_(?:web|auth|sales|prices)\b/i.test(spl.trim())) return setNotice("Dashboard panels must search an imported Buttercup index so every chart uses stored records.");
+    if (!/^index=(?:buttercup|toa)_(?:web|auth|sales|prices)\b/i.test(spl.trim())) return setNotice("Dashboard panels must search an available stored training index so every chart uses stored records.");
     if (addingPanel) return;
     if (panels.length >= 16) return setNotice("Maximum 16 panels per training dashboard.");
     setAddingPanel(true);

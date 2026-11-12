@@ -33,7 +33,7 @@ export default function AlertBuilder({ saved = [], alerts = [], onAddAlert, onUp
     const alert = formValues();
     if (!alert.name || alert.name.length > 100) return { error: "Enter an alert name (up to 100 characters)." };
     if (!alert.spl) return { error: "Choose a search or enter SPL." };
-    if (!/^index=buttercup_(?:web|auth|sales|prices)\b/i.test(alert.spl)) return { error: "Alerts must search an imported Buttercup index." };
+    if (!/^index=(?:buttercup|toa)_(?:web|auth|sales|prices)\b/i.test(alert.spl)) return { error: "Alerts must search an available stored training index." };
     if (String(draft.threshold).trim() === "") return { error: "Enter a threshold." };
     if (!Number.isInteger(alert.threshold) || alert.threshold < 0 || alert.threshold > 1000000) return { error: "Threshold must be a whole number from 0 to 1,000,000." };
     if (![">=", ">", "==", "<=", "<"].includes(alert.operator)) return { error: "Choose a supported comparison operator." };
@@ -81,7 +81,7 @@ export default function AlertBuilder({ saved = [], alerts = [], onAddAlert, onUp
   return <div className="grid gap-6 lg:grid-cols-[420px_1fr]">
     <GlassCard className="p-5 sm:p-6">
       <h2 className="mb-2 flex items-center gap-2 text-lg font-semibold"><Bell size={18} className="text-cyan-300"/> Alert Builder</h2>
-      <p className="mb-5 text-xs leading-relaxed text-slate-400">Evaluate alert thresholds against imported Buttercup records. Runs are stored with the alert, and optional email remains a manual action to your verified account address.</p>
+      <p className="mb-5 text-xs leading-relaxed text-slate-400">Evaluate alert thresholds against stored training records. Runs are stored with the alert, and optional email remains a manual action to your verified account address.</p>
       <div className="space-y-4">
         <label className="block"><span className="mb-1 block text-xs text-slate-400">Alert name</span><input className={control} value={draft.name} onChange={(e) => update("name", e.target.value)} maxLength={100}/></label>
         <label className="block"><span className="mb-1 block text-xs text-slate-400">Use saved search</span><select className={control} value={selectedId} onChange={(e) => { setSearchId(e.target.value); setDraftResult(null); }}><option value="__custom__">Write custom SPL</option>{saved.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</select></label>

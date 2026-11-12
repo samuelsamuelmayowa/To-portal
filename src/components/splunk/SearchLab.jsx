@@ -35,6 +35,10 @@ const EXAMPLES = [
   { label: "Buttercup login failures", query: "index=buttercup_auth action=failure | stats count by user | sort -count" },
   { label: "Buttercup vendor activity", query: "index=buttercup_sales | stats count by VendorID | sort -count" },
   { label: "Buttercup price list", query: "index=buttercup_prices | table productId product_name price sale_price" },
+  { label: "T.O. HTTP error analysis", query: "index=toa_web status>=400 | stats count by status | sort -count" },
+  { label: "T.O. authentication failures", query: "index=toa_auth action=failure | stats count by user | sort -count" },
+  { label: "T.O. vendor activity", query: "index=toa_sales | stats count by VendorID | sort -count" },
+  { label: "T.O. product prices", query: "index=toa_prices | table productId product_name price sale_price" },
 ];
 const LEVELS = ["Beginner", "Intermediate", "Advanced", "Investigations"];
 function safelyLoadProgress() {
@@ -66,6 +70,7 @@ export default function SearchLab({ onSaveSearch, onSearchHistory }) {
   const [chartType, setChartType] = useState("bar");
   const [backendDatasets, setBackendDatasets] = useState([]);
   const [catalogState, setCatalogState] = useState("loading");
+  const [catalogError, setCatalogError] = useState("");
   const [searching, setSearching] = useState(false);
   const [timeRange, setTimeRange] = useState("all");
 
@@ -75,7 +80,7 @@ export default function SearchLab({ onSaveSearch, onSearchHistory }) {
   const isLookupSearch = /^\|?\s*inputlookup\s+/i.test(query);
   const currentIndex = (query.match(/\bindex=([\w-]+)/i) || [])[1] || (isLookupSearch ? "" : initialIndex);
   const selectedDataset = backendDatasets.find((dataset) => dataset.index === currentIndex);
-  const isStoredDatasetSearch = Boolean(selectedDataset || /^buttercup_(?:web|auth|sales|prices)$/.test(currentIndex));
+  const isStoredDatasetSearch = Boolean(selectedDataset || /^(?:buttercup|toa)_(?:web|auth|sales|prices)$/.test(currentIndex));
   const currentLesson = SPL_LESSONS.find((l) => l.id === lessonId) || SPL_LESSONS[0];
   const visibleLessons = SPL_LESSONS.filter((l) => l.level === level);
   const completionRate = Math.round(completed.length / SPL_LESSONS.length * 100);
@@ -93,8 +98,17 @@ export default function SearchLab({ onSaveSearch, onSearchHistory }) {
   useEffect(() => {
     let active = true;
     splunkLabApi.listCatalog()
-      .then((datasets) => { if (active) { setBackendDatasets(datasets); setCatalogState("ready"); } })
-      .catch(() => { if (active) setCatalogState("unavailable"); });
+      .then((datasets) => { if (active) { setBackendDatasets(datasets); setCatalogError(""); setCatalogState("ready"); } })
+      .catch((requestError) => {
+        if (!active) return;
+        const status = requestError.response?.status;
+        setCatalogError(status === 401
+        ? "Sign in to load stored training datasets."
+          : status === 403
+            ? "Your account is not authorized to use the stored training datasets."
+            : requestError.response?.data?.message || "The stored dataset catalog could not be loaded. Try again later.");
+        setCatalogState("unavailable");
+      });
     return () => { active = false; };
   }, []);
   useEffect(() => { localStorage.setItem(PROGRESS_KEY, JSON.stringify(completed)); }, [completed]);
@@ -126,7 +140,7 @@ export default function SearchLab({ onSaveSearch, onSearchHistory }) {
         setResult({ ...out, results: out.rows, serverBacked: true });
         if (out.history) onSearchHistory?.(out.history);
         setResultTab(out.mode === "timechart" ? "chart" : out.mode === "table" || out.mode === "statistics" ? "table" : "events");
-        setLessonMessage("Search completed against imported Buttercup tutorial records.");
+        setLessonMessage("Search completed against stored training records.");
       } catch (requestError) {
         if (requestError.response?.data?.history) onSearchHistory?.(requestError.response.data.history);
         setError(requestError.response?.data?.message || "The stored tutorial dataset could not be searched.");
@@ -213,14 +227,14 @@ export default function SearchLab({ onSaveSearch, onSearchHistory }) {
             </div>
           )}
         </GlassCard>
-        <GlassCard className="p-4"><p className="flex items-center gap-2 text-sm font-semibold text-slate-100"><CircleHelp size={16} className="text-cyan-300" /> Training environment</p><p className="mt-1.5 text-xs leading-relaxed text-slate-400">These are simulated events, not live Splunk logs. Commands run locally. Open the Dictionary for additional terminology and examples.</p></GlassCard>
+        <GlassCard className="p-4"><p className="flex items-center gap-2 text-sm font-semibold text-slate-100"><CircleHelp size={16} className="text-cyan-300" /> Training environment</p><p className="mt-1.5 text-xs leading-relaxed text-slate-400">Indexes shown in the Data Index list search stored training records through the authenticated backend. The other training indexes, guided lessons, and lookup tables use a separate browser-local simulation; they are practice data, not live Splunk logs.</p></GlassCard>
       </aside>
 
       <main className="min-w-0 space-y-5">
         <GlassCard className="p-4 sm:p-5">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div><div className="flex items-center gap-2 text-base font-semibold text-white"><Terminal size={18} className="text-cyan-300" /> SPL Search Console</div><div className="mt-1 text-xs text-slate-400">Build a query, run it, and inspect each command&apos;s output.</div></div>
-            <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[11px] text-emerald-300">{selectedDataset ? "Stored tutorial data · simulator" : "Local simulation"}</span>
+            <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[11px] text-emerald-300">{selectedDataset ? "Stored training data · backend" : "Local simulation"}</span>
           </div>
           <div className="mb-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-end">
             <label className="block"><span className="mb-1.5 flex items-center gap-1.5 text-xs text-slate-400"><Database size={14} /> Data index</span>
@@ -231,15 +245,16 @@ export default function SearchLab({ onSaveSearch, onSearchHistory }) {
               </select>
             </label>
             <label className="block"><span className="mb-1.5 block text-xs text-slate-400">Time range</span><select className={inputClass} value={timeRange} onChange={(e) => setTimeRange(e.target.value)}><option value="all">All available time</option><option value="24h">Last 24 hours</option><option value="7d">Last 7 days</option></select></label>
-            <span className="pb-2 text-xs text-slate-400">{selectedDataset ? "Stored Buttercup tutorial data" : catalogState === "loading" ? "Checking imported data…" : catalogState === "unavailable" ? "Stored data service unavailable" : backendDatasets.length ? "Local fictional practice data" : "No stored imports · local fictional data"}</span>
+            <span className="pb-2 text-xs text-slate-400">{selectedDataset ? `Stored training data · ${selectedDataset.eventCount.toLocaleString()} records` : catalogState === "loading" ? "Checking available stored datasets…" : catalogState === "unavailable" ? "Stored dataset catalog unavailable" : backendDatasets.length ? "Stored datasets available · other indexes use local simulation" : "No stored datasets are available · local simulation remains available"}</span>
           </div>
+          {catalogError && <div role="alert" className="mb-4 rounded-xl border border-amber-400/30 bg-amber-400/10 p-3 text-sm text-amber-100">{catalogError}</div>}
           <label htmlFor="spl-search-editor" className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400">Search Processing Language (SPL)</label>
           <textarea id="spl-search-editor" rows={3} spellCheck={false} value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); runSearch(); } }} className={classNames(inputClass, "min-h-[94px] resize-y font-mono text-[13px] leading-relaxed text-cyan-100")} placeholder="index=training_web | stats count by status" />
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
             <span className="flex items-center gap-1.5 text-xs text-slate-400"><Command size={14} /> Ctrl + Enter to run</span>
             <div className="flex gap-2"><SoftButton onClick={() => onSaveSearch?.(query)} title="Add this query to Saved Searches"><Save size={15} className="mr-1 inline" /> Save</SoftButton><PrimaryButton onClick={() => runSearch()} disabled={searching}><Play size={15} className="mr-1 inline" /> {searching ? "Searching…" : "Run Search"}</PrimaryButton></div>
           </div>
-          {isStoredDatasetSearch && <p className="mt-3 text-xs leading-relaxed text-cyan-100/80">{selectedDataset?.description || "Buttercup Games tutorial index."} This dataset contains fictional tutorial records. If it is not listed in the catalog, import the ZIPs into the local backend database first.</p>}
+          {isStoredDatasetSearch && <p className="mt-3 text-xs leading-relaxed text-cyan-100/80">{selectedDataset?.description || "Stored training index."} This index is searched through the backend catalog of stored training records.</p>}
           {error && <div role="alert" className="mt-4 flex items-start gap-2 rounded-xl border border-rose-400/30 bg-rose-400/10 p-3 text-sm text-rose-200"><XCircle size={18} className="shrink-0" /> {error}</div>}
         </GlassCard>
 
