@@ -1,7 +1,10 @@
 import { Helmet } from "react-helmet";
+import { useContext } from "react";
 import { useLocation } from "react-router-dom";
+import CartItemContext from "../context/CartItemContext";
 
 const SITE_URL = "https://www.to-analytics.com";
+const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
 
 const PAGE_METADATA = {
   "/": {
@@ -54,6 +57,11 @@ const PAGE_METADATA = {
     description:
       "Build practical Splunk and security investigation skills with realistic, hands-on incident scenarios.",
   },
+  "/lab": {
+    title: "Free Splunk Simulator & Search Lab | T.O Analytics",
+    description:
+      "Practice Splunk search, investigate security events, save SPL searches and build dashboards in T.O Analytics’ free hands-on Splunk learning lab.",
+  },
   "/trading-simulator": {
     title: "Paper Trading Simulator | T.O Analytics",
     description:
@@ -69,24 +77,9 @@ const PAGE_METADATA = {
     description:
       "Browse live technology classes and instructor-led learning from T.O Analytics.",
   },
-  "/commands": {
-    title: "Splunk Search Commands Reference | T.O Analytics",
-    description:
-      "Browse a practical reference to Splunk Search Processing Language commands and functions for building effective searches.",
-  },
-  "/dictionary": {
-    title: "Splunk & Technology Dictionary | T.O Analytics",
-    description:
-      "Review plain-language definitions for Splunk, data and technology terms used in hands-on learning.",
-  },
-  "/stockmarkert": {
-    title: "Stock Market Overview | T.O Analytics",
-    description:
-      "Explore stock market information and market overviews with T.O Analytics learning tools.",
-  },
 };
 
-function getPageMetadata(pathname) {
+function getPageMetadata(pathname, courses) {
   if (PAGE_METADATA[pathname]) return PAGE_METADATA[pathname];
 
   if (pathname.startsWith("/courses/")) {
@@ -97,13 +90,25 @@ function getPageMetadata(pathname) {
     } catch {
       // Keep the undecoded slug if the URL contains malformed encoding.
     }
-    courseName = courseName
-      .replace(/[-_]+/g, " ")
-      .replace(/\b\w/g, (letter) => letter.toUpperCase());
+    const course = courses?.find(
+      (item) => item.courseName.toLowerCase() === courseName.toLowerCase()
+    );
+
+    if (!course) {
+      return {
+        title: "Course Not Found | T.O Analytics",
+        description: "This course could not be found.",
+        indexable: false,
+      };
+    }
+
+    const description = `${course.courseName} course by T.O Analytics. ${course.description}`
+      .replace(/\s+/g, " ")
+      .slice(0, 160);
 
     return {
-      title: `${courseName} Course | T.O Analytics`,
-      description: `Explore the ${courseName} course from T.O Analytics, with practical instruction and guided learning to help you build career-ready skills.`,
+      title: `${course.courseName} Course | T.O Analytics`,
+      description,
     };
   }
 
@@ -112,30 +117,60 @@ function getPageMetadata(pathname) {
 
 export default function RouteSeo() {
   const { pathname } = useLocation();
+  const { COURSES = [] } = useContext(CartItemContext);
   const normalizedPath = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
-  const metadata = getPageMetadata(normalizedPath);
-  const canonicalUrl = metadata
+  const metadata = getPageMetadata(normalizedPath, COURSES);
+  const canonicalUrl = metadata && metadata.indexable !== false
     ? `${SITE_URL}${normalizedPath}`
     : null;
   const title = metadata?.title || "T.O Analytics";
   const description =
     metadata?.description ||
     "T.O Analytics provides practical technology training, mentorship and software solutions.";
+  const structuredData = metadata && metadata.indexable !== false && canonicalUrl
+    ? JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "@id": `${canonicalUrl}#webpage`,
+        url: canonicalUrl,
+        name: title,
+        description,
+        inLanguage: "en",
+        isPartOf: { "@id": `${SITE_URL}/#website` },
+      }).replace(/</g, "\\u003c")
+    : null;
 
   return (
     <Helmet>
       <title>{title}</title>
       <meta name="description" content={description} />
-      <meta name="robots" content={metadata ? "index, follow" : "noindex, nofollow"} />
+      <meta
+        name="robots"
+        content={
+          metadata?.indexable === false || !metadata
+            ? "noindex, nofollow"
+            : "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+        }
+      />
       {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
       <meta property="og:type" content="website" />
       <meta property="og:site_name" content="T.O Analytics" />
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
       {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
-      <meta name="twitter:card" content="summary" />
+      <meta property="og:image" content={DEFAULT_OG_IMAGE} />
+      <meta property="og:image:type" content="image/png" />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
+      <meta property="og:image:alt" content="T.O Analytics offers practical technology training, mentorship and software solutions." />
+      <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
+      <meta name="twitter:image" content={DEFAULT_OG_IMAGE} />
+      <meta name="twitter:image:alt" content="T.O Analytics offers practical technology training, mentorship and software solutions." />
+      {structuredData && (
+        <script type="application/ld+json">{structuredData}</script>
+      )}
     </Helmet>
   );
 }

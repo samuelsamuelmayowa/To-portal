@@ -34,6 +34,21 @@ const rememberGuest = (guestId) => {
 };
 
 export const splunkLabApi = {
+  async listCatalog() {
+    const response = await client.get("/catalog");
+    return response.data.data || [];
+  },
+
+  async search(query, options = {}) {
+    const response = await client.post("/search", {
+      query,
+      timeRange: options.timeRange || "all",
+      page: options.page || 1,
+      pageSize: options.pageSize || 100,
+    });
+    return response.data.data;
+  },
+
   async listCases() {
     const response = await client.get("/cases");
     return response.data.data;

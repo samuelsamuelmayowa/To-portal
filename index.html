@@ -7,17 +7,33 @@
       name="description"
       content="Build practical skills with hands-on Splunk, cybersecurity, Linux, data and stock trading education from T.O Analytics. Explore training, mentorship and software services."
     />
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
     <meta name="theme-color" content="#ffffff" />
-    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+    <meta name="author" content="T.O Analytics" />
+    <link rel="canonical" href="https://www.to-analytics.com/" />
+    <link
+      rel="preload"
+      href="https://unpkg.com/aos@next/dist/aos.css"
+      as="style"
+      onload="this.onload=null;this.rel='stylesheet'"
+    />
+    <noscript><link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" /></noscript>
     <link rel="icon" href="/favicon.jpeg" type="image/jpeg" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="T.O Analytics" />
     <meta property="og:title" content="T.O Analytics | Practical Tech Training & Software Solutions" />
     <meta property="og:description" content="Build practical skills with hands-on Splunk, cybersecurity, Linux, data and stock trading education from T.O Analytics." />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:url" content="https://www.to-analytics.com/" />
+    <meta property="og:image" content="https://www.to-analytics.com/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="T.O Analytics offers practical technology training, mentorship and software solutions." />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="T.O Analytics | Practical Tech Training & Software Solutions" />
     <meta name="twitter:description" content="Build practical skills with hands-on Splunk, cybersecurity, Linux, data and stock trading education from T.O Analytics." />
+    <meta name="twitter:image" content="https://www.to-analytics.com/og-image.png" />
+    <meta name="twitter:image:alt" content="T.O Analytics offers practical technology training, mentorship and software solutions." />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -27,13 +43,25 @@
             "@id": "https://www.to-analytics.com/#organization",
             "name": "T.O Analytics",
             "url": "https://www.to-analytics.com/",
-            "description": "Practical technology education, mentorship and software solutions."
+            "description": "Practical technology education, mentorship and software solutions.",
+            "logo": "https://www.to-analytics.com/favicon.jpeg",
+            "image": "https://www.to-analytics.com/og-image.png",
+            "email": "t.oanalyticsllc@gmail.com",
+            "telephone": "+1-443-768-8416",
+            "contactPoint": {
+              "@type": "ContactPoint",
+              "contactType": "customer support",
+              "email": "t.oanalyticsllc@gmail.com",
+              "telephone": "+1-443-768-8416",
+              "url": "https://www.to-analytics.com/contact"
+            }
           },
           {
             "@type": "WebSite",
             "@id": "https://www.to-analytics.com/#website",
             "url": "https://www.to-analytics.com/",
             "name": "T.O Analytics",
+            "inLanguage": "en",
             "publisher": { "@id": "https://www.to-analytics.com/#organization" }
           }
         ]
@@ -44,6 +72,22 @@
 
   <body>
     <div id="root"></div>
+    <noscript>
+      <main style="max-width: 900px; margin: 3rem auto; padding: 0 1.5rem; color: #111827; font-family: Arial, sans-serif; line-height: 1.6;">
+        <h1>Launch your tech career with T.O Analytics</h1>
+        <p>T.O Analytics offers practical, hands-on training in Splunk, cybersecurity, Linux, cloud and data, alongside mentorship and software development services.</p>
+        <h2>Explore T.O Analytics</h2>
+        <ul>
+          <li><a href="/courses">Technology courses</a></li>
+          <li><a href="/mentorship">Technology mentorship</a></li>
+          <li><a href="/lab">Free Splunk simulator</a></li>
+          <li><a href="/trading-simulator">Paper trading simulator</a></li>
+          <li><a href="/about">About T.O Analytics</a></li>
+          <li><a href="/contact">Contact T.O Analytics</a></li>
+        </ul>
+        <p>Enable JavaScript to use the interactive learning tools and account features.</p>
+      </main>
+    </noscript>
     <script>
       document.cookie =
         "myCookie=paypal;domain=www.to-analytics.com;  SameSite=None; Secure; Partitioned;";
@@ -58,10 +102,9 @@
     </script>
     <script type="module" src="/src/main.jsx"></script>
 
-    <script src="https://www.paypal.com/sdk/js?client-id=AXTaMJvDyHKb0JdWMYxjQRWK_-hQB6bjF7oM_r2TSACTTUPK9eRDrRiIb701IbMs_Sp4HERH1hQAXXT_"></script>
-    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <script defer src="https://unpkg.com/aos@next/dist/aos.js"></script>
     <script>
-      AOS.init();
+      window.addEventListener("load", () => window.AOS?.init());
     </script>
   </body>
 </html>

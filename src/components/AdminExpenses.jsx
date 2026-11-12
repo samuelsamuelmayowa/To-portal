@@ -61,10 +61,10 @@ const initialExpenses = [
     amount: 38000,
     currency: "NGN",
     billingCycle: "yearly",
-    status: "active",
+    status: "paid",
     renewalDate: "",
     notes:
-      "Domain renewal costs ₦38,000 and expires this month, August 2026. Add the exact renewal date when confirmed.",
+      "₦38,000 domain renewal has been paid. The domain expires in November 2026; exact expiry date not provided.",
   },
   {
     id: "frontend-hosting",
@@ -126,6 +126,42 @@ const initialExpenses = [
     status: "active",
     renewalDate: "",
     notes: "Confirmed Zoom subscription cost: $17 per month.",
+  },
+  {
+    id: "openweb-ninja-career",
+    name: "Career page order",
+    provider: "OpenWeb Ninja",
+    category: "Software",
+    amount: 25,
+    currency: "USD",
+    billingCycle: "one-time",
+    status: "paid",
+    renewalDate: "2026-11-11",
+    notes: "Order started November 11, 2026 for https://www.to-analytics.com/career.",
+  },
+  {
+    id: "administrator-salary",
+    name: "Administrator salary",
+    provider: "T.O Analytics team",
+    category: "Staff / Teaching",
+    amount: 200000,
+    currency: "NGN",
+    billingCycle: "monthly",
+    status: "active",
+    renewalDate: "",
+    notes: "Monthly administrator salary.",
+  },
+  {
+    id: "software-developer-salary",
+    name: "Software developer salary",
+    provider: "T.O Analytics team",
+    category: "Staff / Teaching",
+    amount: 200000,
+    currency: "NGN",
+    billingCycle: "monthly",
+    status: "active",
+    renewalDate: "",
+    notes: "Monthly software developer salary.",
   },
 ];
 
@@ -236,6 +272,15 @@ function loadExpenses() {
       }
     }
 
+    for (const seededExpense of initialExpenses) {
+      if (
+        ["openweb-ninja-career", "administrator-salary", "software-developer-salary"].includes(seededExpense.id) &&
+        !migratedExpenses.some((expense) => expense.id === seededExpense.id)
+      ) {
+        migratedExpenses.push(seededExpense);
+      }
+    }
+
     return migratedExpenses.map((expense) => {
       if (expense.id === "domain") {
         const storedDomainAmount = Number(
@@ -248,18 +293,14 @@ function loadExpenses() {
           expense.amount === null ||
           expense.amount === undefined;
 
-        if (!domainStillHasOldPrice) {
-          return expense;
-        }
-
         return {
           ...expense,
-          amount: 38000,
+          amount: domainStillHasOldPrice ? 38000 : expense.amount,
           currency: "NGN",
           billingCycle: "yearly",
-          status: "active",
+          status: "paid",
           notes:
-            "Domain renewal costs ₦38,000 and expires this month, August 2026. Add the exact renewal date when confirmed.",
+            "₦38,000 domain renewal has been paid. The domain expires in November 2026; exact expiry date not provided.",
         };
       }
 
@@ -961,11 +1002,11 @@ const AdminExpenses = () => {
         <motion.section
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden rounded-3xl border-2 border-red-600 bg-red-600 p-1 shadow-2xl shadow-red-200"
+          className={`relative overflow-hidden rounded-3xl border-2 p-1 shadow-2xl ${domainExpense.status === "paid" ? "border-emerald-600 bg-emerald-600 shadow-emerald-200" : "border-red-600 bg-red-600 shadow-red-200"}`}
         >
           <div className="absolute -right-12 -top-16 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
 
-          <div className="relative rounded-[20px] border border-white/20 bg-gradient-to-r from-red-700 via-red-600 to-rose-600 px-5 py-6 text-white sm:px-7 lg:flex lg:items-center lg:justify-between lg:gap-8">
+          <div className={`relative rounded-[20px] border border-white/20 px-5 py-6 text-white sm:px-7 lg:flex lg:items-center lg:justify-between lg:gap-8 ${domainExpense.status === "paid" ? "bg-gradient-to-r from-emerald-700 via-emerald-600 to-teal-600" : "bg-gradient-to-r from-red-700 via-red-600 to-rose-600"}`}>
             <div className="flex items-start gap-4">
               <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white text-red-600 shadow-lg">
                 <span className="absolute inset-0 animate-ping rounded-2xl bg-white/30" />
@@ -978,7 +1019,7 @@ const AdminExpenses = () => {
 
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.2em] text-red-100">
-                  Urgent payment alert
+                  {domainExpense.status === "paid" ? "Payment recorded" : "Urgent payment alert"}
                 </p>
 
                 <h2 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">
@@ -986,8 +1027,9 @@ const AdminExpenses = () => {
                 </h2>
 
                 <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-red-50 sm:text-base">
-                  Renew the domain before it expires to prevent the TO website,
-                  admin portal and connected services from becoming unavailable.
+                  {domainExpense.status === "paid"
+                    ? "The ₦38,000 renewal has been paid. The TO website, admin portal and connected services are covered for the renewal."
+                    : "Renew the domain before it expires to prevent the TO website, admin portal and connected services from becoming unavailable."}
                 </p>
               </div>
             </div>
@@ -1442,7 +1484,7 @@ const AdminExpenses = () => {
                           {isDomain && (
                             <span className="inline-flex items-center gap-1.5 rounded-full bg-red-600 px-3 py-1 text-xs font-black uppercase tracking-wide text-white shadow-sm">
                               <FaExclamationTriangle size={11} />
-                              Expires this month
+                              {expense.status === "paid" ? "Renewal paid" : "Expires this month"}
                             </span>
                           )}
                         </div>

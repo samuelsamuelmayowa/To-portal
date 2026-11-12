@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import PropTypes from "prop-types";
 import {
   BookOpen, CheckCircle2, ChevronDown, ChevronRight, CircleHelp,
   Command, Database, GraduationCap, Lightbulb, Play,
@@ -8,6 +9,7 @@ import { getLabLogs } from "../../data/splAdminState";
 import { LOOKUP_CATALOG } from "../../data/splLookups";
 import { SPL_COMMANDS, SPL_LESSONS } from "../../data/splLessons";
 import { runSPL } from "../../utils/splEngine";
+import { splunkLabApi } from "../../services/splunkLabApi";
 import { GlassCard, PrimaryButton, SoftButton } from "./Glass";
 import { PrettyTable } from "./Viz";
 import ChartSelector from "./charts/ChartSelector";
@@ -29,6 +31,10 @@ const EXAMPLES = [
   { label: "Extract severity (rex)", query: 'index=training_apps | rex field=_raw "(?<severity>ERROR|WARN|INFO)" | stats count by severity' },
   { label: "Enrich login audits", query: "index=training_security | lookup user_directory.csv user OUTPUT department role | stats count by department" },
   { label: "Connect sessions", query: "index=training_sessions | transaction session_id maxspan=30m | table session_id user eventcount duration" },
+  { label: "Buttercup HTTP errors", query: "index=buttercup_web status>=400 | stats count by status | sort -count" },
+  { label: "Buttercup login failures", query: "index=buttercup_auth action=failure | stats count by user | sort -count" },
+  { label: "Buttercup vendor activity", query: "index=buttercup_sales | stats count by VendorID | sort -count" },
+  { label: "Buttercup price list", query: "index=buttercup_prices | table productId product_name price sale_price" },
 ];
 const LEVELS = ["Beginner", "Intermediate", "Advanced", "Investigations"];
 function safelyLoadProgress() {
@@ -58,15 +64,22 @@ export default function SearchLab({ onSaveSearch }) {
   const [lookupChoice, setLookupChoice] = useState("user_directory.csv");
   const [completed, setCompleted] = useState(safelyLoadProgress);
   const [chartType, setChartType] = useState("bar");
+  const [backendDatasets, setBackendDatasets] = useState([]);
+  const [catalogState, setCatalogState] = useState("loading");
+  const [searching, setSearching] = useState(false);
+  const [timeRange, setTimeRange] = useState("all");
 
   const labLogs = getLabLogs();
-  const availableIndexes = Object.keys(labLogs);
+  const localIndexes = Object.keys(labLogs);
+  const availableIndexes = [...localIndexes, ...backendDatasets.map((dataset) => dataset.index)];
   const isLookupSearch = /^\|?\s*inputlookup\s+/i.test(query);
   const currentIndex = (query.match(/\bindex=([\w-]+)/i) || [])[1] || (isLookupSearch ? "" : initialIndex);
+  const selectedDataset = backendDatasets.find((dataset) => dataset.index === currentIndex);
+  const isStoredDatasetSearch = Boolean(selectedDataset || /^buttercup_(?:web|auth|sales|prices)$/.test(currentIndex));
   const currentLesson = SPL_LESSONS.find((l) => l.id === lessonId) || SPL_LESSONS[0];
   const visibleLessons = SPL_LESSONS.filter((l) => l.level === level);
   const completionRate = Math.round(completed.length / SPL_LESSONS.length * 100);
-  const rows = result?.results || [];
+  const rows = useMemo(() => result?.results || [], [result]);
   const chartKeys = useMemo(() => getChartKeys(rows, result?.mode), [rows, result?.mode]);
   const selectedLookup = LOOKUP_CATALOG.find((x) => x.name === lookupChoice) || LOOKUP_CATALOG[0];
   const filteredCommands = useMemo(() => SPL_COMMANDS.filter((c) =>
@@ -76,6 +89,13 @@ export default function SearchLab({ onSaveSearch }) {
   useEffect(() => {
     const handoff = sessionStorage.getItem("to_splunk_run_once");
     if (handoff) { setQuery(handoff); sessionStorage.removeItem("to_splunk_run_once"); }
+  }, []);
+  useEffect(() => {
+    let active = true;
+    splunkLabApi.listCatalog()
+      .then((datasets) => { if (active) { setBackendDatasets(datasets); setCatalogState("ready"); } })
+      .catch(() => { if (active) setCatalogState("unavailable"); });
+    return () => { active = false; };
   }, []);
   useEffect(() => { localStorage.setItem(PROGRESS_KEY, JSON.stringify(completed)); }, [completed]);
   useEffect(() => {
@@ -92,11 +112,31 @@ export default function SearchLab({ onSaveSearch }) {
     setLessonId(lesson.id); setLevel(lesson.level);
     setShowHint(false); loadQuery(lesson.starter);
   };
-  const runSearch = () => {
+  const runSearch = async (page = 1) => {
+    if (isStoredDatasetSearch) {
+      setSearching(true);
+      setError("");
+      setLessonMessage(null);
+      try {
+        const out = await splunkLabApi.search(query, { timeRange, page, pageSize: 100 });
+        setResult({ ...out, results: out.rows, serverBacked: true });
+        setResultTab(out.mode === "timechart" ? "chart" : out.mode === "table" || out.mode === "statistics" ? "table" : "events");
+        setLessonMessage("Search completed against imported Buttercup tutorial records.");
+      } catch (requestError) {
+        setError(requestError.response?.data?.message || "The stored tutorial dataset could not be searched.");
+        setResult(null);
+        setLessonMessage(null);
+      } finally {
+        setSearching(false);
+      }
+      return;
+    }
+
     const out = runSPL(query, labLogs);
     if (out.error) { setError(out.error); setResult(null); setLessonMessage(null); return; }
     setResult(out); setError("");
-    setResultTab(out.mode === "timechart" ? "chart" : out.mode === "table" ? "table" : "events");
+    const hasStatistics = /\|\s*(stats|top|rare)\b/i.test(query);
+    setResultTab(out.mode === "timechart" ? "chart" : out.mode === "table" || hasStatistics ? "table" : "events");
     let succeeded = false;
     try { succeeded = Boolean(currentLesson.check(query, out)); }
     catch { succeeded = false; }
@@ -168,24 +208,27 @@ export default function SearchLab({ onSaveSearch }) {
       <main className="min-w-0 space-y-5">
         <GlassCard className="p-4 sm:p-5">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <div><div className="flex items-center gap-2 text-base font-semibold text-white"><Terminal size={18} className="text-cyan-300" /> SPL Search Console</div><div className="mt-1 text-xs text-slate-400">Build a query, run it, and inspect each command's output.</div></div>
-            <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[11px] text-emerald-300">Local simulation</span>
+            <div><div className="flex items-center gap-2 text-base font-semibold text-white"><Terminal size={18} className="text-cyan-300" /> SPL Search Console</div><div className="mt-1 text-xs text-slate-400">Build a query, run it, and inspect each command&apos;s output.</div></div>
+            <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[11px] text-emerald-300">{selectedDataset ? "Stored tutorial data · simulator" : "Local simulation"}</span>
           </div>
-          <div className="mb-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+          <div className="mb-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-end">
             <label className="block"><span className="mb-1.5 flex items-center gap-1.5 text-xs text-slate-400"><Database size={14} /> Data index</span>
               <select className={inputClass} value={availableIndexes.includes(currentIndex) ? currentIndex : ""} onChange={(e) => selectDataset(e.target.value)}>
                 {!availableIndexes.includes(currentIndex) && <option value="">{isLookupSearch ? "CSV lookup (no index)" : "Choose an index"}</option>}
-                {availableIndexes.map((id) => <option key={id} value={id}>{id} ({labLogs[id].length.toLocaleString()} events)</option>)}
+                {localIndexes.map((id) => <option key={id} value={id}>{id} ({labLogs[id].length.toLocaleString()} practice events)</option>)}
+                {backendDatasets.map((dataset) => <option key={dataset.index} value={dataset.index}>{dataset.index} ({dataset.eventCount.toLocaleString()} imported records)</option>)}
               </select>
             </label>
-            <span className="pb-2 text-xs text-slate-400">All training data is synthetic.</span>
+            <label className="block"><span className="mb-1.5 block text-xs text-slate-400">Time range</span><select className={inputClass} value={timeRange} onChange={(e) => setTimeRange(e.target.value)}><option value="all">All available time</option><option value="24h">Last 24 hours</option><option value="7d">Last 7 days</option></select></label>
+            <span className="pb-2 text-xs text-slate-400">{selectedDataset ? "Stored Buttercup tutorial data" : catalogState === "loading" ? "Checking imported data…" : catalogState === "unavailable" ? "Stored data service unavailable" : backendDatasets.length ? "Local fictional practice data" : "No stored imports · local fictional data"}</span>
           </div>
           <label htmlFor="spl-search-editor" className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400">Search Processing Language (SPL)</label>
           <textarea id="spl-search-editor" rows={3} spellCheck={false} value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); runSearch(); } }} className={classNames(inputClass, "min-h-[94px] resize-y font-mono text-[13px] leading-relaxed text-cyan-100")} placeholder="index=training_web | stats count by status" />
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
             <span className="flex items-center gap-1.5 text-xs text-slate-400"><Command size={14} /> Ctrl + Enter to run</span>
-            <div className="flex gap-2"><SoftButton onClick={() => onSaveSearch?.(query)} title="Add this query to Saved Searches"><Save size={15} className="mr-1 inline" /> Save</SoftButton><PrimaryButton onClick={runSearch}><Play size={15} className="mr-1 inline" /> Run Search</PrimaryButton></div>
+            <div className="flex gap-2"><SoftButton onClick={() => onSaveSearch?.(query)} title="Add this query to Saved Searches"><Save size={15} className="mr-1 inline" /> Save</SoftButton><PrimaryButton onClick={() => runSearch()} disabled={searching}><Play size={15} className="mr-1 inline" /> {searching ? "Searching…" : "Run Search"}</PrimaryButton></div>
           </div>
+          {isStoredDatasetSearch && <p className="mt-3 text-xs leading-relaxed text-cyan-100/80">{selectedDataset?.description || "Buttercup Games tutorial index."} This dataset contains fictional tutorial records. If it is not listed in the catalog, import the ZIPs into the local backend database first.</p>}
           {error && <div role="alert" className="mt-4 flex items-start gap-2 rounded-xl border border-rose-400/30 bg-rose-400/10 p-3 text-sm text-rose-200"><XCircle size={18} className="shrink-0" /> {error}</div>}
         </GlassCard>
 
@@ -196,19 +239,22 @@ export default function SearchLab({ onSaveSearch }) {
 
         <GlassCard className="overflow-hidden p-4 sm:p-5">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
-            <div><p className="text-base font-semibold text-white">Search Results</p><p className="mt-1 text-xs text-slate-400">{result ? `Index: ${result.index} · ${result.count.toLocaleString()} matched events · ${result.totalRows.toLocaleString()} result rows · ${result.elapsedMs} ms` : "Run a query to inspect events and reports."}</p></div>
-            <div className="flex flex-wrap gap-1.5">{["events", "table", "chart"].map((item) => <button type="button" key={item} onClick={() => setResultTab(item)} className={classNames("rounded-lg border px-3 py-1.5 text-xs capitalize transition", resultTab === item ? "border-cyan-400/50 bg-cyan-500/10 text-cyan-100" : "border-white/10 bg-white/5 text-slate-300")}>{item}</button>)}</div>
+            <div><p className="text-base font-semibold text-white">Search Results</p><p className="mt-1 text-xs text-slate-400">{result ? `${result.serverBacked ? `Server search · ${result.status} · ${result.scanned.toLocaleString()} events scanned` : `Local search · ${result.count.toLocaleString()} matched events`} · ${result.totalRows.toLocaleString()} result rows · ${result.elapsedMs} ms` : "Run a query to inspect events and reports."}</p></div>
+            <div className="flex flex-wrap gap-1.5">{[{ id: "events", label: "Events" }, { id: "table", label: "Statistics" }, { id: "chart", label: "Visualization" }].map((item) => <button type="button" key={item.id} onClick={() => setResultTab(item.id)} className={classNames("rounded-lg border px-3 py-1.5 text-xs transition", resultTab === item.id ? "border-cyan-400/50 bg-cyan-500/10 text-cyan-100" : "border-white/10 bg-white/5 text-slate-300")}>{item.label}</button>)}</div>
           </div>
           {!result ? <div className="flex min-h-40 flex-col items-center justify-center gap-2 text-center text-slate-400"><Search size={24} className="text-slate-500" /><p className="text-sm">Your data will appear here when you run a search.</p></div> : rows.length === 0 ? <p className="py-12 text-center text-sm text-slate-400">No matching rows. Try broadening your search or checking the index.</p> : (
             <div className="pt-4">
               {resultTab === "chart" && chartKeys ? <><div className="mb-3 flex flex-wrap items-center justify-between gap-3"><p className="text-xs text-slate-400">Recommended visualization: <b className="text-cyan-200">{recommendChart(result)}</b></p><ChartSelector value={chartType} onChange={setChartType} /></div><ChartRenderer type={chartType} rows={rows} xKey={chartKeys.xKey} yKey={chartKeys.yKey} res={result} /></> : resultTab === "chart" ? <div className="py-12 text-center text-sm text-slate-400">Create an aggregation using stats or timechart to visualize numeric results.</div> : <div className="overflow-x-auto"><PrettyTable rows={rows} maxRows={100} /></div>}
-              {result.truncated && <p className="mt-2 text-xs text-amber-200">Preview limited to 500 rows. Matched row count is shown above.</p>}
+              {result.truncated && !result.serverBacked && <p className="mt-2 text-xs text-amber-200">Preview limited to 500 rows. Matched row count is shown above.</p>}
+              {result.serverBacked && result.totalPages > 1 && <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3 text-xs text-slate-400"><span>Page {result.page} of {result.totalPages}</span><div className="flex gap-2"><SoftButton onClick={() => runSearch(result.page - 1)} disabled={searching || result.page <= 1}>Previous</SoftButton><SoftButton onClick={() => runSearch(result.page + 1)} disabled={searching || result.page >= result.totalPages}>Next</SoftButton></div></div>}
             </div>
           )}
         </GlassCard>
 
-        {result && <GlassCard className="p-4 sm:p-5"><div className="mb-3 flex items-center gap-2 text-sm font-semibold text-white"><BookOpen size={17} className="text-cyan-300" /> How Splunk processed this search</div><p className="mb-3 text-xs text-slate-400">Read the pipeline from top to bottom. Each command transforms the rows from the previous step.</p><div className="space-y-2">{result.trace.map((step, i) => <div key={`${step.command}-${i}`} className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.035] p-3"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-cyan-400/10 text-xs font-semibold text-cyan-200">{i + 1}</span><div className="min-w-0 flex-1"><code className="break-all text-xs text-cyan-200">{step.command}</code><p className="mt-1 text-xs leading-relaxed text-slate-400">{step.explanation}</p></div><span className="shrink-0 rounded-lg bg-white/5 px-2 py-1 text-[11px] text-slate-300">{step.outputRows} rows</span></div>)}</div></GlassCard>}
+        {result?.trace?.length > 0 && <GlassCard className="p-4 sm:p-5"><div className="mb-3 flex items-center gap-2 text-sm font-semibold text-white"><BookOpen size={17} className="text-cyan-300" /> How Splunk processed this search</div><p className="mb-3 text-xs text-slate-400">Read the pipeline from top to bottom. Each command transforms the rows from the previous step.</p><div className="space-y-2">{result.trace.map((step, i) => <div key={`${step.command}-${i}`} className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.035] p-3"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-cyan-400/10 text-xs font-semibold text-cyan-200">{i + 1}</span><div className="min-w-0 flex-1"><code className="break-all text-xs text-cyan-200">{step.command}</code><p className="mt-1 text-xs leading-relaxed text-slate-400">{step.explanation}</p></div><span className="shrink-0 rounded-lg bg-white/5 px-2 py-1 text-[11px] text-slate-300">{step.outputRows} rows</span></div>)}</div></GlassCard>}
       </main>
     </div>
   );
 }
+
+SearchLab.propTypes = { onSaveSearch: PropTypes.func };
