@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
+import PropTypes from "prop-types";
+import { Link } from "react-router-dom";
 import { FaCheck, FaGraduationCap, FaSearch, FaSpinner, FaUsers } from "react-icons/fa";
 import { cookieAuthApi } from "../lib/cookieAuth";
+
+const EMPTY_RESOURCE_IDS = [];
 
 function formatDate(value) {
   if (!value) return "Recently";
@@ -28,6 +32,11 @@ function ResourceCard({ resource, checked, onChange }) {
     </label>
   );
 }
+ResourceCard.propTypes = {
+  resource: PropTypes.shape({ title: PropTypes.string, type: PropTypes.string }).isRequired,
+  checked: PropTypes.bool.isRequired,
+  onChange: PropTypes.func.isRequired,
+};
 
 export default function StudentAccess() {
   const [students, setStudents] = useState([]);
@@ -59,14 +68,14 @@ export default function StudentAccess() {
   useEffect(() => { loadAccess(); }, []);
 
   const selectedStudent = students.find((student) => student.email === selectedEmail) || null;
-  const selectedSavedResources = selectedStudent?.resourceIds || [];
+  const selectedSavedResources = selectedStudent?.resourceIds || EMPTY_RESOURCE_IDS;
   const isDirty = [...new Set([...selectedResourceIds, ...selectedSavedResources])]
     .some((resourceId) => selectedResourceIds.includes(resourceId) !== selectedSavedResources.includes(resourceId));
 
   useEffect(() => {
-    setSelectedResourceIds(selectedStudent?.resourceIds || []);
+    setSelectedResourceIds(selectedSavedResources);
     setNotice("");
-  }, [selectedEmail]);
+  }, [selectedEmail, selectedSavedResources]);
 
   const filteredStudents = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -145,15 +154,12 @@ export default function StudentAccess() {
               Choose an existing student or enter an email, select the courses and quizzes they can open, then save.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={loadAccess}
-            disabled={loading}
-            className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/15 disabled:opacity-60"
-          >
-            {loading ? <FaSpinner className="animate-spin" /> : <FaUsers />}
-            Refresh students
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <Link to="/ADMIN-DASHBOARD/student-access/overview" className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-indigo-500"><FaUsers /> View access table</Link>
+            <button type="button" onClick={loadAccess} disabled={loading} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/15 disabled:opacity-60">
+              {loading ? <FaSpinner className="animate-spin" /> : <FaUsers />} Refresh students
+            </button>
+          </div>
         </div>
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
           <div className="rounded-2xl border border-white/10 bg-white/5 p-4"><p className="text-xs font-semibold text-slate-400">Student accounts & assignments</p><p className="mt-1 text-2xl font-black">{students.length}</p></div>

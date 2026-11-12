@@ -263,7 +263,7 @@ function RotatingSimulatorPopup() {
                 >
                   <div className="flex items-center gap-3 sm:block">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-300/20 bg-cyan-300/10 text-cyan-200 sm:mb-3 sm:h-10 sm:w-10 sm:rounded-xl">
-                      <AnnouncementIcon size={20} aria-hidden="true" />
+                      {/* <AnnouncementIcon size={20} aria-hidden="true" /> */}
                     </div>
                     <h2 className="min-w-0 pr-2 text-[15px] font-black leading-5 sm:pr-8 sm:text-[27px] sm:leading-tight">
                       {announcement.title}

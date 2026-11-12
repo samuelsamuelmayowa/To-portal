@@ -194,7 +194,7 @@ export default function SplunkStudio() {
     {showNavBar && <NavBar />}
     <div className={showNavBar ? "pt-20 sm:pt-24" : undefined}>
       <StudioShell active={active} setActive={setActive}>
-        {workspaceNotice && <p role="status" className="mb-4 rounded-xl border border-cyan-400/20 bg-cyan-400/10 p-3 text-sm text-cyan-100">{workspaceNotice}</p>}
+        {workspaceNotice && <p role="status" className="mb-4 rounded-xl border border-fuchsia-400/20 bg-fuchsia-400/10 p-3 text-sm text-fuchsia-100">{workspaceNotice}</p>}
         {workspaceLoading || authLoading ? <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-slate-300">Loading your secure Studio workspace…</div> : <>
         {active === "lab" && <SearchLab onSaveSearch={(spl) => addSaved({ name: `Saved: ${spl.slice(0, 24)}...`, spl })} onSearchHistory={(item) => setHistory((previous) => [item, ...previous.filter((entry) => entry.id !== item.id)].slice(0, 100))} />}
         {active === "saved" && <SavedSearches saved={saved} onAdd={addSaved} onUpdate={updateSaved} onRun={runSavedIntoLab} onDelete={deleteSaved} />}
@@ -206,12 +206,12 @@ export default function SplunkStudio() {
         </>}
       </StudioShell>
     </div>
-    {!dictionaryOpen && <button ref={dictionaryButtonRef} type="button" onClick={() => setDictionaryOpen(true)} aria-haspopup="dialog" aria-controls="splunk-dictionary-dialog" className="fixed bottom-5 right-5 z-[100] inline-flex items-center gap-2 rounded-full border border-cyan-300/30 bg-cyan-600 px-5 py-3.5 font-bold text-white shadow-2xl shadow-cyan-950/50 transition hover:scale-105 hover:bg-cyan-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400 sm:bottom-7 sm:right-7"><BookOpen size={20} aria-hidden="true" /><span className="hidden sm:inline">Splunk Dictionary</span><span className="sm:hidden">Dictionary</span></button>}
+    {!dictionaryOpen && <button ref={dictionaryButtonRef} type="button" onClick={() => setDictionaryOpen(true)} aria-haspopup="dialog" aria-controls="splunk-dictionary-dialog" className="fixed bottom-5 right-5 z-[100] inline-flex items-center gap-2 rounded-full border border-fuchsia-300/30 bg-fuchsia-600 px-5 py-3.5 font-bold text-white shadow-2xl shadow-fuchsia-950/50 transition hover:scale-105 hover:bg-fuchsia-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-400 sm:bottom-7 sm:right-7"><BookOpen size={20} aria-hidden="true" /><span className="hidden sm:inline">Splunk Dictionary</span><span className="sm:hidden">Dictionary</span></button>}
     {dictionaryOpen && <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 p-2 backdrop-blur-sm sm:p-5" onMouseDown={(event) => { if (event.target === event.currentTarget) setDictionaryOpen(false); }}>
       <div id="splunk-dictionary-dialog" ref={dictionaryDialogRef} role="dialog" aria-modal="true" aria-labelledby="splunk-dictionary-title" className="flex h-[95vh] w-full max-w-7xl flex-col overflow-hidden rounded-2xl border border-slate-700 bg-[#020617] shadow-2xl sm:h-[90vh] sm:rounded-3xl">
         <div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-700 bg-[#0f172a] px-4 py-3 sm:px-6 sm:py-4">
-          <div className="flex min-w-0 items-center gap-3"><BookOpen className="shrink-0 text-cyan-400" size={24} aria-hidden="true" /><div className="min-w-0"><h2 id="splunk-dictionary-title" className="truncate text-base font-bold text-white sm:text-lg">Splunk Dictionary</h2><p className="hidden text-xs text-slate-400 sm:block">Search terminology, learn examples, and practice interview questions.</p></div></div>
-          <button ref={dictionaryCloseRef} type="button" onClick={() => setDictionaryOpen(false)} aria-label="Close Splunk Dictionary" className="shrink-0 rounded-xl border border-slate-700 p-2 text-slate-300 transition hover:border-red-500/40 hover:bg-red-500/15 hover:text-red-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-400"><X size={22} aria-hidden="true" /></button>
+          <div className="flex min-w-0 items-center gap-3"><BookOpen className="shrink-0 text-fuchsia-400" size={24} aria-hidden="true" /><div className="min-w-0"><h2 id="splunk-dictionary-title" className="truncate text-base font-bold text-white sm:text-lg">Splunk Dictionary</h2><p className="hidden text-xs text-slate-400 sm:block">Search terminology, learn examples, and practice interview questions.</p></div></div>
+          <button ref={dictionaryCloseRef} type="button" onClick={() => setDictionaryOpen(false)} aria-label="Close Splunk Dictionary" className="shrink-0 rounded-xl border border-slate-700 p-2 text-slate-300 transition hover:border-red-500/40 hover:bg-red-500/15 hover:text-red-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-fuchsia-400"><X size={22} aria-hidden="true" /></button>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain"><SplunkDictionary /></div>
       </div>
@@ -434,7 +434,7 @@ export default function SplunkStudio() {
 //           onClick={() => setDictionaryOpen(true)}
 //           aria-haspopup="dialog"
 //           aria-controls="splunk-dictionary-dialog"
-//           className="fixed bottom-5 right-5 z-[100] inline-flex items-center gap-2 rounded-full border border-cyan-300/30 bg-cyan-600 px-5 py-3.5 font-bold text-white shadow-2xl shadow-cyan-950/50 transition hover:scale-105 hover:bg-cyan-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400 sm:bottom-7 sm:right-7"
+//           className="fixed bottom-5 right-5 z-[100] inline-flex items-center gap-2 rounded-full border border-fuchsia-300/30 bg-fuchsia-600 px-5 py-3.5 font-bold text-white shadow-2xl shadow-fuchsia-950/50 transition hover:scale-105 hover:bg-fuchsia-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-400 sm:bottom-7 sm:right-7"
 //         >
 //           <BookOpen size={20} aria-hidden="true" />
 //           <span className="hidden sm:inline">Splunk Dictionary</span>
@@ -462,7 +462,7 @@ export default function SplunkStudio() {
 //           >
 //             <div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-700 bg-[#0f172a] px-4 py-3 sm:px-6 sm:py-4">
 //               <div className="flex min-w-0 items-center gap-3">
-//                 <BookOpen className="shrink-0 text-cyan-400" size={24} aria-hidden="true" />
+//                 <BookOpen className="shrink-0 text-fuchsia-400" size={24} aria-hidden="true" />
 //                 <div className="min-w-0">
 //                   <h2
 //                     id="splunk-dictionary-title"
@@ -481,7 +481,7 @@ export default function SplunkStudio() {
 //                 type="button"
 //                 onClick={() => setDictionaryOpen(false)}
 //                 aria-label="Close Splunk Dictionary"
-//                 className="shrink-0 rounded-xl border border-slate-700 p-2 text-slate-300 transition hover:border-red-500/40 hover:bg-red-500/15 hover:text-red-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-400"
+//                 className="shrink-0 rounded-xl border border-slate-700 p-2 text-slate-300 transition hover:border-red-500/40 hover:bg-red-500/15 hover:text-red-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-fuchsia-400"
 //               >
 //                 <X size={22} aria-hidden="true" />
 //               </button>

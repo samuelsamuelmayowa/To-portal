@@ -82,6 +82,7 @@ const LazyTSkillLabLogin = React.lazy(() => import("./pages/skillab/TSkillLabLog
 const LazyChatComponent = React.lazy(() => import("./components/ChatComponent"));
 const LazyCourseTabContent = React.lazy(() => import("./components/CourseTabContent"));
 const LazyStudentAccess = React.lazy(() => import("./components/StudentAccess"));
+const LazyStudentAccessOverview = React.lazy(() => import("./components/StudentAccessOverview"));
 const LazyAdminExpenses = React.lazy(() => import("./components/AdminExpenses"));
 const LazySplunkLab = React.lazy(() => import("./pages/SplunkLab"));
 const LazyStockQuiz = React.lazy(() => import("./components/StockQuiz.jsx"));
@@ -451,6 +452,10 @@ const router = createBrowserRouter([
           {
             path: "student-access",
             element: lazyPage(LazyStudentAccess),
+          },
+          {
+            path: "student-access/overview",
+            element: lazyPage(LazyStudentAccessOverview),
           },
 
           {

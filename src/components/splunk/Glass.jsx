@@ -1,11 +1,11 @@
-import React from "react";
+import PropTypes from "prop-types";
 
 export function GlassCard({ className = "", children }) {
   return (
     <div
       className={[
-        "bg-white/5 backdrop-blur-xl border border-white/10",
-        "rounded-3xl shadow-[0_0_0_1px_rgba(255,255,255,0.04)]",
+        "bg-[#171321] border border-[#3a2a43]",
+        "rounded-xl shadow-[0_8px_28px_rgba(0,0,0,0.18)]",
         className,
       ].join(" ")}
     >
@@ -13,13 +13,14 @@ export function GlassCard({ className = "", children }) {
     </div>
   );
 }
+GlassCard.propTypes = { className: PropTypes.string, children: PropTypes.node };
 
 export function Pill({ children, className = "" }) {
   return (
     <span
       className={[
         "inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs",
-        "bg-cyan-500/10 border border-cyan-400/30 text-cyan-200",
+        "bg-[#c418ac]/10 border border-[#c418ac]/35 text-fuchsia-200",
         className,
       ].join(" ")}
     >
@@ -27,14 +28,15 @@ export function Pill({ children, className = "" }) {
     </span>
   );
 }
+Pill.propTypes = { children: PropTypes.node, className: PropTypes.string };
 
 export function SoftButton({ children, className = "", ...props }) {
   return (
     <button
       {...props}
       className={[
-        "px-4 py-2 rounded-xl text-sm border transition-all",
-        "border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20",
+        "px-4 py-2 rounded-lg text-sm border transition-all",
+        "border-[#493a50] bg-[#211a2b] hover:bg-[#30243a] hover:border-[#765071]",
         "active:scale-[0.98]",
         className,
       ].join(" ")}
@@ -43,14 +45,15 @@ export function SoftButton({ children, className = "", ...props }) {
     </button>
   );
 }
+SoftButton.propTypes = { children: PropTypes.node, className: PropTypes.string };
 
 export function PrimaryButton({ children, className = "", ...props }) {
   return (
     <button
       {...props}
       className={[
-        "px-5 py-2 rounded-xl text-sm font-medium",
-        "bg-gradient-to-r from-cyan-500 to-blue-500 shadow-lg",
+        "px-5 py-2 rounded-lg text-sm font-semibold",
+        "bg-[#c418ac] shadow-lg shadow-[#c418ac]/15",
         "hover:opacity-90 active:scale-[0.98] transition",
         className,
       ].join(" ")}
@@ -59,3 +62,4 @@ export function PrimaryButton({ children, className = "", ...props }) {
     </button>
   );
 }
+PrimaryButton.propTypes = { children: PropTypes.node, className: PropTypes.string };
