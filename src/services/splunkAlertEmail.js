@@ -4,9 +4,11 @@ import { getAuth } from "firebase/auth";
 // Your Render backend URL
 // Never put your Resend API key in frontend code.
 const API_URL = (
-  import.meta.env.VITE_BACKEND_API ||
-  import.meta.env.VITE_API_URL ||
-  "https://to-backendapi-v1-kctb.onrender.com"
+  import.meta.env.DEV
+    ? "http://localhost:8000"
+    : import.meta.env.VITE_API_URL ||
+      import.meta.env.VITE_BACKEND_API ||
+      "https://to-backendapi-v1-kctb.onrender.com"
 ).replace(/\/+$/, "");
 
 /**

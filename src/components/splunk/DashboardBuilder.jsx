@@ -1,16 +1,30 @@
-import React, { useMemo, useState } from "react";
+/* eslint-disable react/prop-types */
+import { useEffect, useState } from "react";
 import { Copy, LayoutDashboard, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react";
-import { getLabLogs } from "../../data/splAdminState";
-import { chartKeys, evaluateStudioQuery, numberForPanel } from "../../utils/splStudioRuntime";
+import { chartKeys, numberForPanel } from "../../utils/splStudioRuntime";
+import { splunkLabApi } from "../../services/splunkLabApi";
 import { GlassCard, PrimaryButton, SoftButton } from "./Glass";
 import { MiniBarChart, PrettyTable } from "./Viz";
 
 const control = "w-full rounded-xl border border-white/10 bg-[#080f22] px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-cyan-400/70";
 const newId = () => (globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`);
 
-function PanelPreview({ panel, datasets }) {
-  const output = useMemo(() => evaluateStudioQuery(panel.spl, datasets), [panel.spl, datasets]);
-  if (output.error) return <div className="rounded-xl border border-rose-400/30 bg-rose-500/10 p-4 text-sm text-rose-200" role="alert">{output.error}</div>;
+function PanelPreview({ panel, refreshKey }) {
+  const [output, setOutput] = useState(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    let active = true;
+    setLoading(true); setError("");
+    splunkLabApi.search(panel.spl, { timeRange: "all", pageSize: 100 })
+      .then((result) => { if (active) setOutput({ ...result, results: result.rows }); })
+      .catch((requestError) => { if (active) { setOutput(null); setError(requestError.response?.data?.message || "This panel could not search the stored tutorial data."); } })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [panel.spl, refreshKey]);
+  if (loading) return <p className="p-4 text-sm text-slate-400">Refreshing stored results…</p>;
+  if (error) return <div className="rounded-xl border border-rose-400/30 bg-rose-500/10 p-4 text-sm text-rose-200" role="alert">{error}</div>;
+  if (!output) return <p className="p-4 text-sm text-slate-400">No results returned.</p>;
   const rows = output.results || [];
   if (panel.type === "number") {
     const number = numberForPanel(output);
@@ -23,15 +37,14 @@ function PanelPreview({ panel, datasets }) {
   return rows.length ? <PrettyTable rows={rows} maxRows={10} maxCols={8} /> : <p className="text-sm text-slate-400">No matching rows.</p>;
 }
 
-function DashboardPanels({ panels, datasets, onRemove }) {
+function DashboardPanels({ panels, refreshKey, onRemove }) {
   return <div className="grid gap-4 md:grid-cols-2">{panels.map((panel) => <section key={panel.id} className="min-w-0 rounded-2xl border border-white/10 bg-black/20 p-4">
     <div className="mb-3 flex items-start justify-between gap-2"><div className="min-w-0"><h4 className="font-semibold text-white">{panel.title || "Panel"}</h4><p className="mt-1 break-all font-mono text-[11px] text-slate-500">{panel.spl}</p></div>{onRemove && <button type="button" title="Remove panel" aria-label={`Remove ${panel.title}`} onClick={() => onRemove(panel.id)} className="rounded-lg border border-white/10 p-2 hover:bg-white/10"><Trash2 size={15}/></button>}</div>
-    <PanelPreview panel={panel} datasets={datasets}/>
+    <PanelPreview panel={panel} refreshKey={refreshKey}/>
   </section>)}</div>;
 }
 
 export default function DashboardBuilder({ saved = [], dashboards = [], onAddDashboard, onUpdateDashboard, onDeleteDashboard }) {
-  const datasets = useMemo(() => getLabLogs(), []);
   const [name, setName] = useState("My First Dashboard");
   const [panels, setPanels] = useState([]);
   const [editingId, setEditingId] = useState(null);
@@ -41,19 +54,25 @@ export default function DashboardBuilder({ saved = [], dashboards = [], onAddDas
   const [panelType, setPanelType] = useState("chart");
   const [notice, setNotice] = useState("");
   const [openedId, setOpenedId] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
   const searchId = saved.some((s) => s.id === selectedSearch) ? selectedSearch : "__custom__";
   const chosen = saved.find((s) => s.id === searchId);
   const spl = chosen?.spl || customSPL;
   const opened = dashboards.find((d) => d.id === openedId);
 
-  const addPanel = () => {
+  const [addingPanel, setAddingPanel] = useState(false);
+  const addPanel = async () => {
     if (!spl.trim()) return setNotice("Choose a saved search or enter your SPL query.");
-    const result = evaluateStudioQuery(spl, datasets);
-    if (result.error) return setNotice(`Panel query error: ${result.error}`);
+    if (!/^index=buttercup_(?:web|auth|sales|prices)\b/i.test(spl.trim())) return setNotice("Dashboard panels must search an imported Buttercup index so every chart uses stored records.");
+    if (addingPanel) return;
     if (panels.length >= 16) return setNotice("Maximum 16 panels per training dashboard.");
+    setAddingPanel(true);
+    try { await splunkLabApi.search(spl.trim(), { timeRange: "all", pageSize: 1 }); }
+    catch (error) { setNotice(`Panel query error: ${error.response?.data?.message || error.message}`); setAddingPanel(false); return; }
     const title = panelTitle.trim().slice(0, 80) || "Untitled Panel";
-    setPanels((previous) => [...previous, { id: newId(), title, type: panelType, spl: spl.trim(), sourceSearchId: chosen?.id || null }]);
+    setPanels((previous) => [...previous, { id: newId(), title, type: panelType, spl: spl.trim(), savedSearchId: chosen?.id || null }]);
     setNotice(`Added ${title}. Preview is ready.`);
+    setAddingPanel(false);
   };
   const resetEditor = () => { setEditingId(null); setName("My First Dashboard"); setPanels([]); setNotice(""); };
   const saveDashboard = () => {
@@ -78,7 +97,7 @@ export default function DashboardBuilder({ saved = [], dashboards = [], onAddDas
           {!chosen ? <label className="block"><span className="mb-1 block text-xs text-slate-400">SPL query</span><textarea className={`${control} min-h-24 font-mono`} value={customSPL} onChange={(e) => setCustomSPL(e.target.value)} maxLength={4000}/></label> : <div className="break-all rounded-lg bg-white/5 p-2 font-mono text-xs text-slate-300">{chosen.spl}</div>}
           <label className="block"><span className="mb-1 block text-xs text-slate-400">Panel title</span><input className={control} value={panelTitle} maxLength={80} onChange={(e) => setPanelTitle(e.target.value)}/></label>
           <label className="block"><span className="mb-1 block text-xs text-slate-400">Panel type</span><select className={control} value={panelType} onChange={(e) => setPanelType(e.target.value)}><option value="table">Table</option><option value="chart">Bar chart</option><option value="number">Single value</option></select></label>
-          <PrimaryButton onClick={addPanel} className="flex w-full items-center justify-center gap-2"><Plus size={16}/> Add Panel</PrimaryButton>
+          <PrimaryButton onClick={addPanel} disabled={addingPanel} className="flex w-full items-center justify-center gap-2"><Plus size={16}/> {addingPanel ? "Checking stored data…" : "Add Panel"}</PrimaryButton>
         </div>
         <div className="flex flex-wrap gap-2"><PrimaryButton onClick={saveDashboard} className="flex-1">{editingId ? "Update Dashboard" : "Save Dashboard"}</PrimaryButton><SoftButton onClick={resetEditor} title="New blank dashboard"><RotateCcw size={16}/></SoftButton></div>
         <p className="text-xs text-slate-500">Tip: <code>stats count by status</code> works well for charts.</p>
@@ -86,9 +105,9 @@ export default function DashboardBuilder({ saved = [], dashboards = [], onAddDas
       </div>
     </GlassCard>
     <div className="min-w-0 space-y-6">
-      <GlassCard className="p-5 sm:p-6"><div className="mb-4 flex items-center justify-between"><h3 className="text-lg font-semibold">Live Preview</h3><span className="text-xs text-slate-400">{panels.length} panels</span></div>{panels.length ? <DashboardPanels panels={panels} datasets={datasets} onRemove={(id) => setPanels((prev) => prev.filter((p) => p.id !== id))}/> : <p className="text-sm text-slate-400">Add a panel to see your dashboard.</p>}</GlassCard>
+      <GlassCard className="p-5 sm:p-6"><div className="mb-4 flex items-center justify-between"><h3 className="text-lg font-semibold">Live Preview</h3><span className="text-xs text-slate-400">{panels.length} panels</span></div>{panels.length ? <DashboardPanels panels={panels} refreshKey={refreshKey} onRemove={(id) => setPanels((prev) => prev.filter((p) => p.id !== id))}/> : <p className="text-sm text-slate-400">Add a panel to see your dashboard.</p>}</GlassCard>
       <GlassCard className="p-5 sm:p-6"><h3 className="mb-4 text-lg font-semibold">Saved Dashboards <span className="text-sm font-normal text-slate-400">({dashboards.length})</span></h3>
-        {!dashboards.length ? <p className="text-sm text-slate-400">No dashboards saved yet.</p> : <div className="space-y-3">{dashboards.map((d) => <div key={d.id} className="rounded-xl border border-white/10 bg-white/5 p-4"><div className="flex flex-wrap items-center justify-between gap-3"><div><p className="font-semibold">{d.name}</p><p className="text-xs text-slate-400">{Array.isArray(d.panels) ? d.panels.length : 0} panels</p></div><div className="flex flex-wrap gap-2"><SoftButton onClick={() => setOpenedId(openedId === d.id ? null : d.id)}>{openedId === d.id ? "Close" : "Open"}</SoftButton><SoftButton onClick={() => editDashboard(d)} title="Edit"><Pencil size={15}/></SoftButton><SoftButton onClick={() => { setEditingId(null); setName(`${d.name} (copy)`); setPanels((d.panels || []).map((p) => ({...p, id: newId()}))); setNotice("Copy loaded. Save to create a new dashboard."); }} title="Duplicate"><Copy size={15}/></SoftButton><SoftButton onClick={() => { if (window.confirm(`Delete dashboard '${d.name}'?`)) { onDeleteDashboard(d.id); if (openedId === d.id) setOpenedId(null); if (editingId === d.id) resetEditor(); } }} title="Delete"><Trash2 size={15}/></SoftButton></div></div>{opened?.id === d.id && <div className="mt-4 border-t border-white/10 pt-4"><DashboardPanels panels={Array.isArray(d.panels) ? d.panels : []} datasets={datasets}/></div>}</div>)}</div>}
+        {!dashboards.length ? <p className="text-sm text-slate-400">No dashboards saved yet.</p> : <div className="space-y-3">{dashboards.map((d) => <div key={d.id} className="rounded-xl border border-white/10 bg-white/5 p-4"><div className="flex flex-wrap items-center justify-between gap-3"><div><p className="font-semibold">{d.name}</p><p className="text-xs text-slate-400">{Array.isArray(d.panels) ? d.panels.length : 0} panels</p></div><div className="flex flex-wrap gap-2"><SoftButton onClick={() => setOpenedId(openedId === d.id ? null : d.id)}>{openedId === d.id ? "Close" : "Open"}</SoftButton><SoftButton onClick={() => setRefreshKey((value) => value + 1)} title="Refresh from MongoDB">Refresh Data</SoftButton><SoftButton onClick={() => editDashboard(d)} title="Edit"><Pencil size={15}/></SoftButton><SoftButton onClick={() => { setEditingId(null); setName(`${d.name} (copy)`); setPanels((d.panels || []).map((p) => ({...p, id: newId()}))); setNotice("Copy loaded. Save to create a new dashboard."); }} title="Duplicate"><Copy size={15}/></SoftButton><SoftButton onClick={() => { if (window.confirm(`Delete dashboard '${d.name}'?`)) { onDeleteDashboard(d.id); if (openedId === d.id) setOpenedId(null); if (editingId === d.id) resetEditor(); } }} title="Delete"><Trash2 size={15}/></SoftButton></div></div>{opened?.id === d.id && <div className="mt-4 border-t border-white/10 pt-4"><DashboardPanels key={refreshKey} panels={Array.isArray(d.panels) ? d.panels : []} refreshKey={refreshKey}/></div>}</div>)}</div>}
       </GlassCard>
     </div>
   </div>;

@@ -1,10 +1,12 @@
-import React, { useMemo, useState } from "react";
-import { Play, Trash2, Plus } from "lucide-react";
+/* eslint-disable react/prop-types */
+import { useMemo, useState } from "react";
+import { Play, Trash2, Plus, Pencil, X } from "lucide-react";
 import { GlassCard, PrimaryButton, SoftButton } from "./Glass";
 
-export default function SavedSearches({ saved, onAdd, onRun, onDelete }) {
+export default function SavedSearches({ saved, onAdd, onUpdate, onRun, onDelete }) {
   const [name, setName] = useState("");
   const [spl, setSpl] = useState("index=_internal");
+  const [editingId, setEditingId] = useState(null);
 
   const canAdd = useMemo(() => name.trim().length >= 2 && spl.trim().length > 0, [name, spl]);
 
@@ -38,15 +40,18 @@ export default function SavedSearches({ saved, onAdd, onRun, onDelete }) {
           </div>
 
           <PrimaryButton
-            onClick={() => {
+              onClick={() => {
               if (!canAdd) return;
-              onAdd({ name: name.trim(), spl: spl.trim() });
+              if (editingId) onUpdate?.(editingId, { name: name.trim(), spl: spl.trim() });
+              else onAdd({ name: name.trim(), spl: spl.trim() });
+              setEditingId(null);
               setName("");
             }}
             className="w-full flex items-center justify-center gap-2"
           >
-            <Plus size={16} /> Save Search
+            {editingId ? <><Pencil size={16} /> Update Search</> : <><Plus size={16} /> Save Search</>}
           </PrimaryButton>
+          {editingId && <SoftButton onClick={() => { setEditingId(null); setName(""); setSpl("index=_internal"); }} className="flex items-center gap-2"><X size={15}/> Cancel edit</SoftButton>}
 
           <div className="text-xs text-gray-500">
             Tip: Saved searches can become Dashboard panels and Alert searches.
@@ -84,6 +89,9 @@ export default function SavedSearches({ saved, onAdd, onRun, onDelete }) {
                   <div className="flex gap-2">
                     <SoftButton onClick={() => onRun?.(s.spl)} title="Run">
                       <Play size={16} />
+                    </SoftButton>
+                    <SoftButton onClick={() => { setEditingId(s.id); setName(s.name); setSpl(s.spl); }} title="Edit or rename">
+                      <Pencil size={16} />
                     </SoftButton>
                     <SoftButton onClick={() => onDelete?.(s.id)} title="Delete">
                       <Trash2 size={16} />

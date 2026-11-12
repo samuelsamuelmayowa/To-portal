@@ -50,7 +50,7 @@ function getChartKeys(rows, mode) {
   return xKey && yKey ? { xKey, yKey } : null;
 }
 
-export default function SearchLab({ onSaveSearch }) {
+export default function SearchLab({ onSaveSearch, onSearchHistory }) {
   const [query, setQuery] = useState(initialQuery);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
@@ -112,6 +112,10 @@ export default function SearchLab({ onSaveSearch }) {
     setLessonId(lesson.id); setLevel(lesson.level);
     setShowHint(false); loadQuery(lesson.starter);
   };
+  const rememberLocalSearch = async (values) => {
+    try { const item = await splunkLabApi.recordLocalHistory(values); onSearchHistory?.(item); }
+    catch { /* Local practice remains usable when the account history service is unavailable. */ }
+  };
   const runSearch = async (page = 1) => {
     if (isStoredDatasetSearch) {
       setSearching(true);
@@ -120,9 +124,11 @@ export default function SearchLab({ onSaveSearch }) {
       try {
         const out = await splunkLabApi.search(query, { timeRange, page, pageSize: 100 });
         setResult({ ...out, results: out.rows, serverBacked: true });
+        if (out.history) onSearchHistory?.(out.history);
         setResultTab(out.mode === "timechart" ? "chart" : out.mode === "table" || out.mode === "statistics" ? "table" : "events");
         setLessonMessage("Search completed against imported Buttercup tutorial records.");
       } catch (requestError) {
+        if (requestError.response?.data?.history) onSearchHistory?.(requestError.response.data.history);
         setError(requestError.response?.data?.message || "The stored tutorial dataset could not be searched.");
         setResult(null);
         setLessonMessage(null);
@@ -133,8 +139,13 @@ export default function SearchLab({ onSaveSearch }) {
     }
 
     const out = runSPL(query, labLogs);
-    if (out.error) { setError(out.error); setResult(null); setLessonMessage(null); return; }
+    if (out.error) {
+      setError(out.error); setResult(null); setLessonMessage(null);
+      await rememberLocalSearch({ query, index: currentIndex, timeRange, status: "error", error: out.error });
+      return;
+    }
     setResult(out); setError("");
+    await rememberLocalSearch({ query, index: currentIndex, timeRange, status: "complete", resultCount: out.count, resultRows: out.totalRows, elapsedMs: out.elapsedMs });
     const hasStatistics = /\|\s*(stats|top|rare)\b/i.test(query);
     setResultTab(out.mode === "timechart" ? "chart" : out.mode === "table" || hasStatistics ? "table" : "events");
     let succeeded = false;
@@ -257,4 +268,4 @@ export default function SearchLab({ onSaveSearch }) {
   );
 }
 
-SearchLab.propTypes = { onSaveSearch: PropTypes.func };
+SearchLab.propTypes = { onSaveSearch: PropTypes.func, onSearchHistory: PropTypes.func };

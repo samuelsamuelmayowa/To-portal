@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { BookOpen, X } from "lucide-react";
 import NavBar from "../components/NavBar";
@@ -9,11 +9,18 @@ import DashboardBuilder from "../components/splunk/DashboardBuilder";
 import AlertBuilder from "../components/splunk/AlertBuilder";
 import AdminLab from "../components/splunk/AdminLab";
 import SplunkDictionary from "../components/Dictionary";
+import StudentHistory from "../components/splunk/StudentHistory";
+import LearningMissions from "../components/splunk/LearningMissions";
+import { useStateContext } from "../context/ContextProvider";
+import { splunkLabApi } from "../services/splunkLabApi";
 
 // Keep the existing storage keys. Users' old work is not intentionally cleared.
 const LS_SAVED = "to_splunk_saved_searches";
 const LS_DASH = "to_splunk_dashboards";
 const LS_ALERTS = "to_splunk_alerts";
+const LS_OWNER = "to_splunk_workspace_owner";
+const LS_MISSION_PROGRESS = "to_splunk_lesson_progress_v2";
+const ownerKey = (key, owner) => `${key}::${owner}`;
 function load(key, fallback) {
   try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; }
   catch { return fallback; }
@@ -23,6 +30,8 @@ function makeId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 export default function SplunkStudio() {
+  const { user, token, authLoading } = useStateContext();
+  const authenticatedOwner = token && user ? String(user.id || user.email || "").trim().toLowerCase() : "";
   const { pathname } = useLocation();
   const showNavBar = !pathname.startsWith("/dashboard/");
   const [active, setActive] = useState("lab");
@@ -33,13 +42,84 @@ export default function SplunkStudio() {
   const [saved, setSaved] = useState(() => load(LS_SAVED, []));
   const [dashboards, setDashboards] = useState(() => load(LS_DASH, []));
   const [alerts, setAlerts] = useState(() => load(LS_ALERTS, []));
+  const [history, setHistory] = useState([]);
+  const [missionProgress, setMissionProgress] = useState([]);
+  const [workspaceOwner, setWorkspaceOwner] = useState("");
+  const [workspaceLoading, setWorkspaceLoading] = useState(true);
+  const [workspaceNotice, setWorkspaceNotice] = useState("");
 
-  useEffect(() => { localStorage.setItem(LS_SAVED, JSON.stringify(saved)); }, [saved]);
-  useEffect(() => { localStorage.setItem(LS_DASH, JSON.stringify(dashboards)); }, [dashboards]);
-  useEffect(() => { localStorage.setItem(LS_ALERTS, JSON.stringify(alerts)); }, [alerts]);
+  useEffect(() => {
+    if (workspaceOwner) localStorage.setItem(ownerKey(LS_SAVED, workspaceOwner), JSON.stringify(saved));
+    else if (!localStorage.getItem(LS_OWNER)) localStorage.setItem(LS_SAVED, JSON.stringify(saved));
+  }, [saved, workspaceOwner]);
+  useEffect(() => {
+    if (workspaceOwner) localStorage.setItem(ownerKey(LS_DASH, workspaceOwner), JSON.stringify(dashboards));
+    else if (!localStorage.getItem(LS_OWNER)) localStorage.setItem(LS_DASH, JSON.stringify(dashboards));
+  }, [dashboards, workspaceOwner]);
+  useEffect(() => {
+    if (workspaceOwner) localStorage.setItem(ownerKey(LS_ALERTS, workspaceOwner), JSON.stringify(alerts));
+    else if (!localStorage.getItem(LS_OWNER)) localStorage.setItem(LS_ALERTS, JSON.stringify(alerts));
+  }, [alerts, workspaceOwner]);
+
+  useEffect(() => {
+    if (authLoading) return;
+    let active = true;
+    const previousOwner = localStorage.getItem(LS_OWNER) || "";
+    if (!authenticatedOwner) {
+      if (previousOwner) {
+        setSaved([]); setDashboards([]); setAlerts([]); setHistory([]); setMissionProgress([]); setWorkspaceOwner("");
+        setWorkspaceNotice("Sign in to view your account’s saved searches, dashboards, alerts, history, and mission progress.");
+      } else {
+        setWorkspaceNotice("Your current work is saved in this browser. Sign in to sync it across devices.");
+      }
+      setWorkspaceLoading(false);
+      return () => { active = false; };
+    }
+
+    const identity = authenticatedOwner;
+    const isSameOwner = previousOwner === identity;
+    const localSaved = load(isSameOwner ? ownerKey(LS_SAVED, identity) : previousOwner ? ownerKey(LS_SAVED, identity) : LS_SAVED, []);
+    const localDashboards = load(isSameOwner ? ownerKey(LS_DASH, identity) : previousOwner ? ownerKey(LS_DASH, identity) : LS_DASH, []);
+    const localAlerts = load(isSameOwner ? ownerKey(LS_ALERTS, identity) : previousOwner ? ownerKey(LS_ALERTS, identity) : LS_ALERTS, []);
+    const legacyProgress = load(LS_MISSION_PROGRESS, []);
+    setWorkspaceLoading(true);
+    (async () => {
+      try {
+        const work = await splunkLabApi.migrateLocalWork({
+          savedSearches: localSaved,
+          dashboards: localDashboards,
+          alerts: localAlerts,
+          missionProgress: legacyProgress,
+        });
+        if (!active) return;
+        setSaved(work.savedSearches || []);
+        setDashboards(work.dashboards || []);
+        setAlerts(work.alerts || []);
+        setMissionProgress(work.missionProgress || []);
+        const [nextHistory, nextMissions] = await Promise.all([splunkLabApi.listHistory(), splunkLabApi.listMissions()]);
+        if (!active) return;
+        setHistory(nextHistory);
+        setMissionProgress(nextMissions.map((item) => item.progress).filter(Boolean));
+        setWorkspaceOwner(identity);
+        localStorage.setItem(LS_OWNER, identity);
+        localStorage.setItem(ownerKey(LS_SAVED, identity), JSON.stringify(work.savedSearches || []));
+        localStorage.setItem(ownerKey(LS_DASH, identity), JSON.stringify(work.dashboards || []));
+        localStorage.setItem(ownerKey(LS_ALERTS, identity), JSON.stringify(work.alerts || []));
+        setWorkspaceNotice("Your Studio work is synced to your signed-in account.");
+      } catch (error) {
+        if (!active) return;
+        if (previousOwner && previousOwner !== identity) { setSaved(localSaved); setDashboards(localDashboards); setAlerts(localAlerts); }
+        setWorkspaceOwner(identity);
+        localStorage.setItem(LS_OWNER, identity);
+        setWorkspaceNotice(error.response?.data?.message || "Account sync is unavailable. Your browser copy is preserved.");
+      } finally { if (active) setWorkspaceLoading(false); }
+    })();
+    return () => { active = false; };
+  }, [authLoading, authenticatedOwner]);
 
   useEffect(() => {
     if (!dictionaryOpen) return;
+    const returnFocusTarget = dictionaryButtonRef.current;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     dictionaryCloseRef.current?.focus();
@@ -58,38 +138,72 @@ export default function SplunkStudio() {
     return () => {
       document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", onKeyDown);
-      dictionaryButtonRef.current?.focus();
+      returnFocusTarget?.focus();
     };
   }, [dictionaryOpen]);
 
-  const addSaved = ({ name, spl }) => setSaved((previous) => [
-    { id: makeId(), name, spl, createdAt: Date.now() }, ...previous,
-  ]);
-  const deleteSaved = (id) => setSaved((previous) => previous.filter((item) => item.id !== id));
+  const addSaved = async ({ name, spl }) => {
+    const local = { id: makeId(), name, spl, createdAt: Date.now() };
+    setSaved((previous) => [local, ...previous]);
+    if (!workspaceOwner) return;
+    try { const savedItem = await splunkLabApi.createSavedSearch({ name, spl }); setSaved((previous) => previous.map((item) => item.id === local.id ? savedItem : item)); }
+    catch (error) { setWorkspaceNotice(error.response?.data?.message || "Search saved in this browser; account sync failed."); }
+  };
+  const updateSaved = async (id, changes) => {
+    setSaved((previous) => previous.map((item) => item.id === id ? { ...item, ...changes, updatedAt: Date.now() } : item));
+    if (!workspaceOwner) return;
+    try { const savedItem = await splunkLabApi.updateSavedSearch(id, changes); setSaved((previous) => previous.map((item) => item.id === id ? savedItem : item)); }
+    catch (error) { setWorkspaceNotice(error.response?.data?.message || "Search updated in this browser; account sync failed."); }
+  };
+  const deleteSaved = async (id) => {
+    setSaved((previous) => previous.filter((item) => item.id !== id));
+    if (workspaceOwner) try { await splunkLabApi.deleteSavedSearch(id); } catch (error) { setWorkspaceNotice(error.response?.data?.message || "Search removed locally; server deletion failed."); }
+  };
   const runSavedIntoLab = (spl) => {
     sessionStorage.setItem("to_splunk_run_once", spl);
     setActive("lab");
   };
-  const addDashboard = ({ name, panels }) => setDashboards((previous) => [
-    { id: makeId(), name, panels, createdAt: Date.now() }, ...previous,
-  ]);
-  const updateDashboard = (id, changes) => setDashboards((previous) => previous.map((item) => item.id === id ? { ...item, ...changes, updatedAt: Date.now() } : item));
-  const deleteDashboard = (id) => setDashboards((previous) => previous.filter((x) => x.id !== id));
-  const addAlert = (alert) => setAlerts((previous) => [
-    { id: makeId(), ...alert, createdAt: Date.now() }, ...previous,
-  ]);
-  const updateAlert = (id, changes) => setAlerts((previous) => previous.map((item) => item.id === id ? { ...item, ...changes, updatedAt: Date.now() } : item));
-  const deleteAlert = (id) => setAlerts((previous) => previous.filter((x) => x.id !== id));
+  const addDashboard = async ({ name, panels }) => {
+    const local = { id: makeId(), name, panels, createdAt: Date.now() }; setDashboards((previous) => [local, ...previous]);
+    if (!workspaceOwner) return;
+    try { const item = await splunkLabApi.createDashboard({ name, panels }); setDashboards((previous) => previous.map((entry) => entry.id === local.id ? item : entry)); }
+    catch (error) { setWorkspaceNotice(error.response?.data?.message || "Dashboard kept in this browser; account sync failed."); }
+  };
+  const updateDashboard = async (id, changes) => {
+    setDashboards((previous) => previous.map((item) => item.id === id ? { ...item, ...changes, updatedAt: Date.now() } : item));
+    if (!workspaceOwner) return;
+    try { const item = await splunkLabApi.updateDashboard(id, changes); setDashboards((previous) => previous.map((entry) => entry.id === id ? item : entry)); }
+    catch (error) { setWorkspaceNotice(error.response?.data?.message || "Dashboard updated in this browser; account sync failed."); }
+  };
+  const deleteDashboard = async (id) => { setDashboards((previous) => previous.filter((item) => item.id !== id)); if (workspaceOwner) try { await splunkLabApi.deleteDashboard(id); } catch (error) { setWorkspaceNotice(error.response?.data?.message || "Dashboard removed locally; server deletion failed."); } };
+  const addAlert = async (alert) => {
+    const local = { id: makeId(), ...alert, createdAt: Date.now(), history: [] }; setAlerts((previous) => [local, ...previous]);
+    if (!workspaceOwner) return;
+    try { const item = await splunkLabApi.createAlert(alert); setAlerts((previous) => previous.map((entry) => entry.id === local.id ? item : entry)); }
+    catch (error) { setWorkspaceNotice(error.response?.data?.message || "Alert kept in this browser; account sync failed."); }
+  };
+  const updateAlert = async (id, changes) => {
+    setAlerts((previous) => previous.map((item) => item.id === id ? { ...item, ...changes, updatedAt: Date.now() } : item));
+    if (!workspaceOwner) return;
+    try { const item = await splunkLabApi.updateAlert(id, changes); setAlerts((previous) => previous.map((entry) => entry.id === id ? item : entry)); }
+    catch (error) { setWorkspaceNotice(error.response?.data?.message || "Alert updated in this browser; account sync failed."); }
+  };
+  const deleteAlert = async (id) => { setAlerts((previous) => previous.filter((item) => item.id !== id)); if (workspaceOwner) try { await splunkLabApi.deleteAlert(id); } catch (error) { setWorkspaceNotice(error.response?.data?.message || "Alert removed locally; server deletion failed."); } };
 
   return <>
     {showNavBar && <NavBar />}
     <div className={showNavBar ? "pt-20 sm:pt-24" : undefined}>
       <StudioShell active={active} setActive={setActive}>
-        {active === "lab" && <SearchLab onSaveSearch={(spl) => addSaved({ name: `Saved: ${spl.slice(0, 24)}...`, spl })} />}
-        {active === "saved" && <SavedSearches saved={saved} onAdd={addSaved} onRun={runSavedIntoLab} onDelete={deleteSaved} />}
+        {workspaceNotice && <p role="status" className="mb-4 rounded-xl border border-cyan-400/20 bg-cyan-400/10 p-3 text-sm text-cyan-100">{workspaceNotice}</p>}
+        {workspaceLoading || authLoading ? <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-slate-300">Loading your secure Studio workspace…</div> : <>
+        {active === "lab" && <SearchLab onSaveSearch={(spl) => addSaved({ name: `Saved: ${spl.slice(0, 24)}...`, spl })} onSearchHistory={(item) => setHistory((previous) => [item, ...previous.filter((entry) => entry.id !== item.id)].slice(0, 100))} />}
+        {active === "saved" && <SavedSearches saved={saved} onAdd={addSaved} onUpdate={updateSaved} onRun={runSavedIntoLab} onDelete={deleteSaved} />}
+        {active === "history" && <StudentHistory history={history} onClear={async () => { if (workspaceOwner) { await splunkLabApi.clearHistory(); setHistory([]); } }} onRun={runSavedIntoLab} />}
+        {active === "missions" && <LearningMissions dashboards={dashboards} missionProgress={missionProgress} onProgress={setMissionProgress} />}
         {active === "dash" && <DashboardBuilder saved={saved} dashboards={dashboards} onAddDashboard={addDashboard} onUpdateDashboard={updateDashboard} onDeleteDashboard={deleteDashboard} />}
-        {active === "alerts" && <AlertBuilder saved={saved} alerts={alerts} onAddAlert={addAlert} onUpdateAlert={updateAlert} onDeleteAlert={deleteAlert} />}
+        {active === "alerts" && <AlertBuilder saved={saved} alerts={alerts} onAddAlert={addAlert} onUpdateAlert={updateAlert} onDeleteAlert={deleteAlert} onRunAlert={async (id) => { const result = await splunkLabApi.runAlert(id); setAlerts((previous) => previous.map((alert) => alert.id === id ? { ...alert, history: [result, ...(alert.history || [])].slice(0, 50) } : alert)); return result; }} />}
         {active === "admin" && <AdminLab onOpenLab={runSavedIntoLab} />}
+        </>}
       </StudioShell>
     </div>
     {!dictionaryOpen && <button ref={dictionaryButtonRef} type="button" onClick={() => setDictionaryOpen(true)} aria-haspopup="dialog" aria-controls="splunk-dictionary-dialog" className="fixed bottom-5 right-5 z-[100] inline-flex items-center gap-2 rounded-full border border-cyan-300/30 bg-cyan-600 px-5 py-3.5 font-bold text-white shadow-2xl shadow-cyan-950/50 transition hover:scale-105 hover:bg-cyan-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400 sm:bottom-7 sm:right-7"><BookOpen size={20} aria-hidden="true" /><span className="hidden sm:inline">Splunk Dictionary</span><span className="sm:hidden">Dictionary</span></button>}
