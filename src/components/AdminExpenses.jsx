@@ -134,14 +134,14 @@ const initialExpenses = [
     category: "Software",
     amount: 25,
     currency: "USD",
-    billingCycle: "one-time",
+    billingCycle: "monthly",
     status: "paid",
     renewalDate: "2026-11-11",
-    notes: "Order started November 11, 2026 for https://www.to-analytics.com/career.",
+    notes: "Monthly order started November 11, 2026 for https://www.to-analytics.com/career.",
   },
   {
     id: "administrator-salary",
-    name: "Administrator salary",
+    name: "Administrator and software developer salary",
     provider: "T.O Analytics team",
     category: "Staff / Teaching",
     amount: 200000,
@@ -149,19 +149,7 @@ const initialExpenses = [
     billingCycle: "monthly",
     status: "active",
     renewalDate: "",
-    notes: "Monthly administrator salary.",
-  },
-  {
-    id: "software-developer-salary",
-    name: "Software developer salary",
-    provider: "T.O Analytics team",
-    category: "Staff / Teaching",
-    amount: 200000,
-    currency: "NGN",
-    billingCycle: "monthly",
-    status: "active",
-    renewalDate: "",
-    notes: "Monthly software developer salary.",
+    notes: "One person handles administrator and software developer duties. Total salary: ₦200,000 per month.",
   },
 ];
 
@@ -274,14 +262,37 @@ function loadExpenses() {
 
     for (const seededExpense of initialExpenses) {
       if (
-        ["openweb-ninja-career", "administrator-salary", "software-developer-salary"].includes(seededExpense.id) &&
+        ["openweb-ninja-career", "administrator-salary"].includes(seededExpense.id) &&
         !migratedExpenses.some((expense) => expense.id === seededExpense.id)
       ) {
         migratedExpenses.push(seededExpense);
       }
     }
 
-    return migratedExpenses.map((expense) => {
+    return migratedExpenses
+      .filter((expense) => expense.id !== "software-developer-salary")
+      .map((expense) => {
+      if (expense.id === "administrator-salary") {
+        return {
+          ...expense,
+          name: "Administrator and software developer salary",
+          amount: 200000,
+          currency: "NGN",
+          billingCycle: "monthly",
+          status: "active",
+          notes: "One person handles administrator and software developer duties. Total salary: ₦200,000 per month.",
+        };
+      }
+
+      if (expense.id === "openweb-ninja-career") {
+        return {
+          ...expense,
+          billingCycle: "monthly",
+          renewalDate: "2026-11-11",
+          notes: "Monthly order started November 11, 2026 for https://www.to-analytics.com/career.",
+        };
+      }
+
       if (expense.id === "domain") {
         const storedDomainAmount = Number(
           expense.amount,
@@ -687,10 +698,6 @@ const AdminExpenses = () => {
     summary.yearlyNGN +
     convertedYearlyUsdToNgn;
 
-  const domainExpense = expenses.find(
-    (expense) => expense.id === "domain",
-  );
-
   /*
     SEARCH + FILTER
   */
@@ -996,67 +1003,6 @@ const AdminExpenses = () => {
           </div>
         </div>
       </section>
-
-      {/* URGENT DOMAIN ALERT */}
-      {domainExpense && (
-        <motion.section
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          className={`relative overflow-hidden rounded-3xl border-2 p-1 shadow-2xl ${domainExpense.status === "paid" ? "border-emerald-600 bg-emerald-600 shadow-emerald-200" : "border-red-600 bg-red-600 shadow-red-200"}`}
-        >
-          <div className="absolute -right-12 -top-16 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
-
-          <div className={`relative rounded-[20px] border border-white/20 px-5 py-6 text-white sm:px-7 lg:flex lg:items-center lg:justify-between lg:gap-8 ${domainExpense.status === "paid" ? "bg-gradient-to-r from-emerald-700 via-emerald-600 to-teal-600" : "bg-gradient-to-r from-red-700 via-red-600 to-rose-600"}`}>
-            <div className="flex items-start gap-4">
-              <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white text-red-600 shadow-lg">
-                <span className="absolute inset-0 animate-ping rounded-2xl bg-white/30" />
-
-                <FaExclamationTriangle
-                  size={24}
-                  className="relative"
-                />
-              </div>
-
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.2em] text-red-100">
-                  {domainExpense.status === "paid" ? "Payment recorded" : "Urgent payment alert"}
-                </p>
-
-                <h2 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">
-                  TO domain expires this month
-                </h2>
-
-                <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-red-50 sm:text-base">
-                  {domainExpense.status === "paid"
-                    ? "The ₦38,000 renewal has been paid. The TO website, admin portal and connected services are covered for the renewal."
-                    : "Renew the domain before it expires to prevent the TO website, admin portal and connected services from becoming unavailable."}
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-5 rounded-2xl border border-white/25 bg-white/15 px-5 py-4 backdrop-blur-sm lg:mt-0 lg:min-w-[230px] lg:text-right">
-              <p className="text-xs font-black uppercase tracking-wider text-red-100">
-                Renewal amount
-              </p>
-
-              <p className="mt-1 text-3xl font-black">
-                {formatMoney(
-                  domainExpense.amount,
-                  domainExpense.currency,
-                )}
-              </p>
-
-              <p className="mt-1 text-sm font-bold text-red-100">
-                {domainExpense.renewalDate
-                  ? `Due ${new Date(
-                      `${domainExpense.renewalDate}T00:00:00`,
-                    ).toLocaleDateString()}`
-                  : ""}
-              </p>
-            </div>
-          </div>
-        </motion.section>
-      )}
 
       {/* MAIN SUMMARY */}
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -1430,10 +1376,6 @@ const AdminExpenses = () => {
                 expense.status ===
                   "free";
 
-              const isDomain =
-                expense.id === "domain" ||
-                expense.category === "Domain";
-
               const convertedNairaCost =
                 expense.currency ===
                   "USD" &&
@@ -1451,9 +1393,7 @@ const AdminExpenses = () => {
                   key={expense.id}
                   className={[
                     "p-5 transition sm:p-6",
-                    isDomain
-                      ? "border-l-4 border-red-600 bg-red-50/80 hover:bg-red-50"
-                      : "hover:bg-slate-50/70",
+                    "hover:bg-slate-50/70",
                   ].join(" ")}
                 >
                   <div className="flex flex-col gap-5 xl:flex-row xl:items-center">
@@ -1461,9 +1401,7 @@ const AdminExpenses = () => {
                       <div
                         className={[
                           "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl",
-                          isDomain
-                            ? "bg-red-600 text-white shadow-lg shadow-red-200"
-                            : "bg-indigo-50 text-indigo-600",
+                          "bg-indigo-50 text-indigo-600",
                         ].join(" ")}
                       >
                         <Icon size={19} />
@@ -1481,12 +1419,6 @@ const AdminExpenses = () => {
                             }
                           />
 
-                          {isDomain && (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-red-600 px-3 py-1 text-xs font-black uppercase tracking-wide text-white shadow-sm">
-                              <FaExclamationTriangle size={11} />
-                              {expense.status === "paid" ? "Renewal paid" : "Expires this month"}
-                            </span>
-                          )}
                         </div>
 
                         <p className="mt-1 text-sm font-semibold text-slate-500">
@@ -1504,7 +1436,7 @@ const AdminExpenses = () => {
                             <span className="inline-flex items-center gap-1.5">
                               <FaCalendarAlt />
 
-                              Renewal:{" "}
+                              {expense.id === "openweb-ninja-career" ? "Started:" : "Renewal:"}{" "}
                               {new Date(
                                 `${expense.renewalDate}T00:00:00`,
                               ).toLocaleDateString()}
