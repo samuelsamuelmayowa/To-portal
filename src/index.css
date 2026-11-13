@@ -419,7 +419,10 @@ div.alert-msg svg:first-child {
     background-color: #fff;
     z-index: 99;
   }
-  nav {
+  /* Keep the legacy mobile-nav behavior scoped to the old navigation classes.
+     The current responsive NavBar uses its own Tailwind visibility and state. */
+  nav.navlinks,
+  nav.auth-nav {
     position: absolute;
     top: 68px;
     left: 0;
@@ -438,7 +441,8 @@ div.alert-msg svg:first-child {
     line-height: 2;
   }
 
-  nav.show {
+  nav.navlinks.show,
+  nav.auth-nav.show {
     visibility: visible;
     opacity: 1;
   }
