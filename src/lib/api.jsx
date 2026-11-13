@@ -1,9 +1,9 @@
 // src/lib/api.js
 import axios from "axios";
 import { getCsrfToken } from "./cookieAuth";
+import { API_ROOT } from "./apiOrigin";
 
-const API_BASE_URL =
-  import.meta.env.VITE_BACKEND_API || "http://localhost:5050/api";
+const API_BASE_URL = API_ROOT;
 
 function getStudentEmail() {
   try {

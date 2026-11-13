@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form"
 import { Helmet } from 'react-helmet';
 
 import { useNavigate } from 'react-router-dom';
-const api = import.meta.env.VITE_BACKEND_API
+import { API_ROOT } from "../lib/apiOrigin";
 const ContactPage = () => {
     const notify = () => toast("Thanks for reaching out!");
 
@@ -33,7 +33,7 @@ const ContactPage = () => {
             number:data.phone_number,
             email: data.email
         }
-        axios.post(`${api}contact`, payload, {
+        axios.post(`${API_ROOT}/contact`, payload, {
             headers: {
                 "Accept": "application/json",
                 "Content-Type": "application/json",

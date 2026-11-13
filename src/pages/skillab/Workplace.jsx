@@ -2,13 +2,14 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cookieAuthApi } from "../../lib/cookieAuth";
 import { useStateContext } from "../../context/ContextProvider";
+import { API_ORIGIN } from "../../lib/apiOrigin";
 import {
   ArrowLeft, ArrowRight, BadgeCheck, BriefcaseBusiness, CalendarDays, CheckCircle2,
   CircleAlert, Clock3, Code2, FileText, LayoutDashboard, ListTodo,
   RefreshCw, Send, ShieldCheck, Wallet,
 } from "lucide-react";
 
-const API = import.meta.env.VITE_BACKEND_API;
+const API = API_ORIGIN;
 const credits = (value) => `${Number(value || 0).toLocaleString("en-US")} TO Credits`;
 const dateLabel = (value) => value ? new Date(value).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }) : "—";
 

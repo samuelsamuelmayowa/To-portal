@@ -1,6 +1,6 @@
 import axios from "axios";
+import { API_ORIGIN } from "./apiOrigin";
 
-const API_BASE = String(import.meta.env.VITE_BACKEND_API || "").replace(/\/+$/, "");
 let csrfToken = "";
 
 export function setCsrfToken(value) {
@@ -21,7 +21,7 @@ export function cookieAuthFetch(url, options = {}) {
 }
 
 export const cookieAuthApi = axios.create({
-  baseURL: API_BASE,
+  baseURL: API_ORIGIN,
   withCredentials: true,
   headers: { Accept: "application/json" },
 });

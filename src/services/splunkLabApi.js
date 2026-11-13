@@ -2,14 +2,10 @@ import axios from "axios";
 import { getAuth } from "firebase/auth";
 import { app } from "../../firebase.config";
 import { getCsrfToken } from "../lib/cookieAuth";
-
-const configuredApiUrl = import.meta.env.VITE_API_URL;
-const API_URL = (import.meta.env.DEV
-  ? "http://localhost:8000"
-  : (configuredApiUrl || "")).replace(/\/+$/, "");
+import { API_ORIGIN } from "../lib/apiOrigin";
 
 const client = axios.create({
-  baseURL: `${API_URL}/api/splunk-lab`,
+  baseURL: `${API_ORIGIN}/api/splunk-lab`,
   timeout: 30000,
   withCredentials: true,
   headers: {

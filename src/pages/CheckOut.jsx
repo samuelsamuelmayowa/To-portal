@@ -4,9 +4,9 @@ import { cookieAuthApi } from "../lib/cookieAuth";
 import { Toaster, toast } from "sonner";
 import CartItemContext from "../context/CartItemContext";
 import { useStateContext } from "../context/ContextProvider";
+import { API_ROOT } from "../lib/apiOrigin";
 
-// Must point to your backend (e.g. your Render service), not your frontend.
-const API_URL = (import.meta.env.VITE_HOME_OO || "").replace(/\/+$/, "");
+const API_URL = API_ROOT;
 
 const formatPrice = (value) =>
   new Intl.NumberFormat("en-US", {
@@ -38,11 +38,6 @@ export default function CheckOut() {
       return;
     }
 
-    if (!API_URL) {
-      toast.error("Payment service is not configured.");
-      return;
-    }
-
     const courseIds = cart.map((item) =>
       item.id == null ? "" : String(item.id).trim()
     );
@@ -61,7 +56,7 @@ export default function CheckOut() {
 
     try {
       const { data } = await cookieAuthApi.post(
-        `${API_URL}/api/payment/create-checkout-session`,
+        `${API_URL}/payment/create-checkout-session`,
         { courseIds },
         { timeout: 20000 }
       );

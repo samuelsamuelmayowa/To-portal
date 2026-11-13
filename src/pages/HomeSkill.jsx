@@ -27,11 +27,12 @@ import {
 } from "lucide-react";
 import { useStateContext } from "../context/ContextProvider";
 import { cookieAuthApi } from "../lib/cookieAuth";
+import { API_ORIGIN } from "../lib/apiOrigin";
 
 // T.O. SkillLab — career salary and growth update.
 // Existing assessment API endpoints, payloads, response fields, and auth flow are preserved.
 // Salary benchmarks are illustrative UI planning values, not live market data or real wages.
-const API = import.meta.env.VITE_BACKEND_API;
+const API = API_ORIGIN;
 
 const FALLBACK_ROLES = [
   {

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import axios from "axios";
 import { FaLock, FaArrowLeft } from "react-icons/fa";
 import LOGO from "../assets/images/logo.jpg";
+import { API_ROOT } from "../lib/apiOrigin";
 
 export default function ResetPassword() {
   const { token } = useParams();
@@ -16,7 +17,7 @@ export default function ResetPassword() {
     setLoading(true);
     try {
       const res = await axios.post(
-        `https://to-backendapi-v1-kctb.onrender.com/api/reset-password/${token}`,
+        `${API_ROOT}/reset-password/${token}`,
         { password }
       );
       setMsg(res.data.message);

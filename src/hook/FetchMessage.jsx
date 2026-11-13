@@ -2,11 +2,11 @@ import axios from 'axios'
 import {
     useQuery,
 } from '@tanstack/react-query';
-const api = import.meta.env.VITE_BACKEND_API
+import { API_ROOT } from "../lib/apiOrigin";
 const FetchMessage = () => {
     return useQuery({
         queryKey: ["messages"],
-        queryFn: ()=> axios.get(`${api}/api/messages`)
+        queryFn: ()=> axios.get(`${API_ROOT}/messages`, { withCredentials: true })
     })
 }
 

@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useStateContext } from "../context/ContextProvider";
 import { cookieAuthFetch } from "../lib/cookieAuth";
+import { API_ORIGIN } from "../lib/apiOrigin";
 import jsPDF from "jspdf";
 const Quiz = ({ data }) => {
-  const api = import.meta.env.VITE_HOME_OO;
+  const api = API_ORIGIN;
   const questions = data?.questions ?? [];
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});

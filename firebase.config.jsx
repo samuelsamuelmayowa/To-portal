@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+import { getAnalytics, isSupported as isAnalyticsSupported } from "firebase/analytics";
 import { getStorage } from "firebase/storage";
 import { getFirestore } from "firebase/firestore";
 // import {firebase} from "firebase"
@@ -28,6 +28,10 @@ const firebaseConfig = {
 
 // Initialize Firebase
 export const app  =  initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+// Analytics is optional and can be unsupported in privacy-focused browser
+// contexts (including some Safari modes). Never let that block Firebase Auth.
+isAnalyticsSupported()
+  .then((supported) => { if (supported) getAnalytics(app); })
+  .catch(() => {});
 export const storage = getStorage(app);
 export const db = getFirestore(app);

@@ -22,10 +22,11 @@ import {
 } from "lucide-react";
 import { useStateContext } from "../context/ContextProvider";
 import { cookieAuthApi } from "../lib/cookieAuth";
+import { API_ORIGIN } from "../lib/apiOrigin";
 
 // Complete drop-in redesign of the HomeSkill / TO Skill Lab page.
 // Existing API endpoints, request bodies, response fields, and auth flow are preserved.
-const API = import.meta.env.VITE_BACKEND_API;
+const API = API_ORIGIN;
 
 const FALLBACK_ROLES = [
   {

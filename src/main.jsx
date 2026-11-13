@@ -18,18 +18,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       <CartItemProvider>
         <ContextProvider>
           <QueryClientProvider client={queryClient}>
-            <CookiesProvider
-              allCookies
-              defaultSetOptions={{
-              
-                expires: new Date(2029, 11, 26, 12, 30, 0, 0),
-                maxAge: "1000",
-                path: "https://www.paypal.com/",
-                secure: true,
-                sameSite: "none",
-                domain: "https://www.paypal.com/",
-                httpOnly: true,
-              }}>   
+            <CookiesProvider>
               <App />
               <SpeedInsights/>
               <Analytics />

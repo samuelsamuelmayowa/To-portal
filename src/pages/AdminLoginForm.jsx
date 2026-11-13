@@ -9,7 +9,8 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { useForm } from "react-hook-form"
 import { cookieAuthApi } from "../lib/cookieAuth";
 import { useStateContext } from '../context/ContextProvider';
-const api = import.meta.env.VITE_BACKEND_API_ROUTES || `${import.meta.env.VITE_BACKEND_API}/api/admin/login`;
+import { API_ORIGIN } from "../lib/apiOrigin";
+const api = `${API_ORIGIN}/api/admin/login`;
 const AdminLoginForm = () => {
     const { setToken, setUser } = useStateContext();
     const navigate = useNavigate()

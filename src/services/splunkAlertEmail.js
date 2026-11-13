@@ -1,15 +1,8 @@
 
 import { getAuth } from "firebase/auth";
+import { API_ROOT } from "../lib/apiOrigin";
 
-// Your Render backend URL
 // Never put your Resend API key in frontend code.
-const API_URL = (
-  import.meta.env.DEV
-    ? "http://localhost:8000"
-    : import.meta.env.VITE_API_URL ||
-      import.meta.env.VITE_BACKEND_API ||
-      "https://to-backendapi-v1-kctb.onrender.com"
-).replace(/\/+$/, "");
 
 /**
  * Send a simulated Splunk alert email through the backend.
@@ -34,7 +27,7 @@ export async function sendSimulatedAlertEmail(alert, outcome) {
 
   // Send alert details to the backend
   const response = await fetch(
-    `${API_URL}/api/splunk-alerts/notify`,
+    `${API_ROOT}/splunk-alerts/notify`,
     {
       method: "POST",
       headers: {

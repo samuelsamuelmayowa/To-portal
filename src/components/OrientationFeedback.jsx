@@ -3,18 +3,16 @@ import { Link } from "react-router-dom";
 import { CheckCircle2, MessageSquareText, Star, ShieldCheck } from "lucide-react";
 import { useStateContext } from "../context/ContextProvider";
 import { cookieAuthFetch } from "../lib/cookieAuth";
+import { API_ROOT } from "../lib/apiOrigin";
 
-// Use the same backend origin that Login.jsx uses for /api/login and /api/google.
-// Do not use a relative /api URL here unless Vercel explicitly proxies that path.
-const API_BASE = String(import.meta.env.VITE_BACKEND_API || "").replace(/\/+$/, "");
-const API = `${API_BASE}/api/orientation-feedback`;
+const API = `${API_ROOT}/orientation-feedback`;
 
 async function readApiJson(response) {
   const type = (response.headers.get("content-type") || "").toLowerCase();
   if (!type.includes("application/json")) {
     throw new Error(
       `Feedback API returned ${type || "non-JSON"} (HTTP ${response.status}). ` +
-      "Check VITE_BACKEND_API and your Render API route."
+      "Check the website API proxy and backend route."
     );
   }
   const body = await response.json();
@@ -73,12 +71,6 @@ export default function OrientationFeedback() {
     setError("");
     setCanRate(false);
     setSessionStatus("checking");
-    if (!API_BASE) {
-      setError("VITE_BACKEND_API is missing from your frontend environment. Configure your Render API URL and redeploy.");
-      setSessionStatus(token ? "verification-error" : "signed-out");
-      setLoading(false);
-      return;
-    }
     try {
       // Read the public summary first: even signed-out visitors can view it.
       const summaryResponse = await cookieAuthFetch(API, { signal, cache: "no-store" });
@@ -317,7 +309,7 @@ export default function OrientationFeedback() {
 //     setSessionStatus("checking");
 //     const token = getSiteToken();
 //     if (!API_BASE) {
-//       setError("VITE_BACKEND_API is missing from your frontend environment. Configure your Render API URL and redeploy.");
+//       setError("The API proxy is unavailable. Check the Vercel rewrite and backend route.");
 //       setSessionStatus(token ? "verification-error" : "signed-out");
 //       setLoading(false);
 //       return;

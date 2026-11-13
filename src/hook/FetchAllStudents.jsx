@@ -2,13 +2,12 @@ import axios from 'axios'
 import {
     useQuery,
 } from '@tanstack/react-query';
-const api = import.meta.env.VITE_BACKEND_API
+import { API_ROOT } from "../lib/apiOrigin";
 const FetchAllStudents = () => {
   return useQuery({
     queryKey: ["students"],
-    queryFn: ()=> axios.get(`${api}/api/show`)
+    queryFn: ()=> axios.get(`${API_ROOT}/show`, { withCredentials: true })
   })
   
 }
-console.log( import.meta.env.VITE_BACKEND_API)
 export default FetchAllStudents

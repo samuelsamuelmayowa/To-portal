@@ -14,7 +14,7 @@ function ResultNotice({ value }) {
     {value.emailStatus && <p className="mt-1 text-xs">{value.emailStatus}</p>}
   </div>;
 }
-const defaults = { name: "Buttercup failed login threshold", operator: ">=", threshold: "10", metric: "events", notifyOnTrigger: false, spl: "index=buttercup_auth action=failure" };
+const defaults = { name: "T.O. failed login threshold", operator: ">=", threshold: "10", metric: "events", notifyOnTrigger: false, spl: "index=toa_auth action=failure" };
 
 export default function AlertBuilder({ saved = [], alerts = [], onAddAlert, onUpdateAlert, onDeleteAlert, onRunAlert }) {
   const [draft, setDraft] = useState(defaults);

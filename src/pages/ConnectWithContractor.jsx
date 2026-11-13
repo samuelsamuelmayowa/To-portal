@@ -25,7 +25,7 @@ import {
 } from "firebase/storage";
 import { storage } from "../../firebase.config";
 import { useState } from "react";
-const api = import.meta.env.VITE_BACKEND_API;
+import { API_ROOT } from "../lib/apiOrigin";
 
 const ConnectWithContractor = () => {
     const [file, setFile] = useState(null);
@@ -119,7 +119,7 @@ const ConnectWithContractor = () => {
                                 name: data.name,
                                 pdfurl: downloadURL
                             }
-                            axios.post(`${api}contractors`, payload, {
+                            axios.post(`${API_ROOT}/contractors`, payload, {
                                 headers: {
                                     Accept: "application/json",
                                     "Content-Type": "application/json"

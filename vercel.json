@@ -2,6 +2,8 @@
     "rewrites":  [
       {"source": "/api/jobs", "destination": "/api/jobs"},
       {"source": "/api/options-chain", "destination": "/api/options-chain"},
+      {"source": "/chat", "destination": "https://to-backendapi-v1-kctb.onrender.com/chat"},
+      {"source": "/api/:path*", "destination": "https://to-backendapi-v1-kctb.onrender.com/api/:path*"},
       {"source": "/(.*)", "destination": "/"}
     ]
   }

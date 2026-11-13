@@ -5,7 +5,8 @@ import DashboardDropdown from "./Dropdown";
 import NewFeaturePopup from "./Newapp";
 import Dropdownstock from "./DropdownStock";
 
-const API_BASE = import.meta.env.VITE_HOME_OO || "http://localhost:8000";
+import { API_ORIGIN } from "../lib/apiOrigin";
+const API_BASE = API_ORIGIN;
 
 // ✅ Authorized student emails
 const allowedEmails = [

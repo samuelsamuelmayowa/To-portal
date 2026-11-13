@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import axios from "axios";
 import LOGO from "../assets/images/logo.jpg";
 import { FaChevronLeft } from "react-icons/fa6";
+import { API_ROOT } from "../lib/apiOrigin";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ const ForgotPassword = () => {
     setLoading(true);
 
     try {
-      const res = await axios.post("https://to-backendapi-v1-kctb.onrender.com/api/forgot-password", {
+      const res = await axios.post(`${API_ROOT}/forgot-password`, {
         email,
       });
       setMsg(res.data.message || "Reset link sent successfully!");

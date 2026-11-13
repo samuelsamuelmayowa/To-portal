@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { Send, Loader2 } from "lucide-react";
+import { API_ORIGIN } from "../lib/apiOrigin";
 
 export default function ChatComponent() {
-  const api = import.meta.env.VITE_HOME_OO;
+  const api = API_ORIGIN;
 
   const [message, setMessage] = useState("");
   const [chat, setChat] = useState([]);

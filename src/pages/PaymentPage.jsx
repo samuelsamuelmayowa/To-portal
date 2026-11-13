@@ -4,8 +4,9 @@ import { Link, Navigate } from "react-router-dom";
 import { ReactDOM } from "react";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import axios from "axios";
+import { API_ROOT } from "../lib/apiOrigin";
 
-const api = import.meta.env.VITE_BACKEND_PAY;
+const api = `${API_ROOT}/`;
 import CartItemContext from "../context/CartItemContext";
 import { useStateContext } from "../context/ContextProvider";
 import { useThirdPartyCookieCheck } from "../useThirdPartyCookieCheck";

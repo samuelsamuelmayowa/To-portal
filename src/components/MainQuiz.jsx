@@ -23,6 +23,7 @@ import {
 } from "react-icons/fi";
 import Quiz from "./Quiz";
 import { useStateContext } from "../context/ContextProvider";
+import { API_ORIGIN, API_ROOT } from "../lib/apiOrigin";
 import { cookieAuthApi } from "../lib/cookieAuth";
 
 const QUIZZES = [
@@ -133,7 +134,7 @@ function QuizCard({ quiz, selected, onSelect }) {
 }
 
 export default function MainQuiz() {
-  const api = (import.meta.env.VITE_HOME_OO || "").replace(/\/$/, "");
+  const api = API_ORIGIN;
   const { token: sessionAuthenticated, user, authLoading } = useStateContext();
   const userEmail = user?.email || "";
   const normalizedEmail = userEmail.toLowerCase();
@@ -187,7 +188,7 @@ export default function MainQuiz() {
     if (!isAllowed) return;
 
     const controller = new AbortController();
-    fetch("https://to-backendapi-v1-kctb.onrender.com/api/assignment", {
+    fetch(`${API_ROOT}/assignment`, {
       signal: controller.signal,
     })
       .then((response) => {
@@ -221,7 +222,6 @@ export default function MainQuiz() {
     setQuizLoading(true);
 
     try {
-      if (!api) throw new Error("Quiz API is not configured. Check VITE_HOME_OO.");
       const response = await fetch(
         `${api}/api/quiz/${encodeURIComponent(quiz.apiName)}`,
         { signal: controller.signal, credentials: "include" }

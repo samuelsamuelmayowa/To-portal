@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import {
   BookOpen, CheckCircle2, ChevronDown, ChevronRight, CircleHelp,
   Command, Database, GraduationCap, Lightbulb, Play,
-  Save, Search, Sparkles, Terminal, XCircle,
+  Save, Search, Sparkles, XCircle,
 } from "lucide-react";
 import { getLabLogs } from "../../data/splAdminState";
 import { LOOKUP_CATALOG } from "../../data/splLookups";
@@ -18,23 +18,25 @@ import recommendChart from "./charts/chartRegistry";
 
 const PROGRESS_KEY = "to_splunk_lesson_progress_v2";
 const inputClass = "w-full rounded-lg border border-[#493a50] bg-[#100d18] px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-[#c418ac]/80 focus:ring-1 focus:ring-[#c418ac]/30";
-const initialIndex = "training_web";
-const initialQuery = `index=${initialIndex}`;
+const initialIndex = "toa_web";
+const initialQuery = `index=${initialIndex} | table _time clientip method endpoint status response_time`;
+const BUTTERCUP_TO_SYNTHETIC = Object.freeze({
+  buttercup_web: "toa_web",
+  buttercup_auth: "toa_auth",
+  buttercup_sales: "toa_sales",
+  buttercup_prices: "toa_prices",
+});
 const EXAMPLES = [
-  { label: "Find 404 errors", query: "index=training_web status=404 | table _time endpoint status" },
-  { label: "Average latency", query: "index=training_web | stats avg(response_time) as avg_ms by endpoint | sort -avg_ms" },
-  { label: "HTTP statuses", query: "index=training_web | stats count by status | sort -count" },
-  { label: "Traffic trends", query: "index=training_web | timechart span=1h count" },
-  { label: "Login failures", query: "index=training_security action=failure | stats count by user | sort -count" },
-  { label: "Application errors", query: "index=training_apps level=ERROR | stats count by service" },
-  { label: "Revenue by product", query: "index=training_sales payment_status=paid | stats sum(revenue) as revenue by product | sort -revenue" },
-  { label: "Extract severity (rex)", query: 'index=training_apps | rex field=_raw "(?<severity>ERROR|WARN|INFO)" | stats count by severity' },
-  { label: "Enrich login audits", query: "index=training_security | lookup user_directory.csv user OUTPUT department role | stats count by department" },
-  { label: "Connect sessions", query: "index=training_sessions | transaction session_id maxspan=30m | table session_id user eventcount duration" },
-  { label: "Buttercup HTTP errors", query: "index=buttercup_web status>=400 | stats count by status | sort -count" },
-  { label: "Buttercup login failures", query: "index=buttercup_auth action=failure | stats count by user | sort -count" },
-  { label: "Buttercup vendor activity", query: "index=buttercup_sales | stats count by VendorID | sort -count" },
-  { label: "Buttercup price list", query: "index=buttercup_prices | table productId product_name price sale_price" },
+  { label: "Find 404 errors", query: "index=toa_web status=404 | table _time endpoint status" },
+  { label: "Average latency", query: "index=toa_web | stats avg(response_time) as avg_ms by endpoint | sort -avg_ms" },
+  { label: "HTTP statuses", query: "index=toa_web | stats count by status | sort -count" },
+  { label: "Traffic trends", query: "index=toa_web | timechart span=1h count" },
+  { label: "Login failures", query: "index=toa_auth action=failure | stats count by user | sort -count" },
+  { label: "Application errors", query: "index=toa_web status>=500 | stats count by endpoint" },
+  { label: "Revenue by product", query: "index=toa_sales payment_status=paid | stats sum(revenue) as revenue by product | sort -revenue" },
+  { label: "Extract severity · local simulation", query: 'index=training_apps | rex field=_raw "(?<severity>ERROR|WARN|INFO)" | stats count by severity' },
+  { label: "Enrich login audits · local simulation", query: "index=training_security | lookup user_directory.csv user OUTPUT department role | stats count by department" },
+  { label: "Connect sessions · local simulation", query: "index=training_sessions | transaction session_id maxspan=30m | table session_id user eventcount duration" },
   { label: "T.O. HTTP error analysis", query: "index=toa_web status>=400 | stats count by status | sort -count" },
   { label: "T.O. authentication failures", query: "index=toa_auth action=failure | stats count by user | sort -count" },
   { label: "T.O. vendor activity", query: "index=toa_sales | stats count by VendorID | sort -count" },
@@ -71,6 +73,7 @@ export default function SearchLab({ onSaveSearch, onSearchHistory }) {
   const [backendDatasets, setBackendDatasets] = useState([]);
   const [catalogState, setCatalogState] = useState("loading");
   const [catalogError, setCatalogError] = useState("");
+  const [catalogNotice, setCatalogNotice] = useState("");
   const [searching, setSearching] = useState(false);
   const [timeRange, setTimeRange] = useState("all");
 
@@ -96,6 +99,15 @@ export default function SearchLab({ onSaveSearch, onSearchHistory }) {
     if (handoff) { setQuery(handoff); sessionStorage.removeItem("to_splunk_run_once"); }
   }, []);
   useEffect(() => {
+    if (catalogState !== "ready") return;
+    const oldIndex = (query.match(/(?:^|\s)index\s*=\s*(buttercup_(?:web|auth|sales|prices))\b/i) || [])[1]?.toLowerCase();
+    if (!oldIndex) return;
+    const replacement = BUTTERCUP_TO_SYNTHETIC[oldIndex];
+    if (!backendDatasets.some((dataset) => dataset.index === replacement)) return;
+    setQuery((current) => current.replace(new RegExp(`(\\bindex\\s*=\\s*)${oldIndex}\\b`, "i"), `$1${replacement}`));
+    setCatalogNotice(`Buttercup records are not hosted. This search was switched to the equivalent synthetic T.O. dataset, ${replacement}.`);
+  }, [backendDatasets, catalogState, query]);
+  useEffect(() => {
     let active = true;
     splunkLabApi.listCatalog()
       .then((datasets) => { if (active) { setBackendDatasets(datasets); setCatalogError(""); setCatalogState("ready"); } })
@@ -117,7 +129,7 @@ export default function SearchLab({ onSaveSearch, onSearchHistory }) {
   }, [result]);
 
   const loadQuery = (next) => {
-    setQuery(next); setError(""); setResult(null); setLessonMessage(null);
+    setQuery(next); setError(""); setResult(null); setLessonMessage(null); setCatalogNotice("");
   };
   const selectDataset = (index) => {
     loadQuery(query.match(/\bindex=[\w-]+/i) ? query.replace(/\bindex=[\w-]+/i, `index=${index}`) : `index=${index}`);
@@ -227,31 +239,31 @@ export default function SearchLab({ onSaveSearch, onSearchHistory }) {
             </div>
           )}
         </GlassCard>
-        <GlassCard className="p-4"><p className="flex items-center gap-2 text-sm font-semibold text-slate-100"><CircleHelp size={16} className="text-fuchsia-300" /> Training environment</p><p className="mt-1.5 text-xs leading-relaxed text-slate-400">Indexes shown in the Data Index list search stored training records through the authenticated backend. The other training indexes, guided lessons, and lookup tables use a separate browser-local simulation; they are practice data, not live Splunk logs.</p></GlassCard>
+        <GlassCard className="p-4"><p className="flex items-center gap-2 text-sm font-semibold text-slate-100"><CircleHelp size={16} className="text-fuchsia-300" /> Training environment</p><p className="mt-1.5 text-xs leading-relaxed text-slate-400">The toa_* indexes search original synthetic training records through the authenticated backend. Buttercup tutorial records are not hosted. Other training indexes, guided lessons, and lookup tables use a separate browser-local simulation; they are practice data, not live Splunk logs.</p></GlassCard>
       </aside>
 
       <main className="min-w-0 space-y-5">
         <GlassCard className="p-4 sm:p-5">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-[#382c40] pb-3">
             <div><div className="flex items-center gap-2 text-base font-semibold text-white">
-              {/* <Terminal size={18} className="text-fuchsia-300" />  */}
               Search &amp; Reporting</div><div className="mt-1 text-xs text-slate-400">Search your selected index with SPL, then inspect events, statistics, or charts.</div></div>
-            <span className={classNames("rounded-md border px-2.5 py-1.5 text-[11px]", isStoredDatasetSearch ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-300" : "border-[#49384d] bg-[#211a2b] text-slate-300")}>{isStoredDatasetSearch ? "Stored data · backend" : "Browser simulation"}</span>
+            <span className={classNames("rounded-md border px-2.5 py-1.5 text-[11px]", selectedDataset ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-300" : isStoredDatasetSearch ? "border-amber-400/25 bg-amber-400/10 text-amber-200" : "border-[#49384d] bg-[#211a2b] text-slate-300")}>{selectedDataset ? "Stored data · backend" : isStoredDatasetSearch ? catalogState === "loading" ? "Checking catalog" : catalogState === "unavailable" ? "Catalog unavailable" : "Index unavailable" : "Browser simulation"}</span>
           </div>
           <div className="mb-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-end">
             <label className="block"><span className="mb-1.5 flex items-center gap-1.5 text-xs text-slate-400"><Database size={14} /> Data index</span>
               <select className={inputClass} value={availableIndexes.includes(currentIndex) ? currentIndex : ""} onChange={(e) => selectDataset(e.target.value)}>
                 {!availableIndexes.includes(currentIndex) && <option value="">{isLookupSearch ? "CSV lookup (no index)" : "Choose an index"}</option>}
                 {localIndexes.map((id) => <option key={id} value={id}>{id} ({labLogs[id].length.toLocaleString()} practice events)</option>)}
-                {backendDatasets.map((dataset) => <option key={dataset.index} value={dataset.index}>{dataset.index} ({dataset.eventCount.toLocaleString()} imported records)</option>)}
+                {backendDatasets.map((dataset) => <option key={dataset.index} value={dataset.index}>{dataset.index} ({dataset.eventCount.toLocaleString()} stored records)</option>)}
               </select>
             </label>
             <label className="block"><span className="mb-1.5 block text-xs text-slate-400">Time range</span><select className={inputClass} value={timeRange} onChange={(e) => setTimeRange(e.target.value)}><option value="all">All available time</option><option value="24h">Last 24 hours</option><option value="7d">Last 7 days</option></select></label>
             <span className="pb-2 text-xs text-slate-400">{selectedDataset ? `Stored training data · ${selectedDataset.eventCount.toLocaleString()} records` : catalogState === "loading" ? "Checking available stored datasets…" : catalogState === "unavailable" ? "Stored dataset catalog unavailable" : backendDatasets.length ? "Stored datasets available · other indexes use local simulation" : "No stored datasets are available · local simulation remains available"}</span>
           </div>
           {catalogError && <div role="alert" className="mb-4 rounded-xl border border-amber-400/30 bg-amber-400/10 p-3 text-sm text-amber-100">{catalogError}</div>}
+          {catalogNotice && <div role="status" className="mb-4 rounded-xl border border-sky-400/30 bg-sky-400/10 p-3 text-sm text-sky-100">{catalogNotice}</div>}
           <label htmlFor="spl-search-editor" className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400">Search Processing Language (SPL)</label>
-          <textarea id="spl-search-editor" rows={3} spellCheck={false} value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); runSearch(); } }} className={classNames(inputClass, "min-h-[94px] resize-y font-mono text-[13px] leading-relaxed text-fuchsia-100")} placeholder="index=training_web | stats count by status" />
+          <textarea id="spl-search-editor" rows={3} spellCheck={false} value={query} onChange={(e) => { setQuery(e.target.value); setCatalogNotice(""); }} onKeyDown={(e) => { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); runSearch(); } }} className={classNames(inputClass, "min-h-[94px] resize-y font-mono text-[13px] leading-relaxed text-fuchsia-100")} placeholder="index=toa_web | stats count by status" />
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
             <span className="flex items-center gap-1.5 text-xs text-slate-400"><Command size={14} /> Ctrl + Enter to run</span>
             <div className="flex gap-2"><SoftButton onClick={() => onSaveSearch?.(query)} title="Add this query to Saved Searches"><Save size={15} className="mr-1 inline" /> Save</SoftButton><PrimaryButton onClick={() => runSearch()} disabled={searching}><Play size={15} className="mr-1 inline" /> {searching ? "Searching…" : "Run Search"}</PrimaryButton></div>
