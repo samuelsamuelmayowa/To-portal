@@ -164,17 +164,17 @@ export default function SplunkStudio() {
     sessionStorage.setItem("to_splunk_run_once", spl);
     setActive("lab");
   };
-  const addDashboard = async ({ name, panels }) => {
-    const local = { id: makeId(), name, panels, createdAt: Date.now() }; setDashboards((previous) => [local, ...previous]);
-    if (!workspaceOwner) return;
-    try { const item = await splunkLabApi.createDashboard({ name, panels }); setDashboards((previous) => previous.map((entry) => entry.id === local.id ? item : entry)); }
-    catch (error) { setWorkspaceNotice(error.response?.data?.message || "Dashboard kept in this browser; account sync failed."); }
+  const addDashboard = async (definition) => {
+    const local = { ...definition, id: makeId(), createdAt: Date.now() }; setDashboards((previous) => [local, ...previous]);
+    if (!workspaceOwner) return { id: local.id, synced: false };
+    try { const item = await splunkLabApi.createDashboard(definition); setDashboards((previous) => previous.map((entry) => entry.id === local.id ? item : entry)); return { id: item.id, synced: true }; }
+    catch (error) { setWorkspaceNotice(error.response?.data?.message || "Dashboard kept in this browser; account sync failed."); return { id: local.id, synced: false }; }
   };
   const updateDashboard = async (id, changes) => {
     setDashboards((previous) => previous.map((item) => item.id === id ? { ...item, ...changes, updatedAt: Date.now() } : item));
-    if (!workspaceOwner) return;
-    try { const item = await splunkLabApi.updateDashboard(id, changes); setDashboards((previous) => previous.map((entry) => entry.id === id ? item : entry)); }
-    catch (error) { setWorkspaceNotice(error.response?.data?.message || "Dashboard updated in this browser; account sync failed."); }
+    if (!workspaceOwner) return { id, synced: false };
+    try { const item = await splunkLabApi.updateDashboard(id, changes); setDashboards((previous) => previous.map((entry) => entry.id === id ? item : entry)); return { id, synced: true }; }
+    catch (error) { setWorkspaceNotice(error.response?.data?.message || "Dashboard updated in this browser; account sync failed."); return { id, synced: false }; }
   };
   const deleteDashboard = async (id) => { setDashboards((previous) => previous.filter((item) => item.id !== id)); if (workspaceOwner) try { await splunkLabApi.deleteDashboard(id); } catch (error) { setWorkspaceNotice(error.response?.data?.message || "Dashboard removed locally; server deletion failed."); } };
   const addAlert = async (alert) => {
