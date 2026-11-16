@@ -11,6 +11,7 @@ import AdminLab from "../components/splunk/AdminLab";
 import SplunkDictionary from "../components/Dictionary";
 import StudentHistory from "../components/splunk/StudentHistory";
 import LearningMissions from "../components/splunk/LearningMissions";
+import SocInvestigation from "../components/splunk/SocInvestigation";
 import { useStateContext } from "../context/ContextProvider";
 import { splunkLabApi } from "../services/splunkLabApi";
 
@@ -178,17 +179,27 @@ export default function SplunkStudio() {
   const deleteDashboard = async (id) => { setDashboards((previous) => previous.filter((item) => item.id !== id)); if (workspaceOwner) try { await splunkLabApi.deleteDashboard(id); } catch (error) { setWorkspaceNotice(error.response?.data?.message || "Dashboard removed locally; server deletion failed."); } };
   const addAlert = async (alert) => {
     const local = { id: makeId(), ...alert, createdAt: Date.now(), history: [] }; setAlerts((previous) => [local, ...previous]);
-    if (!workspaceOwner) return;
-    try { const item = await splunkLabApi.createAlert(alert); setAlerts((previous) => previous.map((entry) => entry.id === local.id ? item : entry)); }
-    catch (error) { setWorkspaceNotice(error.response?.data?.message || "Alert kept in this browser; account sync failed."); }
+    if (!workspaceOwner) return false;
+    try { const item = await splunkLabApi.createAlert(alert); setAlerts((previous) => previous.map((entry) => entry.id === local.id ? item : entry)); return true; }
+    catch (error) { setWorkspaceNotice(error.response?.data?.message || "Alert kept in this browser; account sync failed."); return false; }
   };
   const updateAlert = async (id, changes) => {
     setAlerts((previous) => previous.map((item) => item.id === id ? { ...item, ...changes, updatedAt: Date.now() } : item));
-    if (!workspaceOwner) return;
-    try { const item = await splunkLabApi.updateAlert(id, changes); setAlerts((previous) => previous.map((entry) => entry.id === id ? item : entry)); }
-    catch (error) { setWorkspaceNotice(error.response?.data?.message || "Alert updated in this browser; account sync failed."); }
+    if (!workspaceOwner) return false;
+    try { const item = await splunkLabApi.updateAlert(id, changes); setAlerts((previous) => previous.map((entry) => entry.id === id ? item : entry)); return true; }
+    catch (error) { setWorkspaceNotice(error.response?.data?.message || "Alert updated in this browser; account sync failed."); return false; }
   };
   const deleteAlert = async (id) => { setAlerts((previous) => previous.filter((item) => item.id !== id)); if (workspaceOwner) try { await splunkLabApi.deleteAlert(id); } catch (error) { setWorkspaceNotice(error.response?.data?.message || "Alert removed locally; server deletion failed."); } };
+  const refreshAlerts = async () => {
+    try {
+      const work = await splunkLabApi.getStudentWork();
+      const remoteAlerts = new Map((work.alerts || []).map((alert) => [alert.id, alert]));
+      setAlerts((previous) => previous.map((alert) => {
+        const remote = remoteAlerts.get(alert.id);
+        return remote ? { ...alert, history: remote.history, nextRunAt: remote.nextRunAt } : alert;
+      }));
+    } catch (error) { setWorkspaceNotice(error.response?.data?.message || "Could not refresh alert history."); }
+  };
 
   return <>
     {showNavBar && <NavBar />}
@@ -201,7 +212,8 @@ export default function SplunkStudio() {
         {active === "history" && <StudentHistory history={history} onClear={async () => { if (workspaceOwner) { await splunkLabApi.clearHistory(); setHistory([]); } }} onRun={runSavedIntoLab} />}
         {active === "missions" && <LearningMissions dashboards={dashboards} missionProgress={missionProgress} onProgress={setMissionProgress} />}
         {active === "dash" && <DashboardBuilder saved={saved} dashboards={dashboards} onAddDashboard={addDashboard} onUpdateDashboard={updateDashboard} onDeleteDashboard={deleteDashboard} />}
-        {active === "alerts" && <AlertBuilder saved={saved} alerts={alerts} onAddAlert={addAlert} onUpdateAlert={updateAlert} onDeleteAlert={deleteAlert} onRunAlert={async (id) => { const result = await splunkLabApi.runAlert(id); setAlerts((previous) => previous.map((alert) => alert.id === id ? { ...alert, history: [result, ...(alert.history || [])].slice(0, 50) } : alert)); return result; }} />}
+        {active === "alerts" && <AlertBuilder saved={saved} alerts={alerts} onAddAlert={addAlert} onUpdateAlert={updateAlert} onDeleteAlert={deleteAlert} onRefresh={refreshAlerts} onRunAlert={async (id) => { const result = await splunkLabApi.runAlert(id); setAlerts((previous) => previous.map((alert) => alert.id === id ? { ...alert, history: [...(alert.history || []), result].slice(-50) } : alert)); return result; }} />}
+        {active === "soc" && <SocInvestigation onSearch={runSavedIntoLab} />}
         {active === "admin" && <AdminLab onOpenLab={runSavedIntoLab} />}
         </>}
       </StudioShell>

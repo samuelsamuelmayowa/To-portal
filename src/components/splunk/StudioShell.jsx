@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { BookOpen, LayoutDashboard, Database, Bell, Settings2, History, GraduationCap, Search } from "lucide-react";
+import { BookOpen, LayoutDashboard, Database, Bell, Settings2, History, GraduationCap, Search, ShieldCheck } from "lucide-react";
 import { GlassCard } from "./Glass";
 const TABS = [
   { id: "lab", label: "Search & Reporting", Icon: Database },
@@ -7,6 +7,7 @@ const TABS = [
   { id: "history", label: "Search History", Icon: History },
   { id: "dash", label: "Dashboards", Icon: LayoutDashboard },
   { id: "alerts", label: "Alerts", Icon: Bell },
+  { id: "soc", label: "SOC Investigation", Icon: ShieldCheck },
   { id: "missions", label: "Missions", Icon: GraduationCap },
   { id: "admin", label: "Administration", Icon: Settings2 },
 ];

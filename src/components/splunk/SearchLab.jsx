@@ -83,7 +83,7 @@ export default function SearchLab({ onSaveSearch, onSearchHistory }) {
   const isLookupSearch = /^\|?\s*inputlookup\s+/i.test(query);
   const currentIndex = (query.match(/\bindex=([\w-]+)/i) || [])[1] || (isLookupSearch ? "" : initialIndex);
   const selectedDataset = backendDatasets.find((dataset) => dataset.index === currentIndex);
-  const isStoredDatasetSearch = Boolean(selectedDataset || /^(?:buttercup|toa)_(?:web|auth|sales|prices)$/.test(currentIndex));
+  const isStoredDatasetSearch = Boolean(selectedDataset || currentIndex === "toa_soc" || /^(?:buttercup|toa)_(?:web|auth|sales|prices)$/.test(currentIndex));
   const currentLesson = SPL_LESSONS.find((l) => l.id === lessonId) || SPL_LESSONS[0];
   const visibleLessons = SPL_LESSONS.filter((l) => l.level === level);
   const completionRate = Math.round(completed.length / SPL_LESSONS.length * 100);

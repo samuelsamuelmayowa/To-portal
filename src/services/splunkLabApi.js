@@ -57,6 +57,9 @@ export const splunkLabApi = {
     const response = await client.get("/student/work");
     return response.data.data;
   },
+  async getSocScenario() { return (await client.get("/student/soc")).data.data; },
+  async startSocScenario() { return (await client.post("/student/soc")).data.data; },
+  async submitSocReport(report) { return (await client.post("/student/soc/report", report)).data.data; },
 
   async migrateLocalWork(work) {
     const response = await client.post("/student/work/migrate", work);
