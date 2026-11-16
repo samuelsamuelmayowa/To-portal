@@ -1,6 +1,7 @@
 
 import { getAuth } from "firebase/auth";
 import { API_ROOT } from "../lib/apiOrigin";
+import { cookieAuthFetch } from "../lib/cookieAuth";
 
 // Never put your Resend API key in frontend code.
 
@@ -26,7 +27,7 @@ export async function sendSimulatedAlertEmail(alert, outcome) {
   const idToken = await user.getIdToken();
 
   // Send alert details to the backend
-  const response = await fetch(
+  const response = await cookieAuthFetch(
     `${API_ROOT}/splunk-alerts/notify`,
     {
       method: "POST",
