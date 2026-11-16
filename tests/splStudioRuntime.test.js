@@ -1,6 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { evaluateStudioQuery, evaluateStudioAlert, numberForPanel, chartKeys } from "../src/utils/splStudioRuntime.js";
+import { evaluateStudioQuery, evaluateStudioAlert, numberForPanel, chartKeys, storedDatasetLabel } from "../src/utils/splStudioRuntime.js";
+
+test("the catalog can display a SOC replay without a fixed event count", () => {
+  assert.equal(storedDatasetLabel({ index: "toa_soc", name: "SOC password spray" }), "SOC password spray");
+  assert.equal(storedDatasetLabel({ eventCount: 0 }), "0 stored records");
+  assert.equal(storedDatasetLabel({ eventCount: 1200 }), `${(1200).toLocaleString()} stored records`);
+});
 
 const datasets = {
   training_web: [

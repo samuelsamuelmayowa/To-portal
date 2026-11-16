@@ -9,6 +9,7 @@ import { getLabLogs } from "../../data/splAdminState";
 import { LOOKUP_CATALOG } from "../../data/splLookups";
 import { SPL_COMMANDS, SPL_LESSONS } from "../../data/splLessons";
 import { runSPL } from "../../utils/splEngine";
+import { storedDatasetLabel } from "../../utils/splStudioRuntime";
 import { splunkLabApi } from "../../services/splunkLabApi";
 import { GlassCard, PrimaryButton, SoftButton } from "./Glass";
 import { PrettyTable } from "./Viz";
@@ -254,11 +255,11 @@ export default function SearchLab({ onSaveSearch, onSearchHistory }) {
               <select className={inputClass} value={availableIndexes.includes(currentIndex) ? currentIndex : ""} onChange={(e) => selectDataset(e.target.value)}>
                 {!availableIndexes.includes(currentIndex) && <option value="">{isLookupSearch ? "CSV lookup (no index)" : "Choose an index"}</option>}
                 {localIndexes.map((id) => <option key={id} value={id}>{id} ({labLogs[id].length.toLocaleString()} practice events)</option>)}
-                {backendDatasets.map((dataset) => <option key={dataset.index} value={dataset.index}>{dataset.index} ({dataset.eventCount.toLocaleString()} stored records)</option>)}
+                {backendDatasets.map((dataset) => <option key={dataset.index} value={dataset.index}>{dataset.index} ({storedDatasetLabel(dataset)})</option>)}
               </select>
             </label>
             <label className="block"><span className="mb-1.5 block text-xs text-slate-400">Time range</span><select className={inputClass} value={timeRange} onChange={(e) => setTimeRange(e.target.value)}><option value="all">All available time</option><option value="24h">Last 24 hours</option><option value="7d">Last 7 days</option></select></label>
-            <span className="pb-2 text-xs text-slate-400">{selectedDataset ? `Stored training data · ${selectedDataset.eventCount.toLocaleString()} records` : catalogState === "loading" ? "Checking available stored datasets…" : catalogState === "unavailable" ? "Stored dataset catalog unavailable" : backendDatasets.length ? "Stored datasets available · other indexes use local simulation" : "No stored datasets are available · local simulation remains available"}</span>
+            <span className="pb-2 text-xs text-slate-400">{selectedDataset ? storedDatasetLabel(selectedDataset) : catalogState === "loading" ? "Checking available stored datasets…" : catalogState === "unavailable" ? "Stored dataset catalog unavailable" : backendDatasets.length ? "Stored datasets available · other indexes use local simulation" : "No stored datasets are available · local simulation remains available"}</span>
           </div>
           {catalogError && <div role="alert" className="mb-4 rounded-xl border border-amber-400/30 bg-amber-400/10 p-3 text-sm text-amber-100">{catalogError}</div>}
           {catalogNotice && <div role="status" className="mb-4 rounded-xl border border-sky-400/30 bg-sky-400/10 p-3 text-sm text-sky-100">{catalogNotice}</div>}

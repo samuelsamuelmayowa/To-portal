@@ -1,5 +1,11 @@
 import { runSPL } from "./splEngine.js";
 
+export function storedDatasetLabel(dataset) {
+  return Number.isFinite(dataset.eventCount)
+    ? `${dataset.eventCount.toLocaleString()} stored records`
+    : dataset.name || "Stored training data";
+}
+
 /** Unified evaluation used by Search, Dashboards, and Alerts. */
 export function evaluateStudioQuery(spl, datasets) {
   return runSPL(String(spl || "").trim(), datasets);
