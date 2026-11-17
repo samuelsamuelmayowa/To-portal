@@ -1,6 +1,6 @@
 export const canvasWidth = 1200;
 export const canvasHeight = 5400;
-export const panelTypes = { number: "Single value", chart: "Bar chart", table: "Table" };
+export const panelTypes = { number: "Single value", chart: "Bar chart", line: "Line chart", pie: "Pie chart", table: "Table" };
 export const dashboardIndex = (spl) => /^index\s*=\s*([\w-]+)(?=\s|\||$)/i.exec(spl.trim())?.[1];
 
 const clamp = (value, min, max) => Math.round(Math.min(max, Math.max(min, value)));
@@ -38,7 +38,7 @@ export function parseDashboardSource(source) {
     if (typeof id !== "string" || !id.trim() || id !== id.trim() || id.length > 80 || ids.has(id)) throw new Error(`${prefix} needs a unique ID of up to 80 characters.`);
     ids.add(id);
     if (typeof title !== "string" || !title.trim() || title.length > 80) throw new Error(`${prefix} needs a title of up to 80 characters.`);
-    if (!Object.hasOwn(panelTypes, type)) throw new Error(`${prefix} needs type number, chart, or table.`);
+    if (!Object.hasOwn(panelTypes, type)) throw new Error(`${prefix} needs a supported visualization type (${Object.keys(panelTypes).join(", ")}).`);
     if (typeof spl !== "string" || spl.length > 3000 || !dashboardIndex(spl)) throw new Error(`${prefix} must start its SPL with index= and use up to 3,000 characters.`);
     if (position != null) {
       const { x, y, width, height } = position;

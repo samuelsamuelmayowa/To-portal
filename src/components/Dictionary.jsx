@@ -282,7 +282,7 @@ function Mono({children}) {
   return <pre className="overflow-x-auto rounded-xl border border-slate-800 bg-[#0b1120] p-4 font-mono text-xs leading-6 text-cyan-100 sm:text-sm whitespace-pre-wrap break-words">{children}</pre>;
 }
 
-export default function SplunkDictionary() {
+export default function SplunkDictionary({ embedded = false } = {}) {
   const [prefs] = useState(loadPreferences);
   const [dark,setDark] = useState(prefs.dark !== false);
   const [favorites,setFavorites] = useState(() => readSet(prefs.favorites));
@@ -400,7 +400,7 @@ export default function SplunkDictionary() {
             </div>
           </header>
 
-          <section className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label="Your learning overview">
+          <section aria-label="Your learning overview" className={`mt-5 grid grid-cols-2 gap-3 ${embedded ? "" : "lg:grid-cols-4"}`}>
             {[
               {label:'Reference entries',value:prettyCount(DICTIONARY_ITEMS.length),icon:Layers3,hint:'Commands, functions and concepts'},
               {label:'Search commands',value:prettyCount(commandCount),icon:Code2,hint:'Curated SPL/SPL2 coverage'},
@@ -425,7 +425,7 @@ export default function SplunkDictionary() {
                 <label className="relative block flex-1"><Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" /><span className="sr-only">Search Splunk reference</span><input ref={searchRef} value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search stats, tstats, SPL2, CIM, response time…" className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-12 pr-4 text-sm outline-none focus:border-fuchsia-500 dark:border-slate-700 dark:bg-slate-950 dark:placeholder:text-slate-500" /></label>
                 <div className="flex gap-2"><Button icon={SlidersHorizontal} onClick={()=>setFiltersOpen(x=>!x)} aria-expanded={filtersOpen} className="lg:hidden">Filters</Button><Button icon={Bookmark} variant={onlyFavorites?'primary':'outline'} onClick={()=>setOnlyFavorites(x=>!x)} aria-pressed={onlyFavorites}>Bookmarks</Button><Button icon={RotateCcw} onClick={resetFilters}>Reset</Button></div>
               </div>
-              <div className={`${filtersOpen?'grid':'hidden'} mt-3 gap-3 sm:grid-cols-2 lg:grid lg:grid-cols-4`}>
+              <div className={`${filtersOpen?'grid':'hidden'} mt-3 gap-3 sm:grid-cols-2 ${embedded ? "" : "lg:grid"} ${embedded ? "" : "lg:grid-cols-4"}`}>
                 <label><span className={sectionLabel}>Topic</span><select className={`${selectStyles} mt-1.5`} value={category} onChange={e=>setCategory(e.target.value)}>{categories.map(x=><option key={x}>{x}</option>)}</select></label>
                 <label><span className={sectionLabel}>Difficulty</span><select className={`${selectStyles} mt-1.5`} value={level} onChange={e=>setLevel(e.target.value)}>{LEVELS.map(x=><option key={x}>{x}</option>)}</select></label>
                 <label><span className={sectionLabel}>Language</span><select className={`${selectStyles} mt-1.5`} value={dialect} onChange={e=>setDialect(e.target.value)}>{DIALECTS.map(x=><option key={x}>{x}</option>)}</select></label>
@@ -434,7 +434,7 @@ export default function SplunkDictionary() {
               <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400"><span>{prettyCount(filtered.length)} matching entries</span><span>Keyboard shortcut: <kbd className="rounded border border-slate-300 px-1.5 py-0.5 dark:border-slate-700">/</kbd> to search</span></div>
             </section>
 
-            <div className="mt-5 grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(380px,0.95fr)] xl:grid-cols-[minmax(0,1.08fr)_minmax(440px,0.92fr)]">
+            <div className={`mt-5 grid items-start gap-5 ${embedded ? "" : "lg:grid-cols-[minmax(0,1fr)_minmax(380px,0.95fr)]"} ${embedded ? "" : "xl:grid-cols-[minmax(0,1.08fr)_minmax(440px,0.92fr)]"}`}>
               <section aria-label="Dictionary results" className="min-w-0 space-y-3">
                 {filtered.length===0 ? <EmptyState title="No matching commands" description="Try fewer keywords, another command language or a different topic." onReset={resetFilters} /> : <>
                   {filtered.slice(0,pageSize).map(item => {
@@ -455,7 +455,7 @@ export default function SplunkDictionary() {
                 </>}
               </section>
 
-              <aside ref={detailRef} aria-label="Selected command details" className={`${surface} min-w-0 scroll-mt-5 overflow-hidden lg:sticky lg:top-5`}>
+              <aside ref={detailRef} aria-label="Selected command details" className={`${surface} min-w-0 scroll-mt-5 overflow-hidden ${embedded ? "" : "lg:sticky"} ${embedded ? "" : "lg:top-5"}`}>
                 {selected && <>
                   <div className="border-b border-slate-200 bg-gradient-to-r from-fuchsia-500/10 to-cyan-500/10 px-5 py-5 dark:border-slate-800 sm:px-6">
                     <div className="mb-2 flex flex-wrap gap-2"><Pill className={DIFFICULTY[selected.level]}>{selected.level}</Pill><Pill className="border-slate-300 text-slate-500 dark:border-slate-700 dark:text-slate-300">{selected.language}</Pill><Pill className="border-slate-300 text-slate-500 dark:border-slate-700 dark:text-slate-300">{selected.kind}</Pill></div>
@@ -483,12 +483,12 @@ export default function SplunkDictionary() {
             <section className={`${surface} mt-5 p-5`} aria-label="Compare similar commands"><div className="mb-4 flex items-center gap-2"><Layers3 className="h-5 w-5 text-fuchsia-500" /><h3 className="font-bold">Know the differences</h3></div><div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{COMPARE.map(pair=><div key={`${pair.left}-${pair.right}`} className="rounded-xl border border-slate-200 p-4 dark:border-slate-800"><div className="mb-2 flex items-center gap-2 text-sm font-bold"><code className="text-fuchsia-600 dark:text-fuchsia-300">{pair.left}</code><span className="text-slate-400">vs</span><code className="text-cyan-600 dark:text-cyan-300">{pair.right}</code></div><p className="text-xs leading-6 text-slate-600 dark:text-slate-300">{pair.answer}</p></div>)}</div></section>
           </>}
 
-          {tab==='paths' && <div className="mt-5 grid gap-5 lg:grid-cols-[330px_minmax(0,1fr)]">
+          {tab==='paths' && <div className={`mt-5 grid gap-5 ${embedded ? "" : "lg:grid-cols-[330px_minmax(0,1fr)]"}`}>
             <div className="space-y-3">{LEARNING_PATHS.map(path=>{const complete=path.items.filter(name=>mastered.has(DICTIONARY_ITEMS.find(item=>item.name===name)?.id)).length;return <button type="button" key={path.id} onClick={()=>setActivePath(path.id)} className={`w-full rounded-2xl border p-5 text-left transition-colors ${activePath===path.id?'border-fuchsia-500 bg-fuchsia-500/5 dark:bg-fuchsia-500/10':'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900'}`}><div className="flex justify-between gap-3"><div className="font-bold">{path.title}</div><span className="text-xs text-slate-500">{complete}/{path.items.length}</span></div><p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">{path.description}</p><div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800"><div className="h-full rounded-full bg-fuchsia-500" style={{width:`${(complete/path.items.length)*100}%`}} /></div></button>;})}</div>
             <section className={`${surface} p-6`}><div className={sectionLabel}>Guided learning path</div><h2 className="mt-2 text-2xl font-black">{activePathData.title}</h2><p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">{activePathData.description} Select each command to open its complete explanation, then mark it mastered.</p><div className="mt-6 space-y-3">{activePathData.items.map((name,i)=>{const item=DICTIONARY_ITEMS.find(x=>x.name===name);if(!item)return null;return <div key={name} className="flex items-center gap-3 rounded-xl border border-slate-200 p-3 dark:border-slate-800"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-sm font-bold dark:bg-slate-800">{i+1}</span><div className="min-w-0 flex-1"><div className="font-mono text-sm font-bold">{name}</div><p className="mt-1 line-clamp-1 text-xs text-slate-500 dark:text-slate-400">{item.definition}</p></div>{mastered.has(item.id)&&<CheckCheck className="h-4 w-4 text-emerald-500" />}<Button onClick={()=>openItem(item.id)} className="!px-2 !py-1.5">Learn <ArrowRight className="h-3.5 w-3.5" /></Button></div>;})}</div></section>
           </div>}
 
-          {tab==='labs' && <div className="mt-5 grid gap-5 lg:grid-cols-[330px_minmax(0,1fr)]">
+          {tab==='labs' && <div className={`mt-5 grid gap-5 ${embedded ? "" : "lg:grid-cols-[330px_minmax(0,1fr)]"}`}>
             <section className="space-y-3" aria-label="Practice scenarios">{LABS.map(lab=><button type="button" key={lab.id} onClick={()=>{setActiveLab(lab.id);setShowSolution(false);}} className={`w-full rounded-2xl border p-4 text-left transition-colors ${activeLab===lab.id?'border-fuchsia-500 bg-fuchsia-500/5 dark:bg-fuchsia-500/10':'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900'}`}><div className="text-xs text-slate-500 dark:text-slate-400">{lab.category} · {lab.level}</div><h3 className="mt-1 font-bold">{lab.title}</h3><p className="mt-2 text-xs leading-5 text-slate-500 dark:text-slate-400">{lab.question}</p></button>)}</section>
             <section className={`${surface} p-6`}><Pill className={DIFFICULTY[activeLabData.level]}>{activeLabData.level}</Pill><h2 className="mt-3 text-2xl font-black">{activeLabData.title}</h2><p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{activeLabData.question}</p><div className="mt-5 rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-4"><div className={sectionLabel}>Your challenge</div><p className="mt-1 text-sm font-semibold">{activeLabData.goal}</p><p className="mt-2 text-xs leading-5 text-slate-500 dark:text-slate-400">Try writing the SPL yourself first. This educational workspace does not execute real searches or connect to your Splunk server.</p></div><div className="mt-5"><Button variant="primary" icon={showSolution?CircleHelp:Play} onClick={()=>setShowSolution(x=>!x)}>{showSolution?'Hide walkthrough':'Reveal solution and explanation'}</Button></div>{showSolution&&<div className="mt-6 space-y-5"><div><div className="mb-2 flex items-center justify-between"><h3 className={sectionLabel}>Example solution</h3><Button icon={Copy} className="!py-1.5" onClick={()=>copy(activeLabData.query,'Lab SPL copied')}>Copy query</Button></div><Mono>{activeLabData.query}</Mono></div><div><h3 className={sectionLabel}>How it works</h3><ol className="mt-3 space-y-3">{activeLabData.steps.map((x,i)=><li className="flex gap-3 text-sm leading-6" key={x}><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-fuchsia-500/10 text-xs font-bold text-fuchsia-600 dark:text-fuchsia-300">{i+1}</span>{x}</li>)}</ol></div><div><h3 className={sectionLabel}>Expected result</h3><p className="mt-2 text-sm leading-6">{activeLabData.expected}</p></div><div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-sm leading-6">{activeLabData.caveat}</div></div>}</section>
           </div>}
@@ -503,7 +503,7 @@ export default function SplunkDictionary() {
             <div className="flex flex-wrap gap-4"><a href={DOCS.spl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-fuchsia-500">SPL reference <ExternalLink className="h-3 w-3" /></a><a href={DOCS.spl2} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-fuchsia-500">SPL2 reference <ExternalLink className="h-3 w-3" /></a><a href={DOCS.comparison} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-fuchsia-500">SPL vs SPL2 <ExternalLink className="h-3 w-3" /></a></div>
           </footer>
         </div>
-        {toast && <div role="status" className="fixed bottom-5 right-5 z-50 rounded-xl border border-fuchsia-500/30 bg-slate-950 px-4 py-3 text-sm font-semibold text-white shadow-2xl">{toast}</div>}
+        {toast && <div role="status" className={`${embedded ? "sticky bottom-2 mx-2" : "fixed bottom-5 right-5 z-50"} rounded-xl border border-fuchsia-500/30 bg-slate-950 px-4 py-3 text-sm font-semibold text-white shadow-2xl`}>{toast}</div>}
       </div>
     </div>
   );

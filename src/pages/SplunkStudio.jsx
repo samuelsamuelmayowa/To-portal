@@ -38,7 +38,6 @@ export default function SplunkStudio() {
   const [active, setActive] = useState("lab");
   const [dictionaryOpen, setDictionaryOpen] = useState(false);
   const dictionaryButtonRef = useRef(null);
-  const dictionaryDialogRef = useRef(null);
   const dictionaryCloseRef = useRef(null);
   const [saved, setSaved] = useState(() => load(LS_SAVED, []));
   const [dashboards, setDashboards] = useState(() => load(LS_DASH, []));
@@ -120,28 +119,13 @@ export default function SplunkStudio() {
 
   useEffect(() => {
     if (!dictionaryOpen) return;
-    const returnFocusTarget = dictionaryButtonRef.current;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
     dictionaryCloseRef.current?.focus();
-    const onKeyDown = (event) => {
-      if (event.key === "Escape") { setDictionaryOpen(false); return; }
-      if (event.key !== "Tab" || !dictionaryDialogRef.current) return;
-      const focusable = Array.from(dictionaryDialogRef.current.querySelectorAll(
-        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-      )).filter((element) => element.getClientRects().length > 0);
-      if (!focusable.length) { event.preventDefault(); return; }
-      const first = focusable[0], last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-    };
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      document.removeEventListener("keydown", onKeyDown);
-      returnFocusTarget?.focus();
-    };
   }, [dictionaryOpen]);
+
+  const closeDictionary = () => {
+    setDictionaryOpen(false);
+    dictionaryButtonRef.current?.focus();
+  };
 
   const addSaved = async ({ name, spl }) => {
     const local = { id: makeId(), name, spl, createdAt: Date.now() };
@@ -201,10 +185,28 @@ export default function SplunkStudio() {
     } catch (error) { setWorkspaceNotice(error.response?.data?.message || "Could not refresh alert history."); }
   };
 
+  const dictionary = dictionaryOpen && (
+    <aside id="studio-dictionary" aria-labelledby="splunk-dictionary-title"
+      className="min-w-0 overflow-hidden rounded-lg border border-slate-700 bg-[#020617] 2xl:order-last"
+      onKeyDown={(event) => { if (event.key === "Escape" && !event.defaultPrevented) closeDictionary(); }}>
+      <div className="flex items-center justify-between gap-3 border-b border-slate-700 bg-slate-900 px-4 py-2">
+        <h2 id="splunk-dictionary-title" className="font-semibold">Splunk Dictionary</h2>
+        <button ref={dictionaryCloseRef} type="button" onClick={closeDictionary} aria-label="Close Splunk Dictionary" className="rounded p-2 text-slate-300 hover:bg-white/10"><X size={18} /></button>
+      </div>
+      <div className="max-h-[65dvh] overflow-auto overscroll-contain"><SplunkDictionary embedded /></div>
+    </aside>
+  );
+
   return <>
     {showNavBar && <NavBar />}
     <div className={showNavBar ? "pt-20 sm:pt-24" : undefined}>
-      <StudioShell active={active} setActive={setActive}>
+      <StudioShell active={active} setActive={setActive} sidePanel={dictionary} headerAction={
+        <button ref={dictionaryButtonRef} type="button" aria-expanded={dictionaryOpen} aria-controls={dictionaryOpen ? "studio-dictionary" : undefined}
+          onClick={() => dictionaryOpen ? closeDictionary() : setDictionaryOpen(true)}
+          className="inline-flex items-center gap-2 rounded-md border border-fuchsia-300/30 bg-fuchsia-600 px-3 py-2 text-sm font-semibold text-white hover:bg-fuchsia-500">
+          <BookOpen size={16} aria-hidden="true" /> Splunk Dictionary
+        </button>
+      }>
         {workspaceNotice && <p role="status" className="mb-4 rounded-xl border border-fuchsia-400/20 bg-fuchsia-400/10 p-3 text-sm text-fuchsia-100">{workspaceNotice}</p>}
         {workspaceLoading || authLoading ? <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-slate-300">Loading your secure Studio workspace…</div> : <>
         {active === "lab" && <SearchLab onSaveSearch={(spl) => addSaved({ name: `Saved: ${spl.slice(0, 24)}...`, spl })} onSearchHistory={(item) => setHistory((previous) => [item, ...previous.filter((entry) => entry.id !== item.id)].slice(0, 100))} />}
@@ -218,16 +220,6 @@ export default function SplunkStudio() {
         </>}
       </StudioShell>
     </div>
-    {!dictionaryOpen && <button ref={dictionaryButtonRef} type="button" onClick={() => setDictionaryOpen(true)} aria-haspopup="dialog" aria-controls="splunk-dictionary-dialog" className="fixed bottom-5 right-5 z-[100] inline-flex items-center gap-2 rounded-full border border-fuchsia-300/30 bg-fuchsia-600 px-5 py-3.5 font-bold text-white shadow-2xl shadow-fuchsia-950/50 transition hover:scale-105 hover:bg-fuchsia-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-400 sm:bottom-7 sm:right-7"><BookOpen size={20} aria-hidden="true" /><span className="hidden sm:inline">Splunk Dictionary</span><span className="sm:hidden">Dictionary</span></button>}
-    {dictionaryOpen && <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 p-2 backdrop-blur-sm sm:p-5" onMouseDown={(event) => { if (event.target === event.currentTarget) setDictionaryOpen(false); }}>
-      <div id="splunk-dictionary-dialog" ref={dictionaryDialogRef} role="dialog" aria-modal="true" aria-labelledby="splunk-dictionary-title" className="flex h-[95vh] w-full max-w-7xl flex-col overflow-hidden rounded-2xl border border-slate-700 bg-[#020617] shadow-2xl sm:h-[90vh] sm:rounded-3xl">
-        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-700 bg-[#0f172a] px-4 py-3 sm:px-6 sm:py-4">
-          <div className="flex min-w-0 items-center gap-3"><BookOpen className="shrink-0 text-fuchsia-400" size={24} aria-hidden="true" /><div className="min-w-0"><h2 id="splunk-dictionary-title" className="truncate text-base font-bold text-white sm:text-lg">Splunk Dictionary</h2><p className="hidden text-xs text-slate-400 sm:block">Search terminology, learn examples, and practice interview questions.</p></div></div>
-          <button ref={dictionaryCloseRef} type="button" onClick={() => setDictionaryOpen(false)} aria-label="Close Splunk Dictionary" className="shrink-0 rounded-xl border border-slate-700 p-2 text-slate-300 transition hover:border-red-500/40 hover:bg-red-500/15 hover:text-red-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-fuchsia-400"><X size={22} aria-hidden="true" /></button>
-        </div>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain"><SplunkDictionary /></div>
-      </div>
-    </div>}
   </>;
 }
 

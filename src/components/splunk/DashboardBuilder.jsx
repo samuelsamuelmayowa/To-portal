@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useEffect, useState } from "react";
 import { Code2, Copy, LayoutDashboard, Plus, RefreshCw } from "lucide-react";
+import { CartesianGrid, Legend, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { TRAINING_LOGS } from "../../data/splTrainingData";
 import { splunkLabApi } from "../../services/splunkLabApi";
 import { chartKeys, numberForPanel, evaluateStudioQuery } from "../../utils/splStudioRuntime";
@@ -9,13 +10,54 @@ import DashboardCanvas from "./DashboardCanvas";
 import { GlassCard, PrimaryButton, SoftButton } from "./Glass";
 import { MiniBarChart, PrettyTable } from "./Viz";
 
-const control = "w-full rounded-lg border border-white/15 bg-[#100d18] px-3 py-2 text-sm outline-none focus:border-fuchsia-400";
+const control = "w-full rounded-lg border border-white/15 bg-[#252930] px-3 py-2 text-sm outline-none focus:border-[#6cbfff]";
 const newId = () => globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 const blankPanel = { title: "", type: "chart", spl: "" };
 const templates = {
   "Web health": ["training_web", "status>=400", "status", "endpoint status"],
   "Sign-in monitoring": ["training_security", "action=failure", "user", "user clientip action"],
 };
+
+const seriesColors = ["#7B56DB", "#00CDAF", "#0051B5", "#FF7152", "#F8BE34", "#50C5F4", "#D874D6", "#79C16D"];
+const tooltipStyle = { background: "#282c34", border: "1px solid #59606b", color: "#fff" };
+const tooltipTextStyle = { color: "#fff" };
+const isNumeric = (value) => typeof value === "number" && Number.isFinite(value);
+
+function DashboardChart({ rows, type }) {
+  const [firstColumn, valueField] = Object.keys(rows[0]);
+  if (type === "pie") {
+    const slices = rows.filter((row) => isNumeric(row[valueField]) && row[valueField] > 0)
+      .map((row, index) => ({
+        name: String(row[firstColumn] ?? "(empty)"),
+        value: row[valueField],
+        fill: seriesColors[index % seriesColors.length],
+      }));
+    if (!slices.length) return <p className="text-sm text-slate-300">A pie chart needs labels in the first column and positive values in the second.</p>;
+    return <ResponsiveContainer width="100%" height={200}>
+      <PieChart margin={{ right: 4, left: 4 }}>
+        <Pie data={slices} nameKey="name" dataKey="value" outerRadius="82%" stroke="#252930" isAnimationActive={false} />
+        <Tooltip contentStyle={tooltipStyle} itemStyle={tooltipTextStyle} />
+        <Legend iconType="circle" layout="vertical" align="right" verticalAlign="middle" wrapperStyle={{ fontSize: 11, maxWidth: "44%", maxHeight: 180, overflow: "auto", overflowWrap: "anywhere" }} />
+      </PieChart>
+    </ResponsiveContainer>;
+  }
+  const label = Object.hasOwn(rows[0], "_time") ? "_time" : firstColumn;
+  const values = [...new Set(rows.flatMap((row) => Object.keys(row).filter((field) => field !== label && isNumeric(row[field]))))];
+  if (!values.length) return <p className="text-sm text-slate-300">Use a search with a category or time column followed by numeric series.</p>;
+  return <ResponsiveContainer width="100%" height={200}>
+    <LineChart data={rows} margin={{ top: 8, right: 18, bottom: 4 }}>
+      <CartesianGrid vertical={false} stroke="#424852" />
+      <XAxis dataKey={(row) => row[label]} tick={{ fill: "#bac2cd", fontSize: 11 }} minTickGap={24} />
+      <YAxis width={52} tick={{ fill: "#bac2cd", fontSize: 11 }} />
+      <Tooltip contentStyle={tooltipStyle} labelStyle={tooltipTextStyle} />
+      {values.length > 1 && <Legend iconType="plainline" wrapperStyle={{ fontSize: 11 }} />}
+      {values.map((field, index) => <Line key={field} name={field}
+        dataKey={(row) => isNumeric(row[field]) ? row[field] : null}
+        stroke={seriesColors[index % seriesColors.length]} strokeWidth={2}
+        dot={rows.filter((row) => isNumeric(row[field])).length === 1} isAnimationActive={false} />)}
+    </LineChart>
+  </ResponsiveContainer>;
+}
 
 function PanelPreview({ panel, refreshKey }) {
   const [preview, setPreview] = useState(null);
@@ -41,6 +83,8 @@ function PanelPreview({ panel, refreshKey }) {
   if (panel.type === "number") {
     const number = numberForPanel(result);
     content = <><p className="text-xs text-slate-400">{number.label}</p><p className="text-4xl font-semibold tabular-nums text-fuchsia-100">{number.value.toLocaleString()}</p></>;
+  } else if (["line", "pie"].includes(panel.type) && rows.length) {
+    content = <DashboardChart rows={rows} type={panel.type} />;
   } else if (panel.type === "chart" && rows.length) {
     const keys = chartKeys(result);
     content = keys ? <MiniBarChart rows={rows} {...keys}/> : <p className="text-sm text-amber-200">Use a search with numeric results, such as <code>stats count by status</code>.</p>;
@@ -81,7 +125,8 @@ export default function DashboardBuilder({ saved = [], dashboards = [], onAddDas
   };
   const chooseDataSource = (index) => {
     if (!index) return;
-    const pipeline = panelDraft.type === "chart" ? " | timechart span=1h count"
+    const pipeline = ["chart", "line"].includes(panelDraft.type) ? " | timechart span=1h count"
+      : panelDraft.type === "pie" ? " | stats count by sourcetype"
       : panelDraft.type === "number" ? " | stats count" : "";
     updateDraft("spl", `index=${index}${pipeline}`);
   };
@@ -100,7 +145,8 @@ export default function DashboardBuilder({ saved = [], dashboards = [], onAddDas
     const query = `index=${index} ${condition}`;
     loadDashboard({ name: template, panels: [
       { title: "Matching events", type: "number", spl: `${query} | stats count` },
-      { title: `Events by ${group}`, type: "chart", spl: `${query} | stats count by ${group} | sort -count` },
+      { title: "Events over time", type: "line", spl: `${query} | timechart span=1h count` },
+      { title: `Events by ${group}`, type: "pie", spl: `${query} | stats count by ${group} | sort -count` },
       { title: "Event details", type: "table", spl: `${query} | table _time ${fields}` },
     ] });
   };
@@ -175,12 +221,12 @@ export default function DashboardBuilder({ saved = [], dashboards = [], onAddDas
     setLayout(value);
   };
   const dataSources = [...catalog.map(({ index, name: label }) => [index, label]), ["training_web", "Web sample"], ["training_security", "Sign-in sample"]];
-  return <section className="space-y-4" aria-labelledby="dashboard-editor-heading">
+  return <section className="space-y-4 rounded-md bg-[#171a20] p-3 sm:p-4" aria-labelledby="dashboard-editor-heading">
     <header className="flex flex-wrap items-center justify-between gap-3">
-      <h2 id="dashboard-editor-heading" tabIndex={-1} className="flex scroll-mt-24 items-center gap-2 text-xl font-semibold"><LayoutDashboard size={20} className="text-fuchsia-300"/> Dashboard Studio</h2>
+      <h2 id="dashboard-editor-heading" tabIndex={-1} className="flex scroll-mt-24 items-center gap-2 text-xl font-semibold"><LayoutDashboard size={20} className="text-[#8dcbff]"/> Dashboard Studio</h2>
       <div className="flex flex-wrap gap-2"><SoftButton disabled={saving} onClick={() => loadDashboard({ name: "Untitled dashboard" })}><Plus size={14} className="mr-1 inline"/> New</SoftButton><PrimaryButton disabled={saving} onClick={saveDashboard}>{saving ? "Saving…" : "Save dashboard"}</PrimaryButton></div>
     </header>
-    <GlassCard className="space-y-3 p-4">
+    <div className="space-y-3 rounded border border-[#414650] bg-[#252930] p-4">
       <div className="flex flex-wrap gap-2">
         <SoftButton aria-pressed={mode === "visual"} disabled={mode === "visual"} onClick={() => { setMode("visual"); setError(""); }}>Visual editor</SoftButton>
         <SoftButton aria-pressed={mode === "json"} disabled={mode === "json"} onClick={openSource}><Code2 size={15} className="mr-1 inline"/> JSON source</SoftButton>
@@ -201,11 +247,12 @@ export default function DashboardBuilder({ saved = [], dashboards = [], onAddDas
       </div>}
       {error && <p role="alert" className="text-sm text-rose-200">{error}</p>}
       {notice && <p role="status" className="text-sm text-fuchsia-200">{notice}</p>}
-    </GlassCard>
-    <div className={`grid items-start gap-4 ${mode === "visual" ? "xl:grid-cols-[320px_minmax(0,1fr)]" : ""}`}>
-      {mode === "visual" && <GlassCard className="p-4">
+    </div>
+    <div className={`grid items-start gap-4 ${mode === "visual" ? "xl:grid-cols-[minmax(0,1fr)_300px]" : ""}`}>
+      {mode === "visual" && <aside aria-label="Configuration" className="min-w-0 rounded border border-[#414650] bg-[#252930] p-4 xl:col-start-2 xl:row-start-1">
+        <h3 className="mb-3 border-b border-[#414650] pb-2 font-semibold">Configuration</h3>
         <form className="space-y-3" onSubmit={applyPanel}>
-          <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-semibold">{selectedPanel ? "Edit panel" : "Add panel"}</h3>{selectedPanel && <SoftButton type="button" onClick={() => selectPanel(null)}>New panel</SoftButton>}</div>
+          <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-slate-300">{selectedPanel ? "Edit visualization" : "Add visualization"}</p>{selectedPanel && <SoftButton type="button" onClick={() => selectPanel(null)}>New panel</SoftButton>}</div>
           <label className="block text-sm">Panel title<input className={control} value={panelDraft.title} onChange={(event) => updateDraft("title", event.target.value)} maxLength={80}/></label>
           <label className="block text-sm">Visualization<select className={control} value={panelDraft.type} onChange={(event) => updateDraft("type", event.target.value)}>{Object.entries(panelTypes).map(([type, label]) => <option key={type} value={type}>{label}</option>)}</select></label>
           <label className="block text-sm">Data source<select className={control} value={dataSources.some(([index]) => index === dashboardIndex(panelDraft.spl)) ? dashboardIndex(panelDraft.spl) : ""} onChange={(event) => chooseDataSource(event.target.value)}><option value="" disabled>Choose an index</option>{dataSources.map(([index, label]) => <option key={index} value={index}>{label || index} · {index}</option>)}</select></label>
@@ -223,11 +270,11 @@ export default function DashboardBuilder({ saved = [], dashboards = [], onAddDas
             <SoftButton type="button" onClick={() => { setPanels((previous) => previous.filter((panel) => panel.id !== selectedPanel.id)); selectPanel(null); }}>Remove panel</SoftButton>
           </div>}
         </form>
-      </GlassCard>}
-      <GlassCard className="min-w-0 p-4">
-        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2"><h3 className="font-semibold">Preview</h3>{layout === "absolute" && mode === "visual" && <p className="text-xs text-slate-400">Drag the top grip to move a panel and the bottom corner to resize it.</p>}</div>
+      </aside>}
+      <div className="min-w-0 rounded border border-[#414650] bg-[#1c1f25] p-4 xl:col-start-1 xl:row-start-1">
+        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2"><h3 className="font-semibold">Dashboard canvas</h3>{layout === "absolute" && mode === "visual" && <p className="text-xs text-slate-400">Drag the top grip to move a panel and the bottom corner to resize it.</p>}</div>
         {panels.length ? <DashboardCanvas panels={panels} layout={layout} selectedId={mode === "visual" ? panelId : undefined} onSelect={mode === "visual" ? (id) => { if (id !== panelId) selectPanel(id); } : undefined} onPosition={mode === "visual" ? changePosition : undefined} renderPanel={(panel) => <PanelPreview panel={panel} refreshKey={refreshKey}/>}/> : <p className="py-10 text-center text-sm text-slate-400">Add a panel or load a sample dashboard to see results here.</p>}
-      </GlassCard>
+      </div>
     </div>
     <GlassCard className="p-4">
       <h3 className="mb-2 font-semibold">Saved dashboards</h3>
