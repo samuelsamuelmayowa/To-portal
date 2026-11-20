@@ -10,7 +10,6 @@ import AlertBuilder from "../components/splunk/AlertBuilder";
 import AdminLab from "../components/splunk/AdminLab";
 import SplunkDictionary from "../components/Dictionary";
 import StudentHistory from "../components/splunk/StudentHistory";
-import LearningMissions from "../components/splunk/LearningMissions";
 import SocInvestigation from "../components/splunk/SocInvestigation";
 import { useStateContext } from "../context/ContextProvider";
 import { splunkLabApi } from "../services/splunkLabApi";
@@ -43,7 +42,6 @@ export default function SplunkStudio() {
   const [dashboards, setDashboards] = useState(() => load(LS_DASH, []));
   const [alerts, setAlerts] = useState(() => load(LS_ALERTS, []));
   const [history, setHistory] = useState([]);
-  const [missionProgress, setMissionProgress] = useState([]);
   const [workspaceOwner, setWorkspaceOwner] = useState("");
   const [workspaceLoading, setWorkspaceLoading] = useState(true);
   const [workspaceNotice, setWorkspaceNotice] = useState("");
@@ -67,8 +65,8 @@ export default function SplunkStudio() {
     const previousOwner = localStorage.getItem(LS_OWNER) || "";
     if (!authenticatedOwner) {
       if (previousOwner) {
-        setSaved([]); setDashboards([]); setAlerts([]); setHistory([]); setMissionProgress([]); setWorkspaceOwner("");
-        setWorkspaceNotice("Sign in to view your account’s saved searches, dashboards, alerts, history, and mission progress.");
+        setSaved([]); setDashboards([]); setAlerts([]); setHistory([]); setWorkspaceOwner("");
+        setWorkspaceNotice("Sign in to view your account’s saved searches, dashboards, alerts, and history.");
       } else {
         setWorkspaceNotice("Your current work is saved in this browser. Sign in to sync it across devices.");
       }
@@ -95,11 +93,9 @@ export default function SplunkStudio() {
         setSaved(work.savedSearches || []);
         setDashboards(work.dashboards || []);
         setAlerts(work.alerts || []);
-        setMissionProgress(work.missionProgress || []);
-        const [nextHistory, nextMissions] = await Promise.all([splunkLabApi.listHistory(), splunkLabApi.listMissions()]);
+        const nextHistory = await splunkLabApi.listHistory();
         if (!active) return;
         setHistory(nextHistory);
-        setMissionProgress(nextMissions.map((item) => item.progress).filter(Boolean));
         setWorkspaceOwner(identity);
         localStorage.setItem(LS_OWNER, identity);
         localStorage.setItem(ownerKey(LS_SAVED, identity), JSON.stringify(work.savedSearches || []));
@@ -212,7 +208,6 @@ export default function SplunkStudio() {
         {active === "lab" && <SearchLab onSaveSearch={(spl) => addSaved({ name: `Saved: ${spl.slice(0, 24)}...`, spl })} onSearchHistory={(item) => setHistory((previous) => [item, ...previous.filter((entry) => entry.id !== item.id)].slice(0, 100))} />}
         {active === "saved" && <SavedSearches saved={saved} onAdd={addSaved} onUpdate={updateSaved} onRun={runSavedIntoLab} onDelete={deleteSaved} />}
         {active === "history" && <StudentHistory history={history} onClear={async () => { if (workspaceOwner) { await splunkLabApi.clearHistory(); setHistory([]); } }} onRun={runSavedIntoLab} />}
-        {active === "missions" && <LearningMissions dashboards={dashboards} missionProgress={missionProgress} onProgress={setMissionProgress} />}
         {active === "dash" && <DashboardBuilder saved={saved} dashboards={dashboards} onAddDashboard={addDashboard} onUpdateDashboard={updateDashboard} onDeleteDashboard={deleteDashboard} />}
         {active === "alerts" && <AlertBuilder saved={saved} alerts={alerts} onAddAlert={addAlert} onUpdateAlert={updateAlert} onDeleteAlert={deleteAlert} onRefresh={refreshAlerts} onRunAlert={async (id) => { const result = await splunkLabApi.runAlert(id); setAlerts((previous) => previous.map((alert) => alert.id === id ? { ...alert, history: [...(alert.history || []), result].slice(-50) } : alert)); return result; }} />}
         {active === "soc" && <SocInvestigation onSearch={runSavedIntoLab} />}
